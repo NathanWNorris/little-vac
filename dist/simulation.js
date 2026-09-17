@@ -4,8 +4,20 @@ export function createRun(room,stats,runId='run-'+Date.now()) {
   return {room,stats:{...stats},runId,phase:'playing',robot:{...room.spawn,angle:0,move:0,bag:0,bagValue:0,squash:0},debris:room.debris.map((d,i)=>({...d,vx:0,vy:0,angle:i*2.39996,amount:1,collected:false,progress:0,loose:d.type!=='stuck'})),trinket:{...room.trinket,collected:false},cleaned:0,total:room.debris.length,percent:0,coins:0,time:0,unloading:0,nearestStation:0,full:false,finishProgress:0,particles:[],events:[],collectedCount:0,pickupCooldown:0,fullNotified:false};
 }
 export function clearLine(room,ax,ay,bx,by) {
-  const n=Math.ceil(Math.hypot(bx-ax,by-ay)/12);
-  for(let i=1;i<n;i++)if(!isWalkable(room,ax+(bx-ax)*i/n,ay+(by-ay)*i/n,2))return false;
+  if(![ax,ay,bx,by].every(Number.isFinite)||!isWalkable(room,ax,ay,2)||!isWalkable(room,bx,by,2))return false;
+  // Test the whole segment: spaced samples can miss a furniture corner.
+  const dx=bx-ax,dy=by-ay,pad=2;
+  const minX=Math.floor((Math.min(ax,bx)-pad)/40),maxX=Math.floor((Math.max(ax,bx)+pad)/40);
+  const minY=Math.floor((Math.min(ay,by)-pad)/40),maxY=Math.floor((Math.max(ay,by)+pad)/40);
+  for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){
+    if(room.grid[y]?.[x])continue;
+    let enter=0,leave=1;
+    for(const [start,delta,min,max] of [[ax,dx,x*40-pad,(x+1)*40+pad],[ay,dy,y*40-pad,(y+1)*40+pad]]){
+      if(delta===0){if(start<min||start>max){enter=2;break;}}
+      else {const a=(min-start)/delta,b=(max-start)/delta;enter=Math.max(enter,Math.min(a,b));leave=Math.min(leave,Math.max(a,b));}
+    }
+    if(enter<=leave)return false;
+  }
   return true;
 }
 function burst(r,x,y,color,count=4) {
@@ -42,8 +54,10 @@ export function step(r,dt,input={x:0,y:0}) {
       let tx=b.x-d.x,ty=b.y-d.y,dist=Math.hypot(tx,ty),near=dist<r.stats.radius&&clearLine(r.room,b.x,b.y,d.x,d.y);
       if(near&&b.bag<r.stats.capacity){
         if(d.type==='dust'){
-          const before=d.amount;d.amount=Math.max(0,d.amount-dt*1.9*r.stats.pull);r.cleaned+=before-d.amount;
-          if(d.amount>.00001)continue;
+          const before=d.amount;d.amount=Math.max(0,d.amount-dt*1.9*r.stats.pull);
+          if(d.amount<=.00001)d.amount=0;
+          r.cleaned+=before-d.amount;
+          if(d.amount>0)continue;
         } else if(d.type==='stuck'&&!d.loose){
           d.progress+=dt*r.stats.pull/.55;if(d.progress<1)continue;d.loose=true;burst(r,d.x,d.y,'#b7c36c',3);
         }
@@ -62,9 +76,10 @@ export function step(r,dt,input={x:0,y:0}) {
         }
       }else if(d.type==='stuck'&&!d.loose)d.progress=Math.max(0,d.progress-dt*2);
     }
-    let t=r.trinket;
-    if(!t.collected&&Math.hypot(t.x-b.x,t.y-b.y)<30&&clearLine(r.room,t.x,t.y,b.x,b.y)){t.collected=true;r.events.push({type:'trinket'});burst(r,t.x,t.y,'#ffdf78',10);}
   }
+  // Keepsakes have their own collection shelf; a full dirt bag does not block them.
+  const t=r.trinket;
+  if(!t.collected&&Math.hypot(t.x-b.x,t.y-b.y)<30&&clearLine(r.room,t.x,t.y,b.x,b.y)){t.collected=true;r.events.push({type:'trinket'});burst(r,t.x,t.y,'#ffdf78',10);}
   // Loose pieces always remain on reachable floor; fans never create new dirt.
   for(const d of r.debris)if(!d.collected&&d.type!=='dust'&&d.loose){
     for(const f of r.room.fans||[])if(d.x>=f.x&&d.x<=f.x+f.w&&d.y>=f.y&&d.y<=f.y+f.h){d.vx+=f.dx*f.strength*dt*(d.type==='confetti'?1:.3);d.vy+=f.dy*f.strength*dt*(d.type==='confetti'?1:.3);}

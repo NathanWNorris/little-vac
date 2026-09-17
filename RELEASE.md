@@ -1,82 +1,43 @@
-# Sweep Shift release preparation
+# Sweep Shift 1.1.0 release
 
-Target version: **1.0.0**. This project is the original cozy cleaning game: a complete campaign followed by optional replay and Endless Shift.
+The publishing boundary is a reviewed **itch.io draft**. The owner makes the final choice to publish. A draft is not a public release.
 
-The publishing boundary for this task is an uploaded, reviewed **itch.io draft**. The owner makes the final choice to publish. Do not describe a draft or a local preview as publicly available.
+## Verified build
 
-## Game upload
+- Archive: artifacts/sweep-shift-itch.zip
+- Contents: **11 files**; index.html at root; eight JavaScript modules, CSS, and SVG icon; no fixtures, servers, or external runtime dependencies.
+- Size: **47,133 bytes**.
+- SHA-256: **6255aaaa75b94e12694d0a326ccc37e5432c9a0d575ea27e784132d0b3e12297**.
+- Source, archive, extracted, and HTTP hashes match. Exact-package browser smoke checks passed.
+- Automated audit: 14 progression, 10 input, 9 career-store, and 11 application groups; 1,000 generated layouts; all 24 campaign rooms with earned upgrades and again with a starter robot; 40 additional endless rooms; 86,400 random movement frames.
+- Real Chrome playtest: completed room 7, earned the correct reward, purchased Bigger Bag, retained the save on reload, and started newly unlocked room 8 with the upgrade.
 
-Create the browser-game ZIP from the contents of `dist`, with `index.html` at the root of the archive. Include its JavaScript modules, stylesheet, and SVG icon. Do not include test fixtures, local saves, screenshots, documentation, `.git`, or development-server scripts inside the playable ZIP.
+See [PLAYTEST.md](PLAYTEST.md) for precise evidence and limitations. No physical-phone, Safari, or Firefox test is claimed.
 
-After packaging, extract that exact archive into an isolated directory and serve it over HTTP. Verify startup, room rendering, movement, pause, and reload/settings behavior. Compare every extracted and HTTP-served file against the tested source. Full completion and progression coverage comes from the physical campaign suite and the earned browser run documented in PLAYTEST.md. Record the archive's filename, byte size, and SHA-256 in the final release evidence.
+## What changed
 
-Upload the ZIP as a browser-playable HTML game. Preview the actual uploaded game in the itch.io page before handing over the final publication action. Keep the page in Draft until that review is complete.
+- Persistent Rooms and Upgrades navigation, location selectors and actual room previews, next-room guidance, clear upgrade levels/benefits/prices, and saved/pending coin labels.
+- Browse menus while keeping the current room paused; resume its cleaning and bag. New upgrades apply to the next room started.
+- Fixed suction through furniture corners, full bags blocking keepsakes, dust remainder accounting, unrelated touch releases, stale-save overwrites, seed-zero replay, delayed restart/reset races, rejected reward screens, and delayed purchases taking over navigation.
+- Original store and onboarding wording informed by [official comparable-game research](docs/COMPARABLE-GAMES.md).
 
-## Prepared page copy
+## Store page
 
-**Title:** Sweep Shift
+- Title: **Sweep Shift**.
+- Short description: **Clean 24 rooms, earn coins, and upgrade a tiny vacuum robot. A cozy browser game with endless shifts to unlock.**
+- Full formatted copy: [marketing/description.html](marketing/description.html).
+- Type: HTML game; Simulation; free/no payments; comments enabled.
+- Tags: cleaning, cozy, relaxing, singleplayer, top-down.
+- Embed: **960 × 800**, mobile friendly, fullscreen control and scrollbars enabled; autostart disabled.
+- Disclosure: AI-assisted Graphics, Text & Dialog, and Code; original procedurally synthesized audio described accurately.
+- Existing cream/teal theme, robot cover, banner, and launch artwork retained.
 
-**Short description:** Glide, gather, and leave every room lovely. A cozy cleaning game with a tiny vacuum robot.
+Five refreshed gameplay/menu screenshots are marketing/01-rooms.jpg through 05-upgrades.jpg. The upgrade screenshot was taken in the same audit before the final supporting-sentence edit, with legitimately earned affordable upgrades visible. Previous PNG screenshots are retained as source backups.
 
-**Suggested category:** HTML game · Simulation · Singleplayer
+## Draft status
 
-**Suggested tags:** Cozy, Relaxing, Cleaning, Casual, 2D, Top-Down, Singleplayer
+The [existing itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**, received the new ZIP and five screenshots. Reload confirmed the browser-playable upload, new tagline/description, and Draft visibility. The five refreshed screenshots are first in the saved gallery; two earlier screenshots remain afterward. The actual uploaded iframe loaded version 1.1, retained the existing 365-coin career, started room 2, handled pickup/pause, and kept the room intact through Upgrades and Resume. Its browser error/warning log was empty. The final public-publish action has not been taken.
 
-**Price:** Free
+## Rebuild
 
-### Main description
-
-**A little mess. A lovely clean.**
-
-Meet your new favorite chore. Guide a tiny vacuum robot through colorful rooms, pull loose scraps into satisfying little swirls, and watch a lovely clean floor emerge underneath.
-
-Empty your bag at a collection station, pocket the coins, and give your robot a small tune-up before its next shift. There's no rush: simply finishing a room opens the next one.
-
-- Restore **24 rooms** across a workshop, an after-hours arcade, a greenhouse, and a rooftop party.
-- Enjoy four kinds of mess: crumbs, fluttering confetti, dusty patches, and stubborn scraps.
-- Buy **20 upgrade ranks** and collect **five cosmetic shells**.
-- Find **24 optional keepsakes** for your treasure shelf.
-- Chase faster medals when you feel like it, or take your time.
-- Finish the campaign to unlock **Endless Shift**, with repeatable room seeds and your favorite robot upgrades.
-
-### Controls
-
-Move with **WASD or arrow keys**, or **hold the mouse button** to guide the robot. On a touchscreen, drag to steer. Suction happens automatically. Stay beside a collection station for a moment to empty your bag.
-
-At **95% clean**, the room gets one final sweep—no searching for an invisible last crumb. **Escape** pauses. Sound, volume, and reduced motion are in Settings.
-
-### Saves
-
-Your career saves in the current browser. Clearing its site data clears the save. Progress does not transfer between browsers or between different hosting addresses. Room coins join your career balance only when the room is complete. Leaving an unfinished room discards all coins from that room, including material already emptied at a station. Previously completed rooms, purchases, medals, and treasures remain saved.
-
-If saving is blocked, the game shows a warning and remains playable for that session.
-
-### Credits
-
-A game by **Nathan Norris**, developed with AI assistance for code, design iteration, writing, and testing. Game artwork is drawn using original Canvas and SVG code, and sound effects are synthesized with Web Audio. Screenshots show actual gameplay.
-
-## Page presentation
-
-Use the game's warm cream, deep teal, mint, coral, and yellow palette. Keep body copy readable and the cover recognizable at small sizes. The cover should show the mint robot, a visible boundary between messy and clean floor, a collection station, and the **Sweep Shift** title.
-
-Use three to five genuine gameplay screenshots showing room variety and the finished interface. Label marketing artwork as cover art rather than presenting it as a gameplay screenshot. Complete the platform's AI-disclosure fields accurately for the AI-assisted code and writing; describe the actual artwork workflow used for any promotional assets.
-
-## Release evidence
-
-[PLAYTEST.md](PLAYTEST.md) is the source for completed validation, measured outcomes, and remaining limitations. Do not turn automated solver timings into a claim about how long a human campaign takes. Do not claim physical-phone or multiple-browser-engine testing unless those checks actually happened.
-
-The reviewed playable archive is `artifacts/sweep-shift-itch.zip`: **37,697 bytes**, **8 files**, with `index.html` at its root. Its SHA-256 is:
-
-```text
-665a749ef35ee0d70bbdf06de6768c86b87ab08e7425deecd42b4c63a5959100
-```
-
-Every archive entry, extracted file, and HTTP-served file matched the corresponding tested `dist` file. The regenerated verification manifest is `tmp/package-manifest.json`.
-
-The marketing assets are `marketing/cover.png` (1260 × 1000), plus the actual gameplay screenshots `marketing/02-arcade.png`, `marketing/03-greenhouse.png`, and `marketing/04-rooftop.png`.
-
-The saved [itch.io draft](https://fooded.itch.io/sweep-shift) has project ID **5021059**. Its game ZIP is marked for browser play; the cover, three screenshots, and cream/teal page styling with a Sans Serif font and sidebar have been saved. The draft status was verified.
-
-The actual uploaded game passed its browser smoke check inside itch.io: Run Game opened the title and room 1; ordinary mouse drags and keyboard movement collected 10 pieces (4% clean). Clicking outside the game paused it on loss of focus, and Resume continued the room. See PLAYTEST.md for the scope of this check and the full local campaign validation.
-
-The game remains a draft. The public-publish action remains for the owner; a draft link may require the owner's signed-in account. The matching 1260 × 320 page banner has also been uploaded and its saved appearance verified after reload. Cover, banner, three gameplay screenshots, and the formatted description source are in marketing/.
+Run **node scripts/check.mjs**, then **node scripts/verify.mjs --deep**. Package with **./scripts/package-release.ps1** in PowerShell. Serve the extracted archive using **node scripts/serve.mjs --package** with a separate PORT. Repeat the packaged/hosted browser smoke check whenever runtime code changes, and record the new manifest before uploading.

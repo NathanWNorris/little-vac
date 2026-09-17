@@ -1,100 +1,93 @@
 # Sweep Shift validation
 
-Validation date: **2026-09-17**. Target version: **1.0.0**. Automated checks ran with Node.js **v24.19.0**. Browser checks used Chrome and the Codex in-app browser on Windows through the browser-control interface.
+Validation date: **2026-09-17**. Version: **1.1.0**. Automated checks ran with Node.js **v24.19.0** on Windows. The automated audit, local browser integration, exact ZIP checks, and uploaded-game smoke check are complete.
 
-The sections below distinguish physical simulation, real browser interaction, packaged-file checks, and hosted-game checks. No physical-phone or additional browser-engine test is claimed.
+## Reproduce this audit
 
-## Automated content and physics
+```sh
+node scripts/check.mjs
+node scripts/verify.mjs --deep
+```
 
-`node scripts/verify.mjs` runs the room, progression, and physical-playthrough suites. Node was called directly because npm was unavailable on the validation host. The solver moves the robot through the real simulation at 60 Hz; it does not teleport the robot, mark debris collected, inject purchase money, or force a room to complete.
+The syntax check discovers every JavaScript module under `dist` and `scripts` (eight game modules and nine development/test scripts at this audit). The default verification command runs room generation, progression, input, career-store, app orchestration, physics regressions, and the full earned campaign. `--deep` adds the starter campaign, 40 additional endless rooms, and random-movement simulation. npm is not required.
+
+The solver uses ordinary directional movement through the real 60 Hz simulation. It does not teleport the robot, mark debris collected, inject purchase money, or force room completion. Input and storage unit checks use controlled event/storage fixtures; they are not physical-device or browser-concurrency tests.
+
+## Reproduced fixes
+
+| Issue | Evidence and correction |
+| --- | --- |
+| Suction through a furniture corner | Room 1, robot at (244, 165), debris 9 at approximately (306.815, 224.868): the old 12 px samples missed the workbench corner. Exact segment/cell intersection blocks the same ray and prevents the pull force. The reverse ray is also blocked; a clear aisle still works. |
+| Full bag blocked optional keepsakes | The old run could not collect a keepsake after filling its bag. Keepsake collection now runs separately from dirt suction; walking over one works with a full bag and emits one collectible event. |
+| Dust cleanup undercount | A fading dust patch could be removed while its cleaned contribution remained 0.999999. The final fractional remainder is now included. Every simulated frame checks progress against remaining dust and collected pieces. |
+| Unrelated pointer releases interrupted movement | The input controller keeps one controlling pointer and ignores other fingers, secondary mouse buttons, and unrelated release events. Pause releases capture and ignores stale motion. |
+| Stale tabs could overwrite later career progress | Career transactions begin from the latest persisted state. Optional Web Locks serialize purchases and run settlement across tabs; storage-fixture tests preserve completed rooms, coins, settings, and duplicate-run protection. |
+| Failed writes could lose session state or revive an older save | A failed storage read/write switches the current store to memory for the rest of that session. Later operations retain the in-memory career and issue a bounded warning instead of reloading the older disk copy. |
+| Endless seed zero changed on replay/restart | The app treated normalized numeric zero as a missing seed. Nullish fallback retains zero, and the app regression suite compares the entire room before and after restart and replay. |
+| An external reset could produce a false completion screen | A later active room could lose access after another tab reset the career. The app now clears invalidated runs and checks rejected settlement before showing a success screen. Both delivered and missing storage-event cases are tested. |
+| Restart/switch/reset could resume the old room while saving | With a deliberately delayed save lock, the old restart path advanced the room clock from 10 to 10.10 seconds. Transition guards now freeze the old simulation until the new room or career is ready; restart, room switch, and reset are covered separately. |
+| A delayed purchase navigated back to Upgrades unexpectedly | Finishing a purchase after navigating to Rooms used to force the Upgrades screen open again. The app now refreshes the purchase view only when it is still being shown. |
+
+The three physics cases were run against the previous release implementation and the corrected implementation. The corner visibility changed from true to false, the full-bag keepsake from uncollected to collected, and dust progress from 0.9999989999999997 to normal floating-point one (0.9999999999999999).
+
+## Automated content and physical play
 
 | Check | Result |
 | --- | --- |
-| Authored campaign | All 24 rooms completed with real movement, suction, bag limits, and station unloading |
-| Endless gameplay | Seeds 17, 2048, and 99001 completed physically |
-| Room generation | 24 distinct campaign layouts and 100 reproducible endless seeds checked |
-| Reachability | Connected floor, clear aisles, valid spawn, and reachable stations, debris, and trinkets |
-| Movement | Cardinal/diagonal speed, wall collision, and invalid input handling checked |
-| Suction | All material types, line of sight, bag capacity, and automatic unloading checked |
-| Finishing sweep | Completion at 95%, remaining material value paid, bag emptied, no invented trinket |
-| Currency integrity | Material value conserved; repeated settlement and reload cannot repeat run rewards |
-| Restart | An unfinished restarted run cannot be settled for rewards |
+| Authored campaign | All 24 distinct rooms completed using earned upgrades, real movement, suction, bag limits, and station unloading |
+| Starter campaign | All 24 rooms completed again with zero upgrades |
+| Endless gameplay | Standard seeds 17, 2048, and 99001, plus deep seeds 0 through 39; deep seeds alternate starter and maximum builds |
+| Room generation | All 1,000 seeds from 0 through 999 produced distinct, deterministic layouts; all four locations and all 101 debris population sizes appeared |
+| Reachability | Connected floor, intact 80 px aisle modules, valid spawn clearance, and reachable stations, debris, and keepsakes |
+| Random movement | 86,400 frames across all 24 rooms, representing 1,440 simulated seconds |
+| Per-frame invariants | Robot and uncollected debris stay on valid floor; movement speed, finite state, bag capacity, dust progress, material value, and collected state remain valid |
+| Particles | Random-movement checks kept the particle population at or below 110 |
+| Completion | One final sweep at 95%; remaining material and bag value paid once; no invented keepsake; later steps do not change the result |
+| Restart and reload | Unfinished runs cannot settle; repeated settlement and reload cannot duplicate rewards |
 
-The earned campaign route collected all 24 trinkets and received gold medals in all rooms. It earned **15,411 campaign coins**, spent **13,200** on all 20 upgrade ranks, and bought its final rank after room **22**. Three subsequent endless rooms and one campaign replay brought total test awards to **17,362**, leaving **4,162** coins.
+The earned campaign collected all 24 keepsakes and received gold medals. It earned **15,411 campaign coins**, spent **13,200** on all 20 upgrade ranks, and bought its final rank after room **22**. The standard three endless rooms and one campaign replay brought total test awards to **17,362**, leaving **4,162** coins.
 
-The campaign solver took **936.98 simulated seconds**, with individual rooms ranging from **27.65 to 58.98 seconds**. These are efficient route-finding simulation times, not an estimate of human playtime or a completion-time claim for the store page.
+The earned campaign took **939.11 simulated seconds**, with rooms from **27.68 to 58.98 seconds**. The zero-upgrade campaign took **1,780.52 simulated seconds**. Its 24 rooms plus the 40 deep endless rooms totaled **3,859.50 simulated seconds**. These are automated route-finding times, not human playtime estimates or performance benchmarks.
 
-An additional pass completed all 24 rooms using the **starter robot with zero upgrades**. This establishes that no specific upgrade build is required to finish. That pass took **1,787.38 simulated seconds**, with rooms ranging from **58.98 to 81.97 seconds**; those timings also are not human benchmarks.
+Regenerable evidence is written to `tmp/campaign-report.json`, `tmp/deep-physics-report.json`, and `tmp/earned-career*.json`. Test fixtures are excluded from the playable release.
 
-Regenerable detailed evidence is written to `tmp/campaign-report.json`, `tmp/no-upgrade-report.json`, and the `tmp/earned-career*.json` fixtures. These test artifacts are excluded from the playable release.
+## Progression, input, and saves
 
-## Progression and saves
+The integrated suite passes **14 progression checks**, **10 input checks**, **9 career-store checks**, and **11 app-orchestration checks**, in addition to generation and physical simulation.
 
-`node scripts/verify-progression.mjs` passes **14 grouped checks** covering:
+Progression checks cover independent defaults, bounded stats, earned purchases, unique completion/medal/keepsake bonuses, gold-first versus staged medal rewards, invalid and locked-room settlement, unlock order, ending state, replay rewards, save validation, corrupt/blocked storage, bounded balances, and duplicate history. The conservative bronze/no-keepsake economy earns **13,851 coins**, funds all 20 ranks for **13,200**, and completes purchases in room **24**, without replays. The first room affords an upgrade; the tested purchase route waits at most one completed room between purchases.
 
-- Independent fresh careers and bounded upgrade effects.
-- Purchases funded only by earned coins; no negative balances.
-- Completion bonuses paid once, medal bonuses only for improvements, and trinkets awarded once.
-- Missed trinkets collectable on a later replay without repeating other bonuses.
-- Equivalent lifetime medal rewards whether gold is earned immediately or in stages.
-- Rejection of invalid runs, locked-room results, and duplicate run IDs.
-- Campaign unlocks, the final shell, and Endless Shift.
-- Separate persistence of the earned finale and whether its ending has been viewed.
-- Save/reload identity, settings, and duplicate-run history.
-- Blocked reads, failed writes, malformed JSON, invalid versions, and damaged values.
-- No future-room unlocks from a damaged saved unlock counter.
-- Bounded currency and recent-run history.
+Input checks cover scaled and letterboxed mouse coordinates, secondary buttons, multiple pointer identities, relative joystick origins, capped diagonal movement, the separate control tray, pause/capture cleanup, mouse dead zones, keyboard priority, invalid coordinates, detached capture, and detached state snapshots. They establish controller behavior with synthetic events; physical touchscreen behavior remains unverified.
 
-The conservative economy check uses each room's actual debris value, **bronze medals**, and **no trinkets or replays**. It earns **13,851 coins** and funds all 20 ranks for **13,200**, with the final purchase in room **24**. The first room affords one upgrade, and the tested purchase route never waits more than one completed room between affordable upgrades.
+Career-store checks cover stale tab settings after a completed room, serialized competing purchases, duplicate settlement through two stores, failed-write memory retention, blocked reads, rejected mutations, unavailable-lock fallback, ordered same-store work, synchronous fallback transactions, external reset synchronization, and failing view callbacks. Cross-tab fixtures use a queued lock-manager double. Two real browser tabs also synchronized sound and reduced-motion settings; reload retained both changes. Without Web Locks, a synchronous fallback is used; these tests do not prove atomic purchases across all browsers or separate processes.
 
-## Real browser checks
+App-orchestration checks load the real application code against a lightweight DOM double, with its real input, save, room, progression, and simulation modules. They cover preserving paused cleaning while browsing, next-room upgrade effects, seed-zero restart/replay, single settlement, Continue, settings and purchase synchronization, reset/reward rejection, room-change confirmation, delayed restart/switch/reset, and navigation during a delayed purchase. These tests use explicit career and completion fixtures to exercise screen transitions; they do not replace physical campaign completion, rendered-interface checks, or browser interaction tests.
 
-The fresh-career browser run used ordinary keyboard and mouse controls through a full first room. The bag reached its 90-piece limit; suction stopped while movement remained available. Parking at the dock unloaded it. Reaching 95% triggered the final sweep and the completion screen.
+## Current browser and interface checks
 
-That browser run earned **350 coins**, a bronze medal, and the room's trinket. Buying the first width upgrade cost **180**, leaving **170**. Reload retained the completed room, medal, trinket, and upgrade; Continue opened room 2. The recorded room time was **215.78 seconds**, including idle intervals while operating and inspecting the interface; it is not a human pacing benchmark.
+- Chrome completed room 7 (Closing Time) with ordinary mouse drags from a legitimately earned six-room QA career. The robot collected the Arcade token, emptied at a station, and triggered the finishing sweep at 95%. The result awarded **467 coins**, including **135** first-time bonuses, with Gold and a displayed **1:01** time. Saved balance changed **395 → 862**.
+- The result opened Upgrades with three affordable choices. Bigger Bag cost **550**, changed level **2 → 3** and capacity **150 → 180**, and left **312** coins. Reload retained the purchase and balance. Newly unlocked room 8 (Fan Club) started with capacity **180**. This QA career used isolated session storage, not the owner's production save.
+- In-app browser tests moved room 7 to **13%**, **39 pieces**, position **(540, 540)**. Browsing Upgrades and Rooms, choosing another room, cancelling, and resuming kept that same run, bag, position, and cleaning. The clock stopped during browsing and resumed afterward.
+- Persistent Rooms/Upgrades/Treasures navigation was available from title, play, and result flows. All four location selectors and locked prerequisites were readable. Purchases displayed current/next stats, explicit levels, saved balance, and the missing coins needed.
+- Mouse movement, the separate mobile movement pad (operated with a mouse), Escape pause/resume, and focus restoration worked. Input-controller tests separately exercise multiple synthetic touch identities; this is not a physical-phone test.
+- Desktop, **390 × 844** phone layout, and **960 × 800** itch embed layout were inspected. At 390 × 844 the full canvas ended at about y=514 and the control tray at y=638, without horizontal overflow. At 960 × 800 the full canvas ended at y=753 and the hint row at y=796, without horizontal overflow.
+- Two isolated real tabs on port 4183 synchronized sound and reduced-motion settings. Reload preserved both. A deliberately blocked-storage QA page displayed the expected warning and remained available to play.
+- The checked local/packaged browser error and warning logs were empty. Ending, seed-zero replay, rejected rewards, resets, and delayed-save races have explicit application regression coverage; the previous release's ending/browser check is historical evidence only.
 
-Restarting room 2 cleared only that unfinished room. The 170-coin balance, first width upgrade, and completed room 1 remained intact.
+## Current package and hosted build
 
-Additional browser checks used separate QA careers earned by the physical solver, without forcing additional progress:
+The current archive is **artifacts/sweep-shift-itch.zip**, with **11 files**, **47,133 bytes**, and SHA-256 **6255aaaa75b94e12694d0a326ccc37e5432c9a0d575ea27e784132d0b3e12297**. The root contains index.html and all eight JavaScript modules, CSS, and the SVG icon. All archive, extracted, source, and separately served HTTP hashes match.
 
-| Flow | Observed result |
-| --- | --- |
-| Complete campaign, ending not viewed | Continue opened the earned ending |
-| Reload after viewing ending | Continue returned to room selection without replaying the ending or final room |
-| Completed first district | Continue opened room 7, Closing Time |
-| Collection shelf | All 24 named keepsakes were displayed |
-| Final workshop | All five shells available; Sky equipped successfully |
-| Maximum upgrades | All four cards showed rank 5 and disabled Fully upgraded buttons |
-| Earlier workshop | 395 coins; next upgrades at 550 or 900 were correctly disabled; later shells remained locked |
-| Settings | Mute and reduced motion persisted across reload |
-| Reset cancellation | Confirmation appeared; Keep my career preserved the completed career |
-| Endless seed form | `qa-clean-2026` repeatedly reopened canonical seed `4071079376` |
-| Leave and reopen | Ordinary unfinished-room leave/reopen retained the same seed and preserved the 2,211-coin career balance |
-| Pause | Escape opened the dialog, Escape closed it, and keyboard focus returned to the canvas |
-| Browser logs | No error or warning entries during the late-career UI checks |
+The exact extracted archive was served on port 4182. Startup, real directional movement, automatic pickup, separate saved/pending balances, Upgrades browsing, Resume, and Escape pause passed. Its error/warning log was empty.
 
-The browser run found an Escape-key issue: the browser's default action immediately closed a dialog opened by the same Escape event. The handler now prevents that default action and explicitly opens or closes the dialog. Opening and closing were rechecked after reloading the corrected source.
+The new ZIP was uploaded to itch project **5021059**. Reloading the editor confirmed the new **46kb** file, its checked browser-playable flag, the rewritten description and short tagline, and **Draft** visibility. Five refreshed gameplay/menu screenshots uploaded and their first-five gallery positions survived a save/reload. Two older screenshots remain afterward; originals are retained in marketing/*.png. The public-publish action has not been taken.
 
-The responsive interface and the narrow-screen movement tray were inspected using a mobile-sized viewport and ordinary mouse input. This does **not** establish actual touchscreen or physical-phone compatibility.
-
-## Packaged release and blocked storage
-
-The exact archive `artifacts/sweep-shift-itch.zip` contains **8 files**, totals **37,697 bytes**, and has `index.html` at the root. Its SHA-256 is `665a749ef35ee0d70bbdf06de6768c86b87ab08e7425deecd42b4c63a5959100`.
-
-Every ZIP entry, extracted file, and HTTP-served file matched its tested `dist` counterpart by hash. The extracted copy was served separately at `http://127.0.0.1:4182/`. Its browser smoke check opened the title and room 1, rendered the game, and accepted two seconds of real movement input: the robot reached y = 240 and collected 7 pieces (3.477% clean). Escape opened the correct pause dialog. Reload retained muted sound, reduced motion, and effects volume 0.65. No browser errors or warnings were recorded. This checks the distributed files in a browser; it is not a second complete browser campaign.
-
-A separate browser check with storage blocked showed the explanation that progress could not be saved. The room remained playable and collected 7 pieces using normal movement. That check produced no browser errors or warnings. The automated storage tests separately cover failed reads, failed writes, and safe fallback careers.
-
-The 1260 × 1000 cover and three actual gameplay screenshots have been uploaded to [the itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**. The uploaded ZIP is marked for browser play. Cream/teal styling, Sans Serif typography, and the sidebar have been saved. The saved Draft status was verified. Public publication is left to the owner.
-
-The actual itch.io iframe also passed a browser smoke check. Run Game opened the title, and starting a shift opened room 1. Two ordinary mouse drags and a W-key movement collected **10 pieces**, showing **4% clean**. Interaction with the surrounding page caused the expected pause on loss of game focus; Resume continued the room. The observed hosted build was `https://html-classic.itch.zone/html/19281148/index.html?v=1789680692`. This is a hosted startup/input/pause check, not a claim of an additional full campaign playthrough online.
-
-The playable archive, uploaded game, cover, screenshots, and saved draft styling have been reviewed. The matching 1260 × 320 banner was uploaded, and its saved appearance plus Draft status were verified after a page reload. The banner source is marketing/banner.html; its browser capture is marketing/banner.jpg. It does not modify the verified game archive.
+The actual uploaded iframe at **https://html-classic.itch.zone/html/19281737/index.html?v=1789684379** loaded version 1.1 with the revised copy and navigation. The existing career's **365 saved coins** remained intact. Continue opened unlocked room 2 (Bench Business), automatic pickup produced **Bag 1 / 90** and **+1 this room**, and ordinary pointer/keyboard inputs were accepted. Focus loss and Escape paused the room. Upgrades displayed four affordable choices; browsing and Resume retained the same room and bag. No purchase was made in that existing career. The hosted tab's error/warning log was empty.
 
 ## Practical limits
 
-All 24 campaign rooms and the tested endless seeds are physically completable. The content generator was checked across 100 additional seeds; this is strong bounded coverage rather than an exhaustive proof of every possible seed.
+All authored rooms and tested generated rooms are physically completable within the checked simulation. One thousand generated seeds and the bounded random-input run are broad coverage, not a proof of every seed or a real-time browser performance soak.
 
-Saves are local to a browser and hosting origin. Browser data clearing or blocked storage can remove persistence. A running room is restarted rather than resumed after leaving the page. All coins from an unfinished room are discarded, including material already emptied at a station; career coins are awarded on room completion. Audio is synthesized and begins after interaction; subjective audio quality and play feel remain matters for the owner's final review.
+Saves remain local to a browser and hosting origin. Clearing site data removes them. Failed storage leaves only the current in-memory session. Browsing between in-game menus may preserve the active room, but leaving/reloading the page restarts unfinished cleaning; room coins become career coins only on completion. Web Locks support is used when available; no universal cross-browser atomicity guarantee is claimed.
 
-No physical phone, Safari, Firefox, long-duration performance soak, or external audience playtest has been recorded in this release pass.
+No physical phone, Safari, Firefox, long-duration real-time browser soak, or external audience playtest has been recorded for this audit. Synthesized audio quality and overall feel remain subjects for the owner's playtest.

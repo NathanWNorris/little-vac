@@ -53,13 +53,13 @@ for(let id=1;id<=24;id++) {
 }
 assert.equal(layouts.size,24,`Expected 24 distinct authored layouts, received ${layouts.size}`);
 const endlessLayouts=new Set(), locations=new Set(), debrisCounts=new Set();
-for(let seed=0;seed<100;seed++) {
+for(let seed=0;seed<1000;seed++) {
   const room=makeEndless(seed);validate(room);
   assert.deepEqual(room,makeEndless(seed),`Seed ${seed} is not deterministic`);
   assert.deepEqual(room,makeEndless(String(seed)),`Numeric seed ${seed} differs as a string`);
   endlessLayouts.add(JSON.stringify(room.grid));locations.add(room.location);debrisCounts.add(room.debris.length);
 }
-assert(endlessLayouts.size>=95);assert.equal(locations.size,4);assert(debrisCounts.size>45);
+assert(endlessLayouts.size>=950);assert.equal(locations.size,4);assert(debrisCounts.size>45);
 assert.deepEqual(makeEndless('clean-room'),makeEndless('clean-room'));
 assert.throws(()=>makeRoom(0),RangeError);assert.throws(()=>makeRoom(25),RangeError);
-console.log(JSON.stringify({passed:true,campaignRooms:24,uniqueCampaignLayouts:layouts.size,endlessSeeds:100,uniqueEndlessLayouts:endlessLayouts.size,endlessLocations:locations.size,debrisCounts:debrisCounts.size,checks:['determinism','fresh objects','connected floor','80px aisles','18px clearance','all debris/stations/trinkets reachable','bounded population','material validity']},null,2));
+console.log(JSON.stringify({passed:true,campaignRooms:24,uniqueCampaignLayouts:layouts.size,endlessSeeds:1000,uniqueEndlessLayouts:endlessLayouts.size,endlessLocations:locations.size,debrisCounts:debrisCounts.size,checks:['determinism','fresh objects','connected floor','80px aisles','18px clearance','all debris/stations/trinkets reachable','bounded population','material validity']},null,2));

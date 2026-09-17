@@ -1,0 +1,171 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import * as rooms from '../dist/rooms.js';
+import * as progression from '../dist/progression.js';
+import * as simulation from '../dist/simulation.js';
+import * as storeModule from '../dist/career-store.js';
+import * as inputModule from '../dist/input.js';
+import * as ui from '../dist/ui.js';
+
+// Exercise the real app orchestration against a small DOM surface. Drawing is
+// deliberately omitted: browser playtests cover pixels, pointer geometry, and layout.
+const source = (await readFile(new URL('../dist/app.js', import.meta.url), 'utf8')).replace(/^import .*;\r?\n/gm, '');
+const dependencies = { ...rooms, ...progression, ...simulation, ...storeModule, ...inputModule, ...ui, render() {}, drawTitle() {} };
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const makeApp = new AsyncFunction('deps', 'window', 'document', 'navigator', 'performance', 'requestAnimationFrame', 'setTimeout', 'clearTimeout', 'crypto', 'console',
+  `const {${Object.keys(dependencies).join(',')}}=deps;\n${source}\nreturn {act,startRoom,requestStart,completed,frame,rooms,shop,continueShift,publicState,run:()=>run};`);
+
+function fixtureCareer(count = 0) {
+  const career = progression.defaultCareer();
+  for (let id = 1; id <= count; id++) progression.settleRun(career, { runId: `fixture-${id}`, roomId: id, coins: 300, time: 110, medal: 2, trinket: false });
+  return career;
+}
+async function boot(initial = fixtureCareer()) {
+  let text = JSON.stringify(initial), timestamp = 0, releaseLock = null, lockGate = Promise.resolve();
+  const storage = { getItem() { return text; }, setItem(key, value) { assert.equal(key, progression.SAVE_KEY); text = value; } };
+  const locks = {
+    async request(name, callback) { assert.equal(name, progression.SAVE_KEY); await lockGate; return callback(); },
+    hold() { lockGate = new Promise(resolve => { releaseLock = resolve; }); },
+    release() { releaseLock?.(); releaseLock = null; },
+  };
+  const events = new Map(), nodes = new Map();
+  let document;
+  function node(id = '') {
+    return { id, innerHTML: '', textContent: '', hidden: false, disabled: false, open: false, isConnected: true, dataset: {}, style: {}, tagName: 'DIV',
+      classList: { add() {}, remove() {}, toggle() {} }, addEventListener() {}, setAttribute() {}, insertAdjacentHTML(_position, html) { this.innerHTML += html; },
+      querySelector(selector) { return selector === 'h1' || selector === 'h2' ? node('heading') : null; }, querySelectorAll() { return []; },
+      focus() { document.activeElement = this; }, getContext() { return { setTransform() {} }; },
+      showModal() { this.open = true; }, close() { this.open = false; },
+      getBoundingClientRect() { return { left: 0, top: 0, bottom: 640, width: 960, height: 640 }; },
+    };
+  }
+  document = { hidden: false, activeElement: null, body: node('body'), addEventListener() {}, querySelector(selector) {
+    if (!nodes.has(selector)) nodes.set(selector, node(selector));
+    return nodes.get(selector);
+  } };
+  const window = { localStorage: storage, devicePixelRatio: 1, innerWidth: 1280, scrollY: 0,
+    matchMedia: () => ({ matches: false }), scrollTo({ top }) { this.scrollY = top; },
+    addEventListener(name, callback) { if (!events.has(name)) events.set(name, []); events.get(name).push(callback); },
+  };
+  const errors = [];
+  const app = await makeApp(dependencies, window, document, { locks }, { now: () => timestamp }, () => {}, () => 0, () => {}, { randomUUID: () => String(++timestamp) }, { error: error => errors.push(error) });
+  return { ...app, storage, locks, nodes, errors,
+    async externalCareer(career) { storage.setItem(progression.SAVE_KEY, JSON.stringify(career)); for (const callback of events.get('storage') || []) await callback({ key: progression.SAVE_KEY }); },
+    async settle() { const run = app.run(); run.phase = 'complete'; run.time = 100; run.percent = 1; run.coins = run.room.debris.reduce((sum, piece) => sum + piece.value, 0); await app.completed(); },
+  };
+}
+
+let checks = 0;
+async function test(name, body) { await body(); checks++; console.log(`PASS ${name}`); }
+
+await test('room navigation preserves an active run and purchased upgrades apply to the next room', async () => {
+  const app = await boot(fixtureCareer(1));
+  await app.startRoom(2);
+  const active = app.run(); active.robot.x += 20; active.robot.bag = 4; active.robot.bagValue = 4; active.percent = 0.3;
+  await app.act('rooms'); await app.act('shop');
+  await app.act('buy:bag', { disabled: false });
+  assert.equal(app.publicState().career.upgrades.bag, 1);
+  assert.equal(app.run().stats.capacity, 90);
+  await app.act('resume-room');
+  assert.equal(app.run(), active); assert.equal(app.publicState().screen, 'play');
+  assert.equal(active.robot.bag, 4); assert.equal(active.percent, 0.3);
+  await app.act('restart-confirm');
+  assert.notEqual(app.run(), active); assert.equal(app.run().stats.capacity, 120);
+});
+
+await test('Endless seed zero survives restart and replay through the real app', async () => {
+  const app = await boot(fixtureCareer(24));
+  await app.startRoom(0, '0'); const expected = app.run().room;
+  assert.equal(expected.seed, 0);
+  await app.act('restart-confirm'); assert.deepEqual(app.run().room, expected);
+  await app.settle(); await app.act('replay'); assert.deepEqual(app.run().room, expected);
+});
+
+await test('a completed room is paid once and Continue advances after visiting Upgrades', async () => {
+  const app = await boot(); await app.startRoom(1); await app.settle();
+  const coins = app.publicState().career.coins;
+  await app.completed(); assert.equal(app.publicState().career.coins, coins);
+  await app.act('shop'); await app.act('continue');
+  assert.equal(app.run().room.id, 2); assert.equal(app.publicState().career.coins, coins);
+});
+
+await test('another tab’s purchase and settings update preserve this tab’s active room', async () => {
+  const app = await boot(fixtureCareer(1)); await app.startRoom(2);
+  const active = app.run(), latest = progression.loadCareer(app.storage).career;
+  progression.buyUpgrade(latest, 'bag'); latest.settings.muted = true;
+  await app.externalCareer(latest);
+  assert.equal(app.run(), active); assert.equal(app.publicState().career.upgrades.bag, 1);
+  assert.equal(app.publicState().career.settings.muted, true); assert.equal(active.stats.capacity, 90);
+  await app.settle(); assert.equal(app.publicState().career.completed.length, 2);
+  assert.equal(app.publicState().career.upgrades.bag, 1);
+});
+
+await test('an external reset clears a later active room instead of showing a false completion', async () => {
+  const app = await boot(fixtureCareer(6)); await app.startRoom(7);
+  await app.externalCareer(fixtureCareer());
+  assert.equal(app.run(), null); assert.equal(app.publicState().screen, 'rooms');
+  assert.equal(app.publicState().career.coins, 0);
+});
+
+await test('a rejected reward leaves the room safely when a reset arrived without a storage event', async () => {
+  const app = await boot(fixtureCareer(6)); await app.startRoom(7);
+  app.storage.setItem(progression.SAVE_KEY, JSON.stringify(fixtureCareer()));
+  await app.settle();
+  assert.equal(app.run(), null); assert.equal(app.publicState().screen, 'rooms');
+  assert.equal(app.publicState().career.coins, 0); assert.deepEqual(app.publicState().career.completed, []);
+});
+
+await test('choosing another room requires confirmation and cancel keeps current cleaning', async () => {
+  const app = await boot(fixtureCareer(2)); await app.startRoom(2);
+  const active = app.run(); active.robot.bag = 12; active.percent = 0.4;
+  await app.act('rooms'); await app.requestStart(3);
+  assert.equal(app.nodes.get('#modal').open, true); assert.equal(app.run(), active);
+  await app.act('resume'); assert.equal(app.run(), active); assert.equal(active.robot.bag, 12);
+  await app.requestStart(2); assert.equal(app.run(), active); assert.equal(app.publicState().screen, 'play');
+});
+
+await test('a confirmed restart freezes the old room while waiting for its save lock', async () => {
+  const app = await boot(); await app.startRoom(1);
+  const active = app.run(); active.time = 10;
+  await app.act('pause'); app.locks.hold();
+  const restart = app.act('restart-confirm');
+  let duringWait;
+  try { app.frame(1000); duringWait = active.time; }
+  finally { app.locks.release(); await restart; }
+  assert.equal(duringWait, 10, 'The old room must not resume behind an asynchronous restart');
+  assert.notEqual(app.run(), active); assert.equal(app.run().time, 0);
+});
+
+await test('a confirmed room switch freezes the old room during its delayed save', async () => {
+  const app = await boot(fixtureCareer(1)); await app.startRoom(1);
+  const active = app.run(); active.time = 10;
+  await app.requestStart(2); app.locks.hold();
+  const switching = app.act('switch-confirm');
+  let duringWait;
+  try { app.frame(1000); duringWait = active.time; }
+  finally { app.locks.release(); await switching; }
+  assert.equal(duringWait, 10); assert.equal(app.run().room.id, 2);
+});
+
+await test('a career reset cannot finish or reward the old room while storage is delayed', async () => {
+  const app = await boot(fixtureCareer(1)); await app.startRoom(2);
+  const active = app.run(); active.phase = 'finishing'; active.finishProgress = 0.999;
+  await app.act('new'); app.locks.hold();
+  const resetting = app.act('reset-confirm');
+  let duringWait;
+  try { app.frame(1000); duringWait = active.phase; }
+  finally { app.locks.release(); await resetting; }
+  assert.equal(duringWait, 'finishing'); assert.equal(app.run().room.id, 1);
+  assert.equal(app.publicState().career.coins, 0); assert.deepEqual(app.publicState().career.completed, []);
+});
+
+await test('a delayed purchase does not pull the player back after they navigate to Rooms', async () => {
+  const app = await boot(fixtureCareer(1)); await app.act('shop'); app.locks.hold();
+  const purchase = app.act('buy:bag', { disabled: false });
+  await app.act('rooms');
+  app.locks.release(); await purchase;
+  assert.equal(app.publicState().career.upgrades.bag, 1);
+  assert.equal(app.publicState().screen, 'rooms');
+});
+
+console.log(`App orchestration verified: ${checks} checks passed.`);

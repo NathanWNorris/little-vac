@@ -37,12 +37,14 @@ function auditRun(run,totalValue,previous){
   assert(run.cleaned+1e-7>=previous.cleaned,'Cleaning progress regressed');
   assert(run.percent>=0&&run.percent<=1&&b.bag>=0&&b.bag<=run.stats.capacity);
   assert(Number.isInteger(run.coins)&&run.coins>=0&&Number.isInteger(b.bagValue)&&b.bagValue>=0);
-  let looseValue=0;
+  let looseValue=0,cleaned=0;
   for(const d of run.debris){
     assert([d.x,d.y,d.vx,d.vy,d.amount].every(Number.isFinite),'Non-finite debris state');
     assert(d.amount>=0&&d.amount<=1);assert(!previous.collected.has(d.id)||d.collected,'A pickup reappeared');
-    if(d.collected)previous.collected.add(d.id);else looseValue+=d.value;
+    if(d.collected){previous.collected.add(d.id);cleaned++;}
+    else {looseValue+=d.value;if(d.type==='dust')cleaned+=1-d.amount;assert(isWalkable(run.room,d.x,d.y,3),'Loose material crossed a wall');}
   }
+  assert(Math.abs(run.cleaned-cleaned)<1e-7,'Cleaning progress must match the visible remaining material');
   assert.equal(run.coins+b.bagValue+looseValue,totalValue,'Material value was lost or paid twice');
   previous.x=b.x;previous.y=b.y;previous.cleaned=run.cleaned;
 }
@@ -113,6 +115,12 @@ function physicsChecks(){
   }
   assert.equal(stationRoute.length,0);for(let i=0;i<180;i++)step(bagRun,DT,{});
   assert.equal(bagRun.robot.bag,0);assert.equal(bagRun.coins,stats.capacity);assert.equal(bagRun.events.filter(e=>e.type==='unload').length,1,'A physical station visit pays the bag only once');
+  const keepsakeRoom=testRoom({debris:bagRoom.debris});keepsakeRoom.trinket={x:340,y:300,name:'Separate keepsake'};
+  const keepsake=createRun(keepsakeRoom,stats,'full-bag-keepsake');step(keepsake,DT,{});
+  assert.equal(keepsake.robot.bag,stats.capacity);assert.equal(keepsake.trinket.collected,false);
+  for(let i=0;i<24;i++)step(keepsake,DT,{x:1,y:0});
+  assert.equal(keepsake.trinket.collected,true,'A full dirt bag must not block walking over a keepsake');
+  assert.equal(keepsake.robot.bag,stats.capacity);assert.equal(keepsake.events.filter(e=>e.type==='trinket').length,1);
   const blockedRoom=testRoom({spawn:{x:380,y:300},debris:['crumb','dust','stuck','confetti'].map((type,id)=>({id,x:450,y:280+id*12,type,value:1})).concat({id:4,x:365,y:310,type:'crumb',value:1})});
   for(let y=6;y<=9;y++)blockedRoom.grid[y][10]=0;
   assert.equal(clearLine(blockedRoom,380,300,450,300),false);
@@ -120,6 +128,20 @@ function physicsChecks(){
   for(let i=0;i<120;i++)step(blocked,DT,{});
   assert(blocked.debris[4].collected,'Nearby visible material should collect');
   for(const d of blocked.debris.slice(0,4)){assert.equal(d.collected,false,'Suction must not pass through walls');assert.equal(d.amount,1);assert.equal(d.progress,0);}
+  // Actual room 1 geometry: the old 12px samples skipped this workbench corner.
+  const cornerRoom=makeRoom(1);cornerRoom.spawn={x:244,y:165};
+  assert(isWalkable(cornerRoom,cornerRoom.spawn.x,cornerRoom.spawn.y,17));
+  const cornerDebris=cornerRoom.debris.find(d=>d.id===9);
+  assert.equal(clearLine(cornerRoom,244,165,cornerDebris.x,cornerDebris.y),false,'No suction through the corner between LOS samples');
+  assert.equal(clearLine(cornerRoom,cornerDebris.x,cornerDebris.y,244,165),false,'Corner occlusion must be symmetric');
+  assert.equal(clearLine(cornerRoom,244,165,244,200),true,'Clear aisles must still allow suction');
+  assert.equal(clearLine(cornerRoom,280,140,244,165),false,'A ray cannot start inside furniture');
+  const corner=createRun(cornerRoom,statsFor({width:5}),'corner-line-of-sight');step(corner,DT,{});
+  assert.equal(corner.debris[9].vx,0);assert.equal(corner.debris[9].vy,0,'Blocked debris must not receive pull force');
+  const dustRoom=testRoom({debris:[{id:0,x:300,y:300,type:'dust',value:2},...Array.from({length:20},(_,id)=>({id:id+1,x:800,y:500,type:'crumb',value:1}))]});
+  const dust=createRun(dustRoom,stats,'dust-rounding');for(let i=0;i<10;i++)step(dust,.05,{});
+  step(dust,.049999/1.9,{});
+  assert.equal(dust.debris[0].collected,true);assert.equal(dust.debris[0].amount,0);assert(Math.abs(dust.cleaned-1)<1e-10,'A fully faded dust patch counts as one whole cleaned piece');
   const finalRoom=testRoom({debris:Array.from({length:20},(_,id)=>({id,x:id===19?800:300+(id%4)*2,y:id===19?500:300+Math.floor(id/4)*2,type:'crumb',value:id%3+1}))});
   const final=createRun(finalRoom,stats,'95-percent');for(let i=0;i<180;i++)step(final,DT,{});
   assert.equal(final.phase,'complete');assert.equal(final.collectedCount,19,'95% cleanup must finish without hunting the distant final piece');
@@ -128,7 +150,8 @@ function physicsChecks(){
 }
 
 export async function verifyCampaign(){
-  await import('./verify-rooms.mjs');await import('./verify-progression.mjs');physicsChecks();
+  await import('./verify-rooms.mjs');await import('./verify-progression.mjs');
+  await import('./verify-input.mjs');await import('./verify-career-store.mjs');await import('./verify-app.mjs');physicsChecks();
   let career=defaultCareer();const report=[],purchases=[];let awarded=0,spent=0;
   const store=new Map(),storage={getItem:key=>store.get(key)??null,setItem:(key,value)=>store.set(key,value)};
   function shop(room){
@@ -166,10 +189,40 @@ export async function verifyCampaign(){
   assert(replayReward.ok);assert.equal(replayReward.bonus,0,'An equally good replay cannot repeat completion, medal or trinket bonuses');awarded+=replayReward.coins;
   assert.equal(career.coins,awarded-spent);assert.equal(career.completed.length,24);
   writeFileSync(new URL('../tmp/earned-career.json',import.meta.url),JSON.stringify(career,null,2));
-  const output={passed:true,campaignRooms:24,endlessRooms:3,automatedSeconds:report.reduce((sum,r)=>sum+r.seconds,0),timeNote:'Automated route-finding simulation times; not human playtime.',minRoomSeconds:Math.min(...report.map(r=>r.seconds)),maxRoomSeconds:Math.max(...report.map(r=>r.seconds)),awarded,spent,remainingCash:career.coins,purchases,report,endless,checks:['connected rooms','real movement','collision bounds','normalized diagonals','line of sight','physical suction','bag capacity','automatic unloading','conserved material value','95% final sweep','unique bonuses','save/reload','unfinished restart rejection','earned upgrades','ending unlock','endless seeds']};
+  const output={passed:true,campaignRooms:24,endlessRooms:3,automatedSeconds:report.reduce((sum,r)=>sum+r.seconds,0),timeNote:'Automated route-finding simulation times; not human playtime.',minRoomSeconds:Math.min(...report.map(r=>r.seconds)),maxRoomSeconds:Math.max(...report.map(r=>r.seconds)),awarded,spent,remainingCash:career.coins,purchases,report,endless,checks:['connected rooms','real movement','robot and debris collision bounds','normalized diagonals','exact corner line of sight','physical suction','bag capacity','full-bag keepsakes','automatic unloading','conserved material value and dust progress','95% final sweep','unique bonuses','save/reload','unfinished restart rejection','earned upgrades','ending unlock','endless seeds']};
   writeFileSync(new URL('../tmp/campaign-report.json',import.meta.url),JSON.stringify(output,null,2));
   console.log(JSON.stringify({passed:true,rooms:24,endless:3,automatedSeconds:output.automatedSeconds,minRoomSeconds:output.minRoomSeconds,maxRoomSeconds:output.maxRoomSeconds,upgrades:career.upgrades,awarded,spent,remainingCash:career.coins},null,2));
   return output;
 }
 
-if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)await verifyCampaign();
+export function verifyDeepPhysics(){
+  const starterCampaign=Array.from({length:24},(_,i)=>{
+    const solved=solveRoom(makeRoom(i+1),statsFor());
+    return {id:i+1,time:solved.result.time,unloads:solved.unloads};
+  });
+  const endless=Array.from({length:40},(_,seed)=>{
+    const solved=solveRoom(makeEndless(seed),statsFor(seed%2?{width:5,bag:5,speed:5,pull:5}:{}));
+    return {seed,build:seed%2?'max':'starter',time:solved.result.time,unloads:solved.unloads};
+  });
+  // Unplanned movement exercises wall sliding and drifting piles outside the
+  // efficient solver's tidy routes. No progress or awards are forced.
+  let randomState=761923,soakFrames=0;
+  const random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296;};
+  for(let id=1;id<=24;id++){
+    const room=makeRoom(id),run=createRun(room,statsFor({width:5,bag:5,speed:5,pull:5}),`soak-${id}`);
+    const previous={x:run.robot.x,y:run.robot.y,cleaned:0,collected:new Set()},totalValue=room.debris.reduce((sum,d)=>sum+d.value,0);
+    let input={x:0,y:0};
+    for(let frame=0;frame<3600;frame++){
+      if(frame%45===0)input={x:random()*2-1,y:random()*2-1};
+      step(run,DT,input);auditRun(run,totalValue,previous);soakFrames++;
+      assert(run.particles.length<=110,'Particles must stay bounded during sustained play');run.events.length=0;
+    }
+  }
+  const report={passed:true,starterCampaign,endless,soakRooms:24,soakFrames,soakSimulatedSeconds:soakFrames*DT,totalCompletionSeconds:[...starterCampaign,...endless].reduce((sum,r)=>sum+r.time,0),timeNote:'Automated physical simulation, not human playtime.'};
+  mkdirSync(new URL('../tmp/',import.meta.url),{recursive:true});
+  writeFileSync(new URL('../tmp/deep-physics-report.json',import.meta.url),JSON.stringify(report,null,2));
+  console.log(JSON.stringify({passed:true,starterCampaign:24,endless:40,soakRooms:24,soakFrames,soakSimulatedSeconds:report.soakSimulatedSeconds,totalCompletionSeconds:report.totalCompletionSeconds},null,2));
+  return report;
+}
+
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){await verifyCampaign();if(process.argv.includes('--deep'))verifyDeepPhysics();}

@@ -1,1 +1,12 @@
-{"name":"sweep-shift","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node scripts/serve.mjs","check":"node --check dist/app.js && node --check dist/simulation.js && node --check dist/render.js && node --check dist/rooms.js && node --check dist/progression.js","test":"node scripts/verify.mjs"}}
+{
+  "name": "sweep-shift",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node scripts/verify.mjs",
+    "test:deep": "node scripts/verify.mjs --deep"
+  }
+}
