@@ -58,19 +58,63 @@ async function boot(initial = fixtureCareer()) {
 let checks = 0;
 async function test(name, body) { await body(); checks++; console.log(`PASS ${name}`); }
 
-await test('room navigation preserves an active run and purchased upgrades apply to the next room', async () => {
+await test('an active room stays intact and cannot be upgraded through Rooms or the shop action', async () => {
   const app = await boot(fixtureCareer(1));
   await app.startRoom(2);
   const active = app.run(); active.robot.x += 20; active.robot.bag = 4; active.robot.bagValue = 4; active.percent = 0.3;
+  const before = app.publicState().career;
   await app.act('rooms'); await app.act('shop');
+  assert.equal(app.nodes.get('#modal').open, true);
+  assert.notEqual(app.publicState().screen, 'shop', 'The upgrade shop must stay closed until the room is finished or quit');
+  assert.match(app.nodes.get('#modalContent').innerHTML, /data-action="quit"/);
   await app.act('buy:bag', { disabled: false });
-  assert.equal(app.publicState().career.upgrades.bag, 1);
+  assert.deepEqual(app.publicState().career, before, 'An old purchase button must not spend saved coins during a room');
   assert.equal(app.run().stats.capacity, 90);
   await app.act('resume-room');
   assert.equal(app.run(), active); assert.equal(app.publicState().screen, 'play');
   assert.equal(active.robot.bag, 4); assert.equal(active.percent, 0.3);
-  await app.act('restart-confirm');
-  assert.notEqual(app.run(), active); assert.equal(app.run().stats.capacity, 120);
+});
+
+await test('pausing, title navigation, and finishing animation never unlock purchases or shell changes', async () => {
+  const app = await boot(fixtureCareer(6));
+  await app.startRoom(7);
+  const active = app.run(), before = app.publicState().career;
+  for (const state of ['pause', 'title', 'finishing']) {
+    if (state === 'finishing') active.phase = 'finishing';
+    else await app.act(state);
+    await app.act('buy:bag', { disabled: false });
+    await app.act('shell:coral', { disabled: false });
+    assert.deepEqual(app.publicState().career, before, `${state} must not permit changing upgrades or the equipped shell`);
+    app.shop();
+    assert.notEqual(app.publicState().screen, 'shop');
+    assert.equal(app.nodes.get('#modal').open, true);
+    assert.equal(app.run(), active);
+    await app.act('resume');
+  }
+});
+
+await test('quitting requires confirmation, discards only unfinished rewards, and then enables upgrades', async () => {
+  const app = await boot(fixtureCareer(6));
+  await app.startRoom(7);
+  const active = app.run(), before = app.publicState().career;
+  active.coins = 42; active.robot.bag = 4; active.robot.bagValue = 9; active.percent = 0.3;
+  await app.act('pause'); await app.act('quit');
+  assert.equal(app.nodes.get('#modal').open, true); assert.equal(app.run(), active);
+  assert.match(app.nodes.get('#modalContent').innerHTML, /data-action="quit-confirm"/);
+  await app.act('resume');
+  assert.equal(app.run(), active); assert.equal(active.coins, 42);
+  assert.deepEqual(app.publicState().career, before, 'Cancelling quit must keep both the current room and saved career');
+  await app.act('pause'); await app.act('quit'); await app.act('quit-confirm');
+  assert.equal(app.run(), null); assert.equal(app.publicState().screen, 'shop');
+  assert.equal(app.nodes.get('#modal').open, false);
+  assert.deepEqual(app.publicState().career, before, 'Quitting must not pay unfinished bag or room coins');
+  await app.act('buy:bag', { disabled: false }); await app.act('shell:coral', { disabled: false });
+  assert.equal(app.publicState().career.upgrades.bag, 1);
+  assert.equal(app.publicState().career.coins, before.coins - 180);
+  assert.equal(app.publicState().career.shell, 'coral');
+  await app.startRoom(7);
+  assert.equal(app.run().stats.capacity, 120);
+  assert.equal(app.run().percent, 0); assert.equal(app.run().robot.bag, 0);
 });
 
 await test('Endless seed zero survives restart and replay through the real app', async () => {
@@ -81,12 +125,14 @@ await test('Endless seed zero survives restart and replay through the real app',
   await app.settle(); await app.act('replay'); assert.deepEqual(app.run().room, expected);
 });
 
-await test('a completed room is paid once and Continue advances after visiting Upgrades', async () => {
+await test('a completed room is paid once, enables upgrades, and Continue uses the purchased stats', async () => {
   const app = await boot(); await app.startRoom(1); await app.settle();
   const coins = app.publicState().career.coins;
   await app.completed(); assert.equal(app.publicState().career.coins, coins);
-  await app.act('shop'); await app.act('continue');
-  assert.equal(app.run().room.id, 2); assert.equal(app.publicState().career.coins, coins);
+  await app.act('shop'); assert.equal(app.publicState().screen, 'shop');
+  await app.act('buy:bag', { disabled: false }); await app.act('continue');
+  assert.equal(app.run().room.id, 2); assert.equal(app.publicState().career.coins, coins - 180);
+  assert.equal(app.run().stats.capacity, 120);
 });
 
 await test('another tab’s purchase and settings update preserve this tab’s active room', async () => {
@@ -166,6 +212,38 @@ await test('a delayed purchase does not pull the player back after they navigate
   app.locks.release(); await purchase;
   assert.equal(app.publicState().career.upgrades.bag, 1);
   assert.equal(app.publicState().screen, 'rooms');
+});
+
+await test('a queued purchase or shell change cannot slip through while a room is starting', async () => {
+  for (const action of ['buy:bag', 'shell:coral']) {
+    const app = await boot(fixtureCareer(6)); await app.act('shop');
+    const before = app.publicState().career;
+    app.locks.hold();
+    const purchase = app.act(action, { disabled: false });
+    const starting = app.act('room:7');
+    app.locks.release(); await Promise.all([purchase, starting]);
+    const after = app.publicState().career;
+    assert.equal(after.coins, before.coins, `${action} must not spend while room startup is pending`);
+    assert.deepEqual(after.upgrades, before.upgrades);
+    assert.equal(after.shell, before.shell);
+    assert.equal(app.run().room.id, 7); assert.equal(app.run().stats.capacity, 90);
+    assert.equal(app.publicState().screen, 'play');
+  }
+});
+
+await test('a room waiting for reward settlement cannot accept a purchase', async () => {
+  const app = await boot(fixtureCareer(1)); await app.startRoom(2);
+  app.run().phase = 'complete'; app.run().percent = 1; app.run().time = 100;
+  const before = app.publicState().career;
+  app.locks.hold();
+  const completing = app.completed();
+  try {
+    await app.act('shop'); await app.act('buy:bag', { disabled: false });
+    assert.deepEqual(app.publicState().career, before);
+    assert.notEqual(app.publicState().screen, 'shop');
+  } finally { app.locks.release(); await completing; }
+  await app.act('shop'); await app.act('buy:bag', { disabled: false });
+  assert.equal(app.publicState().career.upgrades.bag, 1);
 });
 
 console.log(`App orchestration verified: ${checks} checks passed.`);

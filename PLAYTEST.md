@@ -1,6 +1,22 @@
 # Sweep Shift validation
 
-Validation date: **2026-09-17**. Version: **1.1.0**. Automated checks ran with Node.js **v24.19.0** on Windows. The automated audit, local browser integration, exact ZIP checks, and uploaded-game smoke check are complete.
+Validation date: **2026-09-17**. Current local candidate: **1.1.1**. Automated checks ran with Node.js **v24.19.0** on Windows. The itch.io draft still contains **1.1.0**; it was not updated during this change.
+
+## Current 1.1.1 candidate
+
+Run **node scripts/check.mjs**, then **node scripts/verify.mjs** to reproduce the current checks. Syntax validation, **14 progression**, **14 input**, **9 career-store**, and **15 app-orchestration** groups passed, along with **1,000** generated layouts, all **24** campaign rooms using earned upgrades, three standard Endless rooms, and a replay. The deeper starter-campaign/random-movement audit below belongs to 1.1.0 and was not rerun for this control/menu change.
+
+- Upgrades and shell changes are unavailable while a room is active, even when paused or browsing menus. Opening Upgrades explains the requirement and offers Resume or an explicit quit path. Confirmed quitting opens Upgrades and discards only the unfinished room; completing a room also enables purchases. Tests cover cancelled quits, paused/title/finishing states, pending settlement, and a queued purchase or shell change racing room startup.
+- Mouse pointer movement supplies a target without a held button. Release preserves the mouse target, leaving the room clears it, and pause/input cleanup prevents stale movement. Touch/pen ownership, touch dragging, keyboard priority, and coordinate scaling remain covered. No-button pointer movement is verified with synthetic events; the browser tool cannot generate raw hover.
+- In the isolated port-4181 six-room QA career, room 7's Upgrades action showed the lock dialog. After a mouse click and release, the robot continued from approximately **(212.999, 539.91)** to **(492.652, 539.14)** without a held button.
+- Pause → Quit → Cancel retained **13%** cleaned, **39** bag pieces, and the same position. Confirming Quit cleared the run, opened Upgrades, kept **395 saved coins** and the existing upgrades, and discarded **45 pending coins**. Browser error/warning logs were empty.
+- The exact extracted ZIP served on port 4182 displayed **v1.1.1**, started room 1, blocked the shop with the upgrade-lock dialog, and returned to play after cancellation. At **390 × 844**, the canvas, control tray, and navigation fit; the Rooms paused banner and quit button wrapped cleanly. Document width was **375 px** within the **390 px** viewport. Error/warning logs were empty. This was a layout check, not a physical touchscreen test.
+
+The current ZIP contains **11 files**, is **47,475 bytes**, and has SHA-256 **01ccf41c073ad211034029b185927e7eff07cd6aa2782774728eee5401497a64**. The package manifest verifies root index.html and matching source, archive, and extracted content. Exact-package browser and phone-layout checks passed as described above. No 1.1.1 upload or hosted-page verification is claimed.
+
+## Historical 1.1.0 audit
+
+The remaining sections document the completed 1.1.0 audit, including its then-current archive and hosted build. Midroom Upgrades browsing described there has been replaced by the 1.1.1 restriction above. Historical evidence is retained rather than presented as a new run.
 
 ## Reproduce this audit
 
@@ -63,7 +79,7 @@ Career-store checks cover stale tab settings after a completed room, serialized 
 
 App-orchestration checks load the real application code against a lightweight DOM double, with its real input, save, room, progression, and simulation modules. They cover preserving paused cleaning while browsing, next-room upgrade effects, seed-zero restart/replay, single settlement, Continue, settings and purchase synchronization, reset/reward rejection, room-change confirmation, delayed restart/switch/reset, and navigation during a delayed purchase. These tests use explicit career and completion fixtures to exercise screen transitions; they do not replace physical campaign completion, rendered-interface checks, or browser interaction tests.
 
-## Current browser and interface checks
+## Historical 1.1.0 browser and interface checks
 
 - Chrome completed room 7 (Closing Time) with ordinary mouse drags from a legitimately earned six-room QA career. The robot collected the Arcade token, emptied at a station, and triggered the finishing sweep at 95%. The result awarded **467 coins**, including **135** first-time bonuses, with Gold and a displayed **1:01** time. Saved balance changed **395 → 862**.
 - The result opened Upgrades with three affordable choices. Bigger Bag cost **550**, changed level **2 → 3** and capacity **150 → 180**, and left **312** coins. Reload retained the purchase and balance. Newly unlocked room 8 (Fan Club) started with capacity **180**. This QA career used isolated session storage, not the owner's production save.
@@ -74,9 +90,9 @@ App-orchestration checks load the real application code against a lightweight DO
 - Two isolated real tabs on port 4183 synchronized sound and reduced-motion settings. Reload preserved both. A deliberately blocked-storage QA page displayed the expected warning and remained available to play.
 - The checked local/packaged browser error and warning logs were empty. Ending, seed-zero replay, rejected rewards, resets, and delayed-save races have explicit application regression coverage; the previous release's ending/browser check is historical evidence only.
 
-## Current package and hosted build
+## Historical 1.1.0 package and hosted build
 
-The current archive is **artifacts/sweep-shift-itch.zip**, with **11 files**, **47,133 bytes**, and SHA-256 **6255aaaa75b94e12694d0a326ccc37e5432c9a0d575ea27e784132d0b3e12297**. The root contains index.html and all eight JavaScript modules, CSS, and the SVG icon. All archive, extracted, source, and separately served HTTP hashes match.
+The 1.1.0 archive had **11 files**, **47,133 bytes**, and SHA-256 **6255aaaa75b94e12694d0a326ccc37e5432c9a0d575ea27e784132d0b3e12297**. Its root contained index.html and all eight JavaScript modules, CSS, and the SVG icon. Its archive, extracted, source, and separately served HTTP hashes matched. The local ZIP has since been replaced by the 1.1.1 candidate above; itch.io still hosts 1.1.0.
 
 The exact extracted archive was served on port 4182. Startup, real directional movement, automatic pickup, separate saved/pending balances, Upgrades browsing, Resume, and Escape pause passed. Its error/warning log was empty.
 

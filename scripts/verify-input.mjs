@@ -13,14 +13,33 @@ function fixture(rect={left:10,top:20,width:480,height:320}){
 const almost=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-10,`${actual} != ${expected}`);
 
 check('Mouse targeting follows scaled world coordinates, including letterboxing',()=>{
-  const f=fixture();f.controller.pointerDown(f.event());
+  const f=fixture();f.controller.pointerMove(f.event());
   assert.deepEqual(f.controller.pointer,{id:1,x:480,y:320});
   assert.deepEqual(f.controller.movement({x:480,y:400}),{x:0,y:-1});
   f.controller.pointerMove(f.event({clientX:260,clientY:180}));
   assert.deepEqual(f.controller.pointer,{id:1,x:500,y:320});
-  assert.deepEqual(f.captures,[1]);assert.equal(f.gestures,1);
-  const wide=fixture({left:10,top:20,width:600,height:320});wide.controller.pointerDown(wide.event({clientX:310,clientY:180}));
+  assert.deepEqual(f.captures,[]);assert.equal(f.gestures,0);
+  const wide=fixture({left:10,top:20,width:600,height:320});wide.controller.pointerMove(wide.event({clientX:310,clientY:180}));
   assert.deepEqual(wide.controller.pointer,{id:1,x:480,y:320});
+});
+check('A click and release do not interrupt mouse following',()=>{
+  const f=fixture();f.controller.pointerMove(f.event());f.controller.pointerDown(f.event());f.controller.pointerUp(f.event());
+  assert.deepEqual(f.controller.pointer,{id:1,x:480,y:320});
+  f.controller.pointerMove(f.event({clientX:300,clientY:180}));
+  assert.deepEqual(f.controller.pointer,{id:1,x:580,y:320});assert.equal(f.gestures,1);
+  assert.deepEqual(f.captures,[]);assert.deepEqual(f.releases,[]);
+});
+check('Mouse exit and letterbox margins stop following until the mouse returns',()=>{
+  const f=fixture();f.controller.pointerMove(f.event());f.controller.pointerLeave(f.event({pointerId:2}));
+  assert.ok(f.controller.pointer);f.controller.pointerLeave(f.event());
+  assert.deepEqual(f.controller.movement({x:0,y:0}),{x:0,y:0});
+  f.controller.pointerUp(f.event());assert.equal(f.controller.pointer,null);
+  f.controller.pointerMove(f.event({clientX:300}));assert.equal(f.controller.pointer.x,580);
+  for(const point of [{clientX:9},{clientX:491},{clientY:19},{clientY:341}]){
+    f.controller.pointerMove(f.event());f.controller.pointerMove(f.event(point));assert.equal(f.controller.pointer,null);
+  }
+  const wide=fixture({left:10,top:20,width:600,height:320});wide.controller.pointerMove(wide.event({clientX:310}));
+  wide.controller.pointerMove(wide.event({clientX:30}));assert.equal(wide.controller.pointer,null);
 });
 check('Secondary buttons do not move the robot or steal a gesture',()=>{
   const f=fixture();for(const button of [1,2])f.controller.pointerDown(f.event({button}));
@@ -32,6 +51,7 @@ check('An extra finger cannot replace, release, or cancel the controlling finger
   f.controller.pointerDown(f.event({pointerId:2,pointerType:'touch',isPrimary:false}));
   f.controller.pointerMove(f.event({pointerId:2,pointerType:'touch',clientX:10,clientY:20}));
   f.controller.pointerUp(f.event({pointerId:2}));
+  f.controller.pointerCancel(f.event({pointerId:2}));f.controller.pointerLeave(f.event());
   assert.deepEqual(f.controller.movement({x:0,y:0}),{x:1,y:0});assert.equal(f.controller.touch.id,1);
   // Also ignore another pointer even if a browser/device calls it primary.
   f.controller.pointerDown(f.event({pointerId:3,isPrimary:true}));
@@ -47,16 +67,34 @@ check('The joystick anchors to the touch origin and caps diagonal speed',()=>{
   const movement=f.controller.movement({x:0,y:0});almost(movement.x,.6);almost(movement.y,.8);almost(Math.hypot(movement.x,movement.y),1);
 });
 check('The separate control tray works with a mouse as a relative joystick',()=>{
-  const f=fixture();f.controller.pointerDown(f.event({clientX:200,clientY:380}));
+  const f=fixture();f.controller.pointerMove(f.event());f.controller.pointerDown(f.event({clientX:200,clientY:380}));
   assert.equal(f.controller.pointer,null);assert.equal(f.controller.touch.id,1);
   f.controller.pointerMove(f.event({clientX:180,clientY:380}));
   assert.deepEqual(f.controller.movement({x:0,y:0}),{x:-.5,y:0});
+  f.controller.pointerLeave(f.event());assert.equal(f.controller.touch.id,1);
+  f.controller.pointerUp(f.event());assert.equal(f.controller.touch,null);assert.deepEqual(f.releases,[1]);
+  f.controller.pointerMove(f.event({clientX:180,clientY:380}));assert.equal(f.controller.pointer,null);
+  f.controller.pointerMove(f.event());assert.deepEqual(f.controller.pointer,{id:1,x:480,y:320});
 });
 check('Pause clear stops movement, releases capture, and ignores stale events',()=>{
-  const f=fixture();f.controller.pointerDown(f.event());f.controller.clear();
-  f.controller.pointerMove(f.event({clientX:400,clientY:100}));f.controller.pointerUp(f.event());
+  const f=fixture();f.controller.pointerDown(f.event({pointerType:'touch'}));f.controller.clear();
+  f.controller.pointerMove(f.event({pointerType:'touch',clientX:400,clientY:100}));f.controller.pointerUp(f.event());
   assert.deepEqual(f.controller.movement({x:0,y:0}),{x:0,y:0});assert.deepEqual(f.releases,[1]);
   assert.deepEqual(f.changes.at(-1),{pointer:null,touch:null});
+});
+check('Clearing mouse hover stops it until a fresh mouse movement',()=>{
+  const f=fixture();f.controller.pointerMove(f.event());f.controller.clear();
+  assert.equal(f.controller.pointer,null);assert.deepEqual(f.controller.movement({x:0,y:0}),{x:0,y:0});
+  f.controller.pointerUp(f.event());f.controller.pointerCancel(f.event());assert.equal(f.controller.pointer,null);
+  f.controller.pointerMove(f.event());assert.deepEqual(f.controller.pointer,{id:1,x:480,y:320});
+});
+check('Touch can take over idle mouse hover and ignores hovering secondary devices',()=>{
+  const f=fixture();f.controller.pointerMove(f.event());
+  f.controller.pointerMove(f.event({pointerId:2,pointerType:'touch'}));assert.equal(f.controller.pointer.id,1);
+  f.controller.pointerDown(f.event({pointerId:2,pointerType:'touch'}));assert.equal(f.controller.pointer,null);
+  f.controller.pointerMove(f.event({pointerId:2,pointerType:'touch',clientX:290}));
+  f.controller.pointerMove(f.event());assert.deepEqual(f.controller.movement({x:0,y:0}),{x:1,y:0});
+  f.controller.pointerCancel(f.event({pointerId:2}));assert.equal(f.controller.touch,null);
 });
 check('Mouse dead zone and approach speed avoid jitter and overshoot',()=>{
   const f=fixture();f.controller.pointerDown(f.event());
@@ -79,8 +117,11 @@ check('Malformed events or missing canvas do not poison later movement',()=>{
   const hidden=fixture({left:0,top:0,width:0,height:0});hidden.controller.pointerDown(hidden.event());assert.equal(hidden.controller.pointer,null);
 });
 check('Capture loss and unsupported capture are safe, with detached snapshots',()=>{
-  const f=fixture();f.controller.pointerDown(f.event({currentTarget:{setPointerCapture(){throw Error('detached');},releasePointerCapture(){throw Error('already released');}}}));
+  const f=fixture();f.controller.pointerDown(f.event({pointerType:'pen',currentTarget:{setPointerCapture(){throw Error('detached');},releasePointerCapture(){throw Error('already released');}}}));
   const view=f.controller.pointer;view.x=Infinity;assert.equal(f.controller.pointer.x,480);
-  f.controller.pointerUp({pointerId:1});assert.equal(f.controller.pointer,null);
+  f.controller.pointerCancel({pointerId:1});assert.equal(f.controller.pointer,null);
+  f.controller.pointerMove(f.event({pointerType:'pen'}));assert.equal(f.controller.pointer,null);
+  f.controller.pointerMove(f.event());assert.ok(f.controller.pointer);
+  f.controller.pointerCancel(f.event());assert.equal(f.controller.pointer,null);
 });
 console.log(`Input regression suite passed: ${checks} checks.`);

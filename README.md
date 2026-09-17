@@ -2,7 +2,7 @@
 
 **A little mess. A lovely clean.**
 
-Version **1.1.0** adds clearer room and upgrade navigation, tighter input handling, safer career transactions, and physics fixes. Automated, browser, and exact-package results are in [PLAYTEST.md](PLAYTEST.md).
+Version **1.1.1** adds mouse following without clicking and locks upgrades until you finish or quit the current room. Automated, browser, and exact-package results are in [PLAYTEST.md](PLAYTEST.md).
 
 Sweep Shift is a cozy browser game about a small vacuum robot making colorful rooms feel good again. Glide through a mess, watch scraps swirl into your bag, visit a collection station, and spend your cleaning coins on a more capable little robot.
 
@@ -10,7 +10,7 @@ The campaign has 24 authored rooms across a workshop, an after-hours arcade, a g
 
 ## Play
 
-- Move with **WASD or the arrow keys**, or **hold the mouse button** where you want the robot to go.
+- Move with **WASD or the arrow keys**, or **move your mouse over the room** and the robot follows it. No click or hold is needed; leaving the play area stops mouse steering.
 - On a touchscreen, **drag to steer** with the movement joystick.
 - Suction is automatic. Park beside a **collection station** to empty the bag automatically.
 - A full bag stops suction, but the robot can still move normally.
@@ -24,7 +24,7 @@ There are no lives or mandatory time limits. Bronze rewards finishing; optional 
 
 Four upgrade categories each have five purchasable ranks: cleaning width, bag capacity, movement speed, and pull strength. Every location completed unlocks another cosmetic shell, for five shells in total. Each campaign room also contains one optional trinket for the collection shelf.
 
-Use **Rooms** to see your next room, browse location previews, or replay a completed room. Use **Upgrades** to compare your current robot with the next rank, see what you can afford, and change its color. Purchases use saved career coins. If you browse the shop during an active room, that room stays paused and purchases apply when you start the next room.
+Use **Rooms** to see your next room, browse location previews, or replay a completed room. Use **Upgrades** to compare your current robot with the next rank, see what you can afford, and change its color. Purchases use saved career coins. Upgrades unlock only after finishing a room or using **Pause → Quit room & upgrade** and confirming. Pausing or browsing rooms alone does not unlock purchases. Quitting discards only the unfinished room’s cleaning and coins.
 
 Completing a room unlocks the next one regardless of medal, trinket, or upgrade choices. Replays pay their cleaning coins again; completion bonuses, medal improvements, and trinket bonuses are awarded only when newly earned.
 

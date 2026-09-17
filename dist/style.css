@@ -50,6 +50,7 @@ body[data-screen="play"] .game-bottom details{max-width:84px;min-width:72px;font
 .nav-item.selected{background:var(--ink);color:var(--paper);box-shadow:0 3px 0 #092e29}
 .nav-item:not(.selected):hover{background:#e8eedf}
 .nav-count{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:7px;background:var(--yellow);color:#493c12;font-size:11px;line-height:1;font-weight:800}
+.nav-lock{font-size:12px;line-height:1}
 .nav-spacer{flex:1}
 .nav-resume{background:#e1eedc;border:1px solid #b2cbae;color:#224e3c;padding-inline:14px}
 .nav-wallet{display:block;flex:none;min-width:79px;padding-left:17px;margin-left:8px;border-left:1px solid #cad8c9;text-align:right;color:#365744;font-size:17px;font-weight:800;line-height:1.2;white-space:nowrap}

@@ -8,14 +8,14 @@ export const action = (id, label, style = 'secondary', extra = '') => `<button c
 export const affordable = career => UPGRADES.filter(u => career.upgrades[u.key] < 5 && upgradePrice(u.key, career.upgrades[u.key]) <= career.coins);
 
 export function navigation(career, screen, active) {
-  const count = affordable(career).length;
+  const count = active ? 0 : affordable(career).length;
   const selected = screen === 'result' || screen === 'endless' ? 'rooms' : screen === 'shop' ? 'shop' : screen;
   const tab = (id, label, icon, detail = '') => `<button class="nav-item ${selected === id ? 'selected' : ''}" data-action="${id}" ${selected === id ? 'aria-current="page"' : ''}><span aria-hidden="true">${icon}</span><span>${label}</span>${detail}</button>`;
-  return `${tab('rooms', 'Rooms', '▦')}${tab('shop', 'Upgrades', '↑', count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures', '✧')}<div class="nav-spacer"></div>${active && screen !== 'play' ? action('resume-room', 'Resume room ↗', 'nav-resume') : ''}<span class="nav-wallet" aria-label="${money(career.coins)} saved coins"><span aria-hidden="true">✦</span> ${money(career.coins)}<small>saved coins</small></span>`;
+  return `${tab('rooms', 'Rooms', '▦')}${tab('shop', 'Upgrades', '↑', active ? '<span class="nav-lock" aria-label="Locked until you finish or quit this room" title="Finish or quit this room to upgrade">🔒</span>' : count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures', '✧')}<div class="nav-spacer"></div>${active && screen !== 'play' ? action('resume-room', 'Resume room ↗', 'nav-resume') : ''}<span class="nav-wallet" aria-label="${money(career.coins)} saved coins"><span aria-hidden="true">✦</span> ${money(career.coins)}<small>saved coins</small></span>`;
 }
 
-export function pausedRoomBanner(run, inShop = false) {
-  return `<aside class="paused-room"><span class="paused-room-icon" aria-hidden="true">Ⅱ</span><div><strong>${esc(run.room.name)} is paused · ${Math.floor(run.percent * 100)}% clean</strong><p>${inShop ? 'Buy with saved coins. New upgrades take effect in your next room.' : 'Your cleaning and bag are kept while you browse. Come back whenever you’re ready.'}</p></div></aside>`;
+export function pausedRoomBanner(run) {
+  return `<aside class="paused-room"><span class="paused-room-icon" aria-hidden="true">Ⅱ</span><div><strong>${esc(run.room.name)} is paused · ${Math.floor(run.percent * 100)}% clean</strong><p>Your cleaning and bag are kept while you browse. Finish or quit this room before upgrading.</p></div>${action('quit','Quit room & upgrade')}</aside>`;
 }
 
 const previews = new Map();
@@ -31,9 +31,9 @@ export function roomPreview(id) {
   previews.set(id, svg); return svg;
 }
 
-export function roomsMarkup(career, district) {
+export function roomsMarkup(career, district, active = false) {
   const next = CAMPAIGN[Math.min(23, career.unlocked - 1)], done = career.completed.length === 24;
-  const count = affordable(career).length;
+  const count = active ? 0 : affordable(career).length;
   const location = LOCATIONS[district];
   const roomCard = r => {
     const unlocked = isRoomUnlocked(career, r.id), completed = career.completed.includes(r.id), medal = ['', 'Bronze', 'Silver', 'Gold'][career.medals[r.id]];
