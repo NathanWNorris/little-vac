@@ -51,6 +51,13 @@ body[data-screen="play"] .game-bottom details{max-width:84px;min-width:72px;font
 .nav-item:not(.selected):hover{background:#e8eedf}
 .nav-count{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:7px;background:var(--yellow);color:#493c12;font-size:11px;line-height:1;font-weight:800}
 .nav-lock{font-size:12px;line-height:1}
+.finish-target{display:block;font-size:10px;letter-spacing:0;text-transform:none;white-space:nowrap;margin-top:5px;color:var(--muted)}
+.controls-help strong{color:var(--ink)}
+.controls-help p{margin:13px 0;font-size:13px;line-height:1.5}
+.reward-breakdown{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 22px;padding:14px 12px;margin:-10px 0 22px;border-radius:12px;background:#edf3e5;color:var(--muted);font-size:12px}
+.reward-breakdown strong{color:var(--ink);white-space:nowrap;margin-left:5px}
+.result .replay-note{font-size:13px;line-height:1.5}
+@media(max-width:660px){.finish-target{font-size:10px;margin-top:3px}.controls-help p{font-size:12px}.reward-breakdown{gap:8px 14px}}
 .nav-spacer{flex:1}
 .nav-resume{background:#e1eedc;border:1px solid #b2cbae;color:#224e3c;padding-inline:14px}
 .nav-wallet{display:block;flex:none;min-width:79px;padding-left:17px;margin-left:8px;border-left:1px solid #cad8c9;text-align:right;color:#365744;font-size:17px;font-weight:800;line-height:1.2;white-space:nowrap}

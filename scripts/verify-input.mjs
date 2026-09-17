@@ -108,6 +108,31 @@ check('Keyboard direction stays normalized, cancels opposites, and overrides mou
   assert.deepEqual(f.controller.movement({x:0,y:0},new Set(['ArrowLeft'])),{x:-1,y:0});
   f.controller.clear();assert.deepEqual(f.controller.movement({x:0,y:0},new Set(['a','d','w','s'])),{x:0,y:0});
 });
+check('Releasing a keyboard direction never returns to a stale mouse target',()=>{
+  const f=fixture();f.controller.pointerMove(f.event());
+  assert.deepEqual(f.controller.movement({x:400,y:320},new Set(['ArrowLeft'])),{x:-1,y:0});
+  assert.deepEqual(f.controller.movement({x:350,y:320},new Set()),{x:0,y:0});
+  assert.equal(f.controller.pointer,null);
+  // Mouse follow resumes from an actual new movement, without requiring a click.
+  f.controller.pointerMove(f.event({clientX:300}));
+  assert.deepEqual(f.controller.movement({x:350,y:320},new Set()),{x:1,y:0});
+});
+check('Opposing held keyboard directions stop instead of falling back to mouse',()=>{
+  const f=fixture();f.controller.pointerMove(f.event());
+  assert.deepEqual(f.controller.movement({x:350,y:320},new Set(['a','d'])),{x:0,y:0});
+  assert.deepEqual(f.controller.movement({x:350,y:320},new Set()),{x:0,y:0});
+});
+check('Clicking letterbox margins cannot restart out-of-room mouse steering',()=>{
+  const f=fixture({left:10,top:20,width:600,height:320});
+  f.controller.pointerMove(f.event({clientX:310}));
+  f.controller.pointerMove(f.event({clientX:30}));
+  assert.equal(f.controller.pointer,null);
+  f.controller.pointerDown(f.event({clientX:30}));
+  assert.deepEqual(f.controller.movement({x:480,y:320}),{x:0,y:0});
+  assert.equal(f.controller.pointer,null);assert.equal(f.gestures,0);
+  f.controller.pointerMove(f.event({clientX:310}));
+  assert.deepEqual(f.controller.pointer,{id:1,x:480,y:320});
+});
 check('Malformed events or missing canvas do not poison later movement',()=>{
   const f=fixture();for(const point of [{clientX:NaN},{clientY:Infinity},{pointerId:NaN}])f.controller.pointerDown(f.event(point));
   assert.equal(f.controller.pointer,null);f.controller.pointerDown(f.event());

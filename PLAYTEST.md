@@ -1,8 +1,8 @@
 # Sweep Shift validation
 
-Validation date: **2026-09-17**. Current local candidate: **1.1.1**. Automated checks ran with Node.js **v24.19.0** on Windows. The itch.io draft still contains **1.1.0**; it was not updated during this change.
+Current local candidate: **1.1.2**. See the [second deep audit](docs/AUDIT-1.1.2.md) for the new control and transition fixes, research-informed UI changes, full deep verification, and 144-run build matrix at 120 Hz. The itch.io draft still contains **1.1.0** and was not updated during this change. The sections below retain prior-version evidence.
 
-## Current 1.1.1 candidate
+## Previous 1.1.1 candidate
 
 Run **node scripts/check.mjs**, then **node scripts/verify.mjs** to reproduce the current checks. Syntax validation, **14 progression**, **14 input**, **9 career-store**, and **15 app-orchestration** groups passed, along with **1,000** generated layouts, all **24** campaign rooms using earned upgrades, three standard Endless rooms, and a replay. The deeper starter-campaign/random-movement audit below belongs to 1.1.0 and was not rerun for this control/menu change.
 
@@ -12,7 +12,7 @@ Run **node scripts/check.mjs**, then **node scripts/verify.mjs** to reproduce th
 - Pause → Quit → Cancel retained **13%** cleaned, **39** bag pieces, and the same position. Confirming Quit cleared the run, opened Upgrades, kept **395 saved coins** and the existing upgrades, and discarded **45 pending coins**. Browser error/warning logs were empty.
 - The exact extracted ZIP served on port 4182 displayed **v1.1.1**, started room 1, blocked the shop with the upgrade-lock dialog, and returned to play after cancellation. At **390 × 844**, the canvas, control tray, and navigation fit; the Rooms paused banner and quit button wrapped cleanly. Document width was **375 px** within the **390 px** viewport. Error/warning logs were empty. This was a layout check, not a physical touchscreen test.
 
-The current ZIP contains **11 files**, is **47,475 bytes**, and has SHA-256 **01ccf41c073ad211034029b185927e7eff07cd6aa2782774728eee5401497a64**. The package manifest verifies root index.html and matching source, archive, and extracted content. Exact-package browser and phone-layout checks passed as described above. No 1.1.1 upload or hosted-page verification is claimed.
+The historical 1.1.1 ZIP contained **11 files**, was **47,475 bytes**, and had SHA-256 **01ccf41c073ad211034029b185927e7eff07cd6aa2782774728eee5401497a64**. Its package manifest verified root index.html and matching source, archive, and extracted content. Exact-package browser and phone-layout checks passed as described above. No 1.1.1 upload or hosted-page verification is claimed. The latest archive is described in RELEASE.md.
 
 ## Historical 1.1.0 audit
 

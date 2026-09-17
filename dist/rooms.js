@@ -9,7 +9,7 @@ export const LOCATIONS = [
 
 const plans = [
   { name: 'First Sweep', brief: 'Meet your little cleaning machine.', tip: 'Move through the crumbs. Your vacuum does the rest.', n: 230, objects: [[7,3,4,2,'workbench'],[17,3,2,4,'cabinet'],[11,9,4,2,'crate']], clusters: [[6,8],[16,11],[13,4]] },
-  { name: 'Bench Business', brief: 'Two workbenches, one spotless floor.', tip: 'A full bag? Park beside the striped collection station.', n: 275, objects: [[5,3,6,2,'workbench'],[5,9,6,2,'workbench'],[17,7,2,4,'cabinet']], clusters: [[8,7],[15,11],[17,4]] },
+  { name: 'Bench Business', brief: 'Two workbenches, one spotless floor.', tip: 'A full bag? Park beside the green dock to empty it.', n: 275, objects: [[5,3,6,2,'workbench'],[5,9,6,2,'workbench'],[17,7,2,4,'cabinet']], clusters: [[8,7],[15,11],[17,4]] },
   { name: 'Corner Office', brief: 'Discover the hidden workshop nook.', tip: 'The last few scraps are swept up automatically at 95%.', n: 280, cuts: [[1,1,4,4],[19,11,4,4]], objects: [[9,3,2,6,'cabinet'],[15,5,4,2,'workbench'],[5,11,6,2,'crate']], clusters: [[6,7],[14,9],[20,4]] },
   { name: 'Round the Island', brief: 'Pick a side and make a clean lap.', tip: 'A wider vacuum makes clean passes easier to line up.', n: 290, objects: [[9,5,6,6,'workbench'],[3,3,2,2,'crate'],[19,11,2,2,'cabinet']], clusters: [[7,7],[17,8],[12,2]] },
   { name: 'Shelf Shuffle', brief: 'Choose your route through the storage aisles.', tip: 'Try a loop that finishes near the collection station.', n: 300, objects: [[5,3,2,8,'cabinet'],[11,5,2,8,'cabinet'],[17,3,2,8,'cabinet']], stations: [[2,13],[21,2]], clusters: [[9,7],[15,9],[20,7]] },

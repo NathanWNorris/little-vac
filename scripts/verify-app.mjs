@@ -13,7 +13,7 @@ const source = (await readFile(new URL('../dist/app.js', import.meta.url), 'utf8
 const dependencies = { ...rooms, ...progression, ...simulation, ...storeModule, ...inputModule, ...ui, render() {}, drawTitle() {} };
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 const makeApp = new AsyncFunction('deps', 'window', 'document', 'navigator', 'performance', 'requestAnimationFrame', 'setTimeout', 'clearTimeout', 'crypto', 'console',
-  `const {${Object.keys(dependencies).join(',')}}=deps;\n${source}\nreturn {act,startRoom,requestStart,completed,frame,rooms,shop,continueShift,publicState,run:()=>run};`);
+  `const {${Object.keys(dependencies).join(',')}}=deps;\n${source}\nreturn {act,startRoom,requestStart,completed,frame,rooms,shop,continueShift,publicState,pointerMove,pointer:()=>input.pointer,run:()=>run};`);
 
 function fixtureCareer(count = 0) {
   const career = progression.defaultCareer();
@@ -28,7 +28,7 @@ async function boot(initial = fixtureCareer()) {
     hold() { lockGate = new Promise(resolve => { releaseLock = resolve; }); },
     release() { releaseLock?.(); releaseLock = null; },
   };
-  const events = new Map(), nodes = new Map();
+  const events = new Map(), documentEvents = new Map(), nodes = new Map();
   let document;
   function node(id = '') {
     return { id, innerHTML: '', textContent: '', hidden: false, disabled: false, open: false, isConnected: true, dataset: {}, style: {}, tagName: 'DIV',
@@ -39,7 +39,7 @@ async function boot(initial = fixtureCareer()) {
       getBoundingClientRect() { return { left: 0, top: 0, bottom: 640, width: 960, height: 640 }; },
     };
   }
-  document = { hidden: false, activeElement: null, body: node('body'), addEventListener() {}, querySelector(selector) {
+  document = { hidden: false, activeElement: null, body: node('body'), addEventListener(name,callback) {if(!documentEvents.has(name))documentEvents.set(name,[]);documentEvents.get(name).push(callback);}, querySelector(selector) {
     if (!nodes.has(selector)) nodes.set(selector, node(selector));
     return nodes.get(selector);
   } };
@@ -50,6 +50,7 @@ async function boot(initial = fixtureCareer()) {
   const errors = [];
   const app = await makeApp(dependencies, window, document, { locks }, { now: () => timestamp }, () => {}, () => 0, () => {}, { randomUUID: () => String(++timestamp) }, { error: error => errors.push(error) });
   return { ...app, storage, locks, nodes, errors,
+    keyEvent(type,key){for(const callback of documentEvents.get(type)||[])callback({key,target:{tagName:'CANVAS',closest:()=>null},preventDefault(){}});},
     async externalCareer(career) { storage.setItem(progression.SAVE_KEY, JSON.stringify(career)); for (const callback of events.get('storage') || []) await callback({ key: progression.SAVE_KEY }); },
     async settle() { const run = app.run(); run.phase = 'complete'; run.time = 100; run.percent = 1; run.coins = run.room.debris.reduce((sum, piece) => sum + piece.value, 0); await app.completed(); },
   };
@@ -244,6 +245,49 @@ await test('a room waiting for reward settlement cannot accept a purchase', asyn
   } finally { app.locks.release(); await completing; }
   await app.act('shop'); await app.act('buy:bag', { disabled: false });
   assert.equal(app.publicState().career.upgrades.bag, 1);
+});
+
+await test('a dialog opened during delayed room startup keeps the new room paused', async () => {
+  const app = await boot(); app.locks.hold();
+  const starting = app.startRoom(1);
+  app.nodes.get('#settingsBtn').onclick();
+  app.locks.release(); await starting;
+  assert.equal(app.nodes.get('#modal').open, true);
+  assert.equal(app.publicState().paused, true, 'A visible settings dialog must pause a newly started room');
+  app.frame(1000); app.frame(1100);
+  assert.equal(app.run().time, 0, 'No cleaning or time may advance behind a dialog');
+});
+
+await test('delayed ending save does not replace a later navigation choice', async () => {
+  const app = await boot(fixtureCareer(24)); app.locks.hold();
+  const ending = app.act('ending');
+  await app.act('rooms');
+  app.locks.release(); await ending;
+  assert.equal(app.publicState().screen, 'rooms');
+  assert.equal(app.publicState().career.endingSeen, true);
+});
+
+await test('reopening controls in a later room freezes the run and preserves it on resume', async () => {
+  const app = await boot(fixtureCareer(12)); await app.startRoom(13);
+  const active = app.run(); active.time = 15; active.robot.bag = 5;
+  await app.act('pause'); await app.act('controls');
+  assert.equal(app.publicState().paused, true);
+  app.frame(1000); app.frame(1100);
+  assert.equal(active.time, 15); assert.equal(active.robot.bag, 5);
+  assert.match(app.nodes.get('#modalContent').innerHTML, /How to play/);
+  await app.act('resume');
+  assert.equal(app.run(), active); assert.equal(app.publicState().paused, false);
+});
+
+await test('a quick key tap between simulation frames cancels the old mouse target', async () => {
+  const app = await boot(); await app.startRoom(1);
+  app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:550,clientY:540});
+  assert.equal(app.pointer().x,550);
+  app.keyEvent('keydown','ArrowUp'); app.keyEvent('keyup','ArrowUp');
+  assert.equal(app.pointer(),null,'Keyboard takeover must happen at keydown, even without an intervening animation frame');
+  const before={x:app.run().robot.x,y:app.run().robot.y};
+  app.frame(1000);app.frame(1100);
+  assert.equal(app.run().robot.x,before.x);assert.equal(app.run().robot.y,before.y);
 });
 
 console.log(`App orchestration verified: ${checks} checks passed.`);

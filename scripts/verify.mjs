@@ -29,11 +29,11 @@ function search(room,point){
   }};
 }
 
-function auditRun(run,totalValue,previous){
+function auditRun(run,totalValue,previous,timeStep=DT){
   const b=run.robot;
   assert([b.x,b.y,b.bag,b.bagValue,run.coins,run.time,run.percent,run.cleaned].every(Number.isFinite),'Non-finite run state');
   assert(isWalkable(run.room,b.x,b.y,17),'Robot crossed a wall');
-  assert(Math.hypot(b.x-previous.x,b.y-previous.y)<=run.stats.speed*DT+1e-6,'Movement exceeded the allowed speed');
+  assert(Math.hypot(b.x-previous.x,b.y-previous.y)<=run.stats.speed*timeStep+1e-6,'Movement exceeded the allowed speed');
   assert(run.cleaned+1e-7>=previous.cleaned,'Cleaning progress regressed');
   assert(run.percent>=0&&run.percent<=1&&b.bag>=0&&b.bag<=run.stats.capacity);
   assert(Number.isInteger(run.coins)&&run.coins>=0&&Number.isInteger(b.bagValue)&&b.bagValue>=0);
@@ -49,12 +49,13 @@ function auditRun(run,totalValue,previous){
   previous.x=b.x;previous.y=b.y;previous.cleaned=run.cleaned;
 }
 
-export function solveRoom(room,stats,{runId=`verify-${room.id}-${room.seed}`,timeout=1000,collectTrinket=true}={}){
+export function solveRoom(room,stats,{runId=`verify-${room.id}-${room.seed}`,timeout=1000,collectTrinket=true,timeStep=DT}={}){
+  assert(Number.isFinite(timeStep)&&timeStep>0&&timeStep<=.05,'Solver timestep must be supported by the simulation');
   const run=createRun(room,stats,runId),totalValue=room.debris.reduce((sum,d)=>sum+d.value,0);
   const previous={x:run.robot.x,y:run.robot.y,cleaned:0,collected:new Set()};
   let route=[],target=null,routeAge=0,stationVisit=false,unloads=0,finishEvents=0,lastProgress=0,lastChange=0;
   const diagnostic=()=>({room:room.name,seed:room.seed,time:run.time,percent:run.percent,robot:run.robot,target:target&&{kind:target.kind,id:target.item.id,x:target.item.x,y:target.item.y,amount:target.item.amount,collected:target.item.collected},route:route.slice(0,3),remaining:run.debris.filter(d=>!d.collected).slice(0,5)});
-  for(let frame=0;frame<Math.ceil((timeout+2)*60)&&run.phase!=='complete';frame++){
+  for(let frame=0;frame<Math.ceil((timeout+2)/timeStep)&&run.phase!=='complete';frame++){
     if(run.phase==='playing'){
       assert(run.time<=timeout,`Physical solver timeout: ${JSON.stringify(diagnostic())}`);
       if(run.cleaned>lastProgress+.001){lastProgress=run.cleaned;lastChange=run.time;}
@@ -78,9 +79,9 @@ export function solveRoom(room,stats,{runId=`verify-${room.id}-${room.seed}`,tim
     while(route.length&&Math.hypot(route[0].x-run.robot.x,route[0].y-run.robot.y)<.1)route.shift();
     if(run.phase==='playing'&&route.length){
       const dx=route[0].x-run.robot.x,dy=route[0].y-run.robot.y,length=Math.hypot(dx,dy);
-      const scale=Math.min(1,length/(run.stats.speed*DT));input={x:dx/length*scale,y:dy/length*scale};
+      const scale=Math.min(1,length/(run.stats.speed*timeStep));input={x:dx/length*scale,y:dy/length*scale};
     }
-    step(run,DT,input);routeAge+=DT;auditRun(run,totalValue,previous);
+    step(run,timeStep,input);routeAge+=timeStep;auditRun(run,totalValue,previous,timeStep);
     for(const event of run.events){if(event.type==='unload')unloads++;if(event.type==='finish')finishEvents++;}
     run.events.length=0;
   }
@@ -88,7 +89,7 @@ export function solveRoom(room,stats,{runId=`verify-${room.id}-${room.seed}`,tim
   assert.equal(finishEvents,1,'There must be one final sweep');assert.equal(run.coins,totalValue);
   assert.equal(run.percent,1);assert(run.debris.every(d=>d.collected));assert.equal(run.robot.bag,0);
   const result=runResult(run),settled=JSON.stringify(result);
-  for(let i=0;i<180;i++)step(run,DT,{x:1,y:1});
+  for(let i=0;i<Math.ceil(3/timeStep);i++)step(run,timeStep,{x:1,y:1});
   assert.equal(JSON.stringify(runResult(run)),settled,'A completed run cannot award coins or time again');
   return {run,result,unloads,physicalPickups:run.collectedCount,finalSweepPickups:run.total-run.collectedCount};
 }

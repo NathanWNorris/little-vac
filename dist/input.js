@@ -13,6 +13,7 @@ export function createInputController({canvas,onGesture=()=>{},onChange=()=>{}})
     const scale=Math.min(r.width/960,r.height/640);
     return{x:(e.clientX-r.left-(r.width-960*scale)/2)/scale,y:(e.clientY-r.top-(r.height-640*scale)/2)/scale};
   }
+  const inRoom=point=>point.x>=0&&point.x<=960&&point.y>=0&&point.y<=640;
   function clear(){
     const id=activeId(),target=captureTarget;
     pointer=null;touch=null;captureTarget=null;captureId=null;
@@ -22,11 +23,13 @@ export function createInputController({canvas,onGesture=()=>{},onChange=()=>{}})
   function pointerDown(e){
     if(!finitePoint(e)||e.isPrimary===false||activeId()!==undefined||(e.button!==undefined&&e.button!==0))return;
     const r=bounds();if(!r)return;
+    const joystick=e.pointerType==='touch'||e.clientY>r.top+r.height,point=coords(e,r);
+    if(!joystick&&!inRoom(point)){pointerLeave(e);return;}
     onGesture();
     e.preventDefault?.();
     pointer=null;touch=null;
-    if(e.pointerType==='touch'||e.clientY>r.top+r.height)touch={id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,dy:0};
-    else pointer={id:e.pointerId,...coords(e,r)};
+    if(joystick)touch={id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,dy:0};
+    else pointer={id:e.pointerId,...point};
     if(touch||e.pointerType!=='mouse'){
       captureTarget=e.currentTarget;captureId=e.pointerId;
       try{captureTarget?.setPointerCapture?.(e.pointerId);}catch{}
@@ -43,7 +46,7 @@ export function createInputController({canvas,onGesture=()=>{},onChange=()=>{}})
       if(activeId()===undefined&&(e.pointerType!=='mouse'||e.isPrimary===false))return;
       const r=bounds();if(!r)return;
       const point=coords(e,r);
-      if(activeId()===undefined&&(point.x<0||point.x>960||point.y<0||point.y>640)){
+      if(activeId()===undefined&&!inRoom(point)){
         pointerLeave(e);return;
       }
       pointer={id:e.pointerId,...point};
@@ -58,9 +61,13 @@ export function createInputController({canvas,onGesture=()=>{},onChange=()=>{}})
   function movement(robot,keys){
     if(touch)return{x:touch.dx,y:touch.dy};
     const has=key=>keys?.has?.(key)===true;
-    const x=Number(has('ArrowRight')||has('d'))-Number(has('ArrowLeft')||has('a'));
-    const y=Number(has('ArrowDown')||has('s'))-Number(has('ArrowUp')||has('w'));
-    if(x||y){const length=Math.max(1,Math.hypot(x,y));return{x:x/length,y:y/length};}
+    const right=has('ArrowRight')||has('d'),left=has('ArrowLeft')||has('a'),down=has('ArrowDown')||has('s'),up=has('ArrowUp')||has('w');
+    if(right||left||down||up){
+      // Once keys take over, releasing them must not steer back to an old cursor.
+      if(pointer){pointer=null;changed();}
+      const x=Number(right)-Number(left),y=Number(down)-Number(up),length=Math.max(1,Math.hypot(x,y));
+      return{x:x/length,y:y/length};
+    }
     if(pointer&&Number.isFinite(robot?.x)&&Number.isFinite(robot?.y)){
       const dx=pointer.x-robot.x,dy=pointer.y-robot.y,d=Math.hypot(dx,dy);
       if(d>5){const speed=Math.min(1,d/20);return{x:dx/d*speed,y:dy/d*speed};}

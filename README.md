@@ -2,7 +2,7 @@
 
 **A little mess. A lovely clean.**
 
-Version **1.1.1** adds mouse following without clicking and locks upgrades until you finish or quit the current room. Automated, browser, and exact-package results are in [PLAYTEST.md](PLAYTEST.md).
+Version **1.1.2** improves mouse/keyboard switching, fixes menu timing bugs, and adds clearer finish goals, reusable controls help, replay labels, and reward breakdowns. The [latest audit](docs/AUDIT-1.1.2.md) records the research, fixes, and verification; prior results are in [PLAYTEST.md](PLAYTEST.md).
 
 Sweep Shift is a cozy browser game about a small vacuum robot making colorful rooms feel good again. Glide through a mess, watch scraps swirl into your bag, visit a collection station, and spend your cleaning coins on a more capable little robot.
 
@@ -17,6 +17,7 @@ The campaign has 24 authored rooms across a workshop, an after-hours arcade, a g
 - Optional keepsakes go to their own collection shelf, even when the dirt bag is full.
 - Clean **95%** of a room to trigger its finishing sweep. The remaining scraps and everything in the bag are paid automatically.
 - Press **Escape** or use **Pause** for a break. Sound and reduced motion are available in Settings.
+- Choose **Pause → How to play** to reopen the controls and rules in any room.
 
 There are no lives or mandatory time limits. Bronze rewards finishing; optional silver and gold medals reward faster routes. The timer and target times are tucked into Room details.
 
@@ -44,9 +45,10 @@ Open `http://127.0.0.1:4180/`. The server binds to the local computer. Serve the
 node scripts/check.mjs
 node scripts/verify.mjs
 node scripts/verify.mjs --deep
+node scripts/verify-builds.mjs
 ```
 
-The syntax check automatically includes every JavaScript module in `dist`. The default suite checks 1,000 generated layouts, progression, input, save transactions, and real movement/suction through the full earned campaign. `--deep` also completes all 24 rooms without upgrades, completes 40 additional endless rooms, and runs 86,400 random-movement frames. Individual suites are `scripts/verify-progression.mjs`, `scripts/verify-rooms.mjs`, `scripts/verify-input.mjs`, `scripts/verify-career-store.mjs`, and `scripts/verify-app.mjs`.
+The syntax check automatically includes every JavaScript module in `dist`. The default suite checks 1,000 generated layouts, progression, input, save transactions, and real movement/suction through the full earned campaign. `--deep` also completes all 24 rooms without upgrades, completes 40 additional endless rooms, and runs 86,400 random-movement frames. The optional `verify-builds.mjs` checks 144 campaign runs across six upgrade builds and nine Endless seed inputs at production's 120 Hz timestep. Individual suites are `scripts/verify-progression.mjs`, `scripts/verify-rooms.mjs`, `scripts/verify-input.mjs`, `scripts/verify-career-store.mjs`, and `scripts/verify-app.mjs`.
 
 If npm is installed, `npm start`, `npm run check`, `npm test`, and `npm run test:deep` are optional shortcuts. npm is not required and was unavailable on the validation host.
 
