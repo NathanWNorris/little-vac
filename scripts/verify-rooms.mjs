@@ -21,7 +21,7 @@ function validate(room) {
     assert(isWalkable(room,target.x,target.y,18),`${room.name}: inaccessible point ${JSON.stringify(target)}`);
     assert(seen.has(`${Math.floor(target.x/40)},${Math.floor(target.y/40)}`),`${room.name}: unreachable point`);
   }
-  assert(Math.hypot(room.spawn.x-room.stations[0].x,room.spawn.y-room.stations[0].y)>=60,'Robot must not overlap the collection station at spawn');
+  assert.deepEqual(room.spawn,room.stations[0],'Robot must spawn parked in the first drop-off dock');
   // All floor is built from intact 80px modules, ruling out one-cell corridors.
   for(let y=1;y<15;y+=2)for(let x=1;x<23;x+=2) {
     const block=[room.grid[y][x],room.grid[y][x+1],room.grid[y+1][x],room.grid[y+1][x+1]];

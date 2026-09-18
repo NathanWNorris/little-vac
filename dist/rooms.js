@@ -150,6 +150,9 @@ function buildRoom(meta, plan, seed) {
   const far = valid.filter(([x,y]) => Math.hypot(x*40+20-room.spawn.x,y*40+20-room.spawn.y)>400);
   const trinketCell = (far.length ? far : valid)[Math.floor(random()*(far.length || valid.length))];
   room.trinket = {x:trinketCell[0]*40+20,y:trinketCell[1]*40+20,name:meta.id ? LOCATIONS[meta.location].trinkets[(meta.id-1)%6] : 'Shift souvenir'};
+  // Keep the legacy entrance anchor above for stable debris/treasure generation.
+  // The playable vacuum starts parked in the actual drop-off dock.
+  room.spawn = {...station};
   return room;
 }
 

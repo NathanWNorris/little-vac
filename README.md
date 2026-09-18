@@ -2,7 +2,7 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.3.0** gives all four locations distinct floors, scenery, furniture, and cleanup materials. The room list previews reflect each setting and its actual layout. **Mouse or WASD to steer** is prominent on the start screen and stays visible during play. The click-to-start rule is preserved. See the [previous deep audit](docs/AUDIT-1.2.1.md), [1.2.0 redesign](docs/REDESIGN-1.2.0.md), and historical [playtest results](PLAYTEST.md).
+Version **1.3.1** starts the vacuum parked in the drop-off dock. Mouse hovering cannot start a new room: left-click inside the room or press WASD / an arrow key to begin. Time and suction stay stopped until then. The four themed environments and prominent steering reminders from 1.3.0 remain. See the [previous deep audit](docs/AUDIT-1.2.1.md), [1.2.0 redesign](docs/REDESIGN-1.2.0.md), and historical [playtest results](PLAYTEST.md).
 
 Sweep Shift is a browser game about a vacuum robot cleaning messy rooms. Collect debris, dock to empty the bag, and spend earned coins on upgrades.
 
@@ -17,7 +17,7 @@ Endless rooms use the same location artwork. Decorative scenery is kept outside 
 
 ## Play
 
-- **Left-click to start each room**, or press **Enter / Space** on the Start button. Nothing moves or counts toward your time while you read the instructions.
+- Every room starts **parked in the drop-off dock**. **Left-click inside the room**, or press **WASD / an arrow key** to start and steer. Mouse hovering, held-key repeats from a previous room, and unrelated keys cannot start it. The focused Start button also supports Enter / Space.
 - After starting, move with **WASD or the arrow keys**, or **move your mouse over the room** and the robot follows it. No holding is needed; leaving the play area stops mouse steering.
 - On a touchscreen, **tap to start**, then **drag to steer** with the movement joystick or room.
 - Suction is automatic. Park beside a **collection station** to empty the bag automatically.

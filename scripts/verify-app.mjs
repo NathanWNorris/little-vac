@@ -50,7 +50,7 @@ async function boot(initial = fixtureCareer()) {
   const errors = [];
   const app = await makeApp(dependencies, window, document, { locks }, { now: () => timestamp }, () => {}, () => 0, () => {}, { randomUUID: () => String(++timestamp) }, { error: error => errors.push(error) });
   return { ...app, storage, locks, nodes, errors, webTools, focused:()=>document.activeElement,
-    keyEvent(type,key){for(const callback of documentEvents.get(type)||[])callback({key,target:{tagName:'CANVAS',closest:()=>null},preventDefault(){}});},
+    keyEvent(type,key,options={}){for(const callback of documentEvents.get(type)||[])callback({key,target:{tagName:'CANVAS',closest:()=>null},preventDefault(){},...options});},
     async externalCareer(career) { storage.setItem(progression.SAVE_KEY, JSON.stringify(career)); for (const callback of events.get('storage') || []) await callback({ key: progression.SAVE_KEY }); },
     async settle() { const run = app.run(); run.phase = 'complete'; run.time = 100; run.percent = 1; run.coins = run.room.debris.reduce((sum, piece) => sum + piece.value, 0); await app.completed(); },
   };
@@ -368,10 +368,14 @@ await test('a quick key tap between simulation frames cancels the old mouse targ
 await test('new rooms freeze time, suction, movement and rewards until an explicit left click', async () => {
   const app = await boot(); await app.startRoom(1);
   const run = app.run();
+  assert.deepEqual({x:run.robot.x,y:run.robot.y},run.room.stations[0],'Spawn inside the actual drop-off dock');
   Object.assign(run.debris[0], {x:run.robot.x, y:run.robot.y, type:'crumb', collected:false, amount:1});
   const before = JSON.stringify(run);
   const pointer = {pointerId:1,pointerType:'mouse',isPrimary:true,clientX:550,clientY:540,button:0};
-  app.pointerMove(pointer); app.keyEvent('keydown','ArrowRight');
+  app.pointerMove(pointer);
+  app.keyEvent('keydown','ArrowRight',{repeat:true});
+  app.keyEvent('keydown','d',{ctrlKey:true});
+  app.keyEvent('keydown','q');
   for (let stamp=100;stamp<=10000;stamp+=100) app.frame(stamp);
   assert.equal(app.publicState().awaitingStart,true);
   assert.equal(app.pointer(),null);
@@ -385,10 +389,41 @@ await test('new rooms freeze time, suction, movement and rewards until an explic
   assert.equal(app.nodes.get('#roomStart').hidden,true);
   app.frame(10100);
   assert(run.time>0&&run.time<=.101,'Reading time must never be counted as cleaning time');
-  assert.equal(run.robot.x,JSON.parse(before).robot.x,'Keys pressed before starting must be cleared');
+  assert.equal(run.robot.x,JSON.parse(before).robot.x,'Ignored keys must not carry through into movement');
   assert(run.collectedCount>0,'Automatic suction starts after the explicit click');
   app.pointerMove(pointer); app.pointerUp(pointer);
   assert.equal(app.pointer().x,550,'Mouse following needs no held button after starting');
+});
+
+await test('fresh WASD, uppercase WASD and arrow keys start at the dock and steer on the first press', async () => {
+  for(const [key,axis,sign] of [['w','y',-1],['a','x',-1],['s','y',1],['d','x',1],['W','y',-1],['D','x',1],['ArrowUp','y',-1],['ArrowRight','x',1],['ArrowDown','y',1],['ArrowLeft','x',-1]]){
+    const app=await boot();await app.startRoom(1);const run=app.run();
+    const origin={x:run.robot.x,y:run.robot.y};
+    app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:550,clientY:300});
+    app.keyEvent('keydown',key);app.frame(100);app.frame(200);
+    assert.equal(app.publicState().awaitingStart,false,key+' starts the room');
+    assert((run.robot[axis]-origin[axis])*sign>0,key+' steers immediately');
+    assert.equal(app.pointer(),null,'Keyboard startup must discard hovering mouse targets');
+    app.keyEvent('keyup',key);
+    const stopped={x:run.robot.x,y:run.robot.y};app.frame(300);
+    assert.deepEqual({x:run.robot.x,y:run.robot.y},stopped,'Releasing the key stops without stale mouse steering');
+  }
+});
+
+await test('restarting returns to the dock and waits for a fresh key instead of a held repeat', async () => {
+  const app=await boot();await app.startRoom(1);
+  app.keyEvent('keydown','d');app.frame(100);app.frame(200);
+  assert(app.run().robot.x>app.run().room.stations[0].x);
+  await app.act('restart-confirm');
+  const parked={x:app.run().robot.x,y:app.run().robot.y};
+  assert.deepEqual(parked,app.run().room.stations[0]);
+  app.keyEvent('keydown','d',{repeat:true});
+  app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:600,clientY:250});
+  app.frame(300);app.frame(400);
+  assert.equal(app.run().time,0);assert.equal(app.publicState().awaitingStart,true);
+  assert.deepEqual({x:app.run().robot.x,y:app.run().robot.y},parked);
+  app.keyEvent('keyup','d');app.keyEvent('keydown','d');app.frame(500);
+  assert(app.run().robot.x>parked.x);
 });
 
 await test('menus preserve readiness and return focus to Start, while Resume does not re-arm a started room', async () => {
