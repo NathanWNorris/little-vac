@@ -2,7 +2,9 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.4.2** adds bright locator rings and pointers for the final five dirt pieces, including faint dust, plus a remaining-piece counter. It keeps your dirt and its coin value in the bag between areas, with a green arrow to the drop-off when it is nearly full. The campaign introduced in 1.4.0 expands the campaign to **50 distinct areas across 24 jobs**. Rooms 1–8 stay small; rooms 9–17 have two areas, 18–21 have three, and 22–24 have four. Clear an area to open its marked doorway, then follow the arrow into the next. Later dust and stuck leaves take more suction, with fixed difficulty that stronger upgrades make faster. Each job begins parked at its dock and waits for a left click or WASD; connected areas continue seamlessly through opposite doorways. Every area has one dock and requires 100% cleaning.
+Version **1.4.3** replaces the long instructions with three numbered pictures: **Move, Clean, Empty**. The same guide appears before starting and in How to play, with visible WASD keys, a touch illustration, and optional extra tips. Touch users can scroll the instructions safely, then tap Start. The final five dirt pieces keep their bright locator rings and remaining-piece counter.
+
+The campaign has **50 distinct areas across 24 jobs**. Rooms 1–8 stay small; rooms 9–17 have two areas, 18–21 have three, and 22–24 have four. Clear an area to open its marked doorway, then follow the arrow into the next. Later dust and stuck leaves take more suction, with fixed difficulty that stronger upgrades make faster. Each job begins parked at its dock and waits for a left click or WASD; connected areas continue seamlessly through opposite doorways. Every area has one dock and requires 100% cleaning. Dirt and its coin value stay in the bag between areas; a green arrow leads to the dock when it is nearly full.
 
 Sweep Shift is a browser game about a vacuum robot cleaning messy rooms. Collect debris, dock to empty the bag, and spend earned coins on upgrades.
 
@@ -19,7 +21,7 @@ Endless rooms use the same location artwork. Decorative scenery is kept outside 
 
 - Every new job starts **parked in the drop-off dock**. **Left-click inside the room**, or press **WASD / an arrow key** to start and steer. Mouse hovering, held-key repeats from a previous room, and unrelated keys cannot start it. The focused Start button also supports Enter / Space.
 - After starting, move with **WASD or the arrow keys**, or **move your mouse over the room** and the robot follows it. No holding is needed; leaving the play area stops mouse steering.
-- On a touchscreen, **tap to start**, then **drag to steer** with the movement joystick or room.
+- On a touchscreen, **tap the Start button**, then **drag to steer** with the movement joystick or room. Swiping the instructions scrolls them without starting the job.
 - Suction is automatic. Each area has **one collection station**. Park beside it to empty the bag automatically.
 - A full bag stops suction, but the robot can still move normally. Follow the green arrow to the drop-off dock. Bag contents and their coin value carry through internal doorways; clearing an area does not empty the bag. The HUD shows the value still in your bag.
 - Optional keepsakes go to their own collection shelf, even when the dirt bag is full.

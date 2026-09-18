@@ -453,17 +453,25 @@ await test('restarts, replays, next rooms, and Endless always wait for a fresh S
   assert.equal(app.publicState().awaitingStart,true); assert.equal(app.run().time,0);
 });
 
-await test('touch can start then drag, and a start action cannot bypass pending room setup', async () => {
+await test('touch can scroll instructions, tap Start, then drag without bypassing pending room setup', async () => {
   const app = await boot(); await app.startRoom(1);
   app.locks.hold(); const restarting = app.act('restart-confirm');
   app.pointerDown({pointerId:1,pointerType:'mouse',button:0});
   assert.equal(app.publicState().awaitingStart,true);
   app.locks.release(); await restarting;
   const touch = {pointerId:2,pointerType:'touch',isPrimary:true,button:0,clientX:300,clientY:400};
-  app.pointerDown(touch); assert.equal(app.publicState().awaitingStart,false);
+  for(const pointerType of ['touch','pen']){
+    app.pointerDown({...touch,pointerType,preventDefault(){assert.fail('Reading the guide must allow native scrolling');}});
+    app.pointerMove({...touch,pointerType,clientY:300});app.frame(100);
+    app.pointerUp({...touch,pointerType});
+    assert.equal(app.publicState().awaitingStart,true,'Swiping the instructions must not start the job');
+    assert.equal(app.run().time,0);
+  }
+  await app.act('begin-room');assert.equal(app.publicState().awaitingStart,false);
+  app.pointerDown(touch);
   const x=app.run().robot.x;
-  app.pointerMove({...touch,clientX:340}); app.frame(100); app.frame(200);
-  assert(app.run().robot.x>x,'The first touch may continue naturally into a steering gesture');
+  app.pointerMove({...touch,clientX:340}); app.frame(200); app.frame(300);
+  assert(app.run().robot.x>x,'Dragging after tapping Start steers normally');
   app.pointerUp(touch);
 });
 

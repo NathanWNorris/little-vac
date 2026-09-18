@@ -802,80 +802,190 @@ body[data-screen="play"] .footer {
   display:none
 }
 .room-start {
-  position:absolute;
-  inset:0;
+  position:relative;
   z-index:3;
   display:grid;
   place-items:safe center;
-  overflow:auto;
+  overflow:visible;
   padding:18px;
   background:rgba(18,21,25,.94);
   cursor:pointer
 }
 .arena:has(.room-start:not([hidden])) {
-  min-height:320px
+  padding-bottom:0;
+  touch-action:pan-y
+}
+.arena:has(.room-start:not([hidden])) #gameCanvas {
+  position:absolute;
+  inset:0
+}
+body[data-screen="play"] main:has(.room-start:not([hidden])) {
+  width:min(100%,860px)
+}
+.arena:has(.room-start:not([hidden])) .joystick,
+.arena:has(.room-start:not([hidden])) .touch-hint {
+  visibility:hidden
 }
 .room-start[hidden] {
   display:none
 }
 .start-card {
-  width:min(100%,390px);
+  width:min(100%,760px);
   text-align:center
 }
 .start-card h2 {
-  font-size:26px;
+  font-size:28px;
   margin-bottom:12px
 }
-.start-inputs {
-  display:grid;
-  grid-template-columns:1fr auto 1fr;
-  align-items:center;
-  gap:9px;
-  margin:12px 0
-}
-.start-inputs>div {
-  border:1px solid #747980;
-  border-radius:4px;
-  background:#282d35;
-  padding:9px 6px
-}
-.start-inputs strong,.start-inputs>div span {
-  display:block
-}
-.start-inputs strong {
+.start-area {
   color:var(--accent);
+  margin:6px 0 12px;
+  font-size:13px
+}
+.picture-guide {
+  list-style:none;
+  padding:0;
+  margin:20px 0;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  text-align:left
+}
+.picture-guide>li {
+  position:relative;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:4px;
+  background:#1c2026
+}
+.guide-number {
+  position:absolute;
+  top:10px;
+  left:10px;
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:var(--accent);
+  color:var(--ink);
+  font-weight:800;
   font-size:18px;
-  line-height:1.25
+  z-index:1
 }
-.start-inputs>div span {
-  margin-top:3px;
-  font-size:11px
+.guide-art {
+  display:block;
+  width:100%;
+  height:auto
 }
-.input-or {
-  font-size:11px;
-  font-weight:700;
-  color:var(--muted)
+.guide-picture {
+  margin:13px -5px 10px
 }
-.start-steer,.start-rules {
-  font-size:13px;
-  line-height:1.55
+.guide-copy h3 {
+  font-size:21px;
+  margin:0 0 7px;
+  line-height:1.2
 }
-.start-steer {
+.guide-copy p {
+  color:#c9cdd2;
+  margin:0;
+  font-size:15px;
+  line-height:1.5
+}
+.guide-copy strong {
   color:var(--text)
 }
-.start-rules {
-  margin:12px 0 18px
+.guide-copy .dock-color {
+  color:var(--good)
 }
-.start-rules strong {
+.guide-keys {
+  margin-top:10px;
+  font-size:13px;
+  white-space:nowrap;
+  color:var(--muted)
+}
+.guide-keys kbd {
+  display:inline-block;
+  min-width:22px;
+  padding:1px 4px;
+  text-align:center;
+  font:700 13px/1.5 Arial,Helvetica,sans-serif;
+  color:var(--text);
+  background:#333a44;
+  border:1px solid #6d7580;
+  border-bottom-width:3px;
+  border-radius:3px
+}
+.guide-goal {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:12px;
+  text-align:left;
+  margin:0 0 20px
+}
+.guide-goal>span {
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  flex-shrink:0;
+  border:2px solid var(--good);
+  border-radius:50%;
+  color:var(--good);
+  font-size:20px
+}
+.guide-goal p {
+  margin:0;
+  font-size:13px;
+  line-height:1.5
+}
+.guide-goal strong {
+  display:block;
+  font-size:16px;
+  color:var(--text)
+}
+.guide-goal p>span {
+  display:block
+}
+dialog:has(.how-to-play) {
+  width:min(800px,calc(100% - 32px));
+  max-width:none
+}
+.how-to-play .button-row {
+  margin-top:16px
+}
+.how-to-play .button-row button {
+  font-size:16px;
+  min-height:48px
+}
+.guide-tips {
+  font-size:14px;
+  color:var(--muted)
+}
+.guide-tips summary {
+  cursor:pointer;
+  padding:8px 0;
+  min-height:40px
+}
+.guide-tips ul {
+  margin:4px 0;
+  padding-left:22px
+}
+.guide-tips li+li {
+  margin-top:8px
+}
+.guide-tips strong {
   color:var(--text)
 }
 .start-card button {
-  min-width:210px;
-  min-height:48px
+  min-width:240px;
+  min-height:50px;
+  font-size:17px
 }
 .start-keys {
   margin-top:12px;
-  font-size:11px;
+  font-size:13px;
   line-height:1.5
 }
 .touch-copy {
@@ -885,18 +995,27 @@ body[data-screen="play"] .footer {
   .mouse-copy {display:none}
   .touch-copy {display:inline}
   .start-keys {display:none}
-  .start-inputs {display:none}
 }
-@media(max-width:660px),(max-height:760px) {
-  .room-start {padding:12px}
-  .start-card h2 {font-size:21px;margin-bottom:6px}
-  .start-steer,.start-rules {font-size:12px;line-height:1.4}
-  .start-rules {margin:8px 0 12px}
-  .start-keys {font-size:10px;margin-top:8px}
-  .start-inputs {margin:8px 0;gap:6px}
-  .start-inputs>div {padding:7px 4px}
-  .start-inputs strong {font-size:16px}
-  .start-inputs>div span {font-size:10px}
+@media(max-width:700px) {
+  .room-start {padding:16px 12px}
+  .start-card h2 {font-size:25px;margin-bottom:10px}
+  .picture-guide {grid-template-columns:1fr;gap:10px;margin:16px 0}
+  .picture-guide>li {display:grid;grid-template-columns:110px 1fr;align-items:center;gap:12px;padding:12px}
+  .guide-picture {margin:12px -5px 0}
+  .guide-number {width:26px;height:26px;top:6px;left:6px;font-size:15px}
+  .guide-copy h3 {font-size:19px;margin-bottom:5px}
+  .guide-copy p {font-size:14px}
+  .guide-keys {font-size:12px;margin-top:6px}
+  .guide-keys kbd {min-width:20px;font-size:12px}
+  .guide-goal {margin-bottom:16px;gap:9px}
+  .guide-goal p {font-size:12px}
+  .guide-goal strong {font-size:15px}
+  .start-card button {min-width:0;width:100%}
+  .start-keys {font-size:12px;margin-top:9px}
+}
+@media(max-width:380px) {
+  .picture-guide>li {grid-template-columns:82px 1fr;gap:9px;padding:11px 9px}
+  .guide-goal>span {width:28px;height:28px;font-size:17px}
 }
 @media(max-width:660px) {
   .steering-guide {font-size:12px;margin-top:5px}
@@ -1590,7 +1709,6 @@ body[data-screen="play"] .nav-wallet { display:none; }
 .area-steps li { display:grid; place-items:center; width:26px; height:26px; border:1px solid #606773; color:#b0b6bf; font-size:12px; border-radius:4px; }
 .area-steps .current { color:#211d15; background:var(--accent); border-color:var(--accent); font-weight:800; }
 .area-steps .done { color:#a8ddbb; border-color:#70a88a; }
-.start-area { color:var(--accent); font-size:12px; margin:6px 0 12px; }
 @media(max-width:660px) {
   .area-guide { padding:9px 10px; gap:8px; }
   .area-guide strong { font-size:12px; }

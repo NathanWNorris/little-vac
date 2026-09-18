@@ -1,17 +1,24 @@
-# Sweep Shift 1.4.2 local release candidate
+# Sweep Shift 1.4.3 local release candidate
 
-The current **1.4.2** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.4.3** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **58,864 bytes**.
-- SHA-256: **c6815560c52daa620643ae27c09559d2b11ecf461c808a59e1da9fdac75b9c5e**.
+- Size: **60,208 bytes**.
+- SHA-256: **63423c4a8c430228d6f6d038e4693aec3fbd28b12241aebec1b3650038d86cb8**.
 - All source, archive, and extracted hashes match.
-- This visual patch passed syntax and 36 app-orchestration groups, plus browser visual checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
+- This instruction/UI patch passed syntax and 36 app-orchestration groups, plus responsive browser checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-## What changed in 1.4.2
+## What changed in 1.4.3
+
+- Three numbered pictures replace long start/help instructions: Move, Clean, Empty. Original SVG diagrams show the robot, dirt, cursor/touch gesture, and green dock.
+- Short captions, WASD keycaps, and a clear 100% goal explain the essentials. Extra tips are optional and collapsed.
+- Guides use readable rows on narrow screens. The waiting layout grows naturally, avoiding clipped Start buttons and crowded columns in short desktop windows.
+- Touch/pen users can scroll the guide without starting. The Start button activates the job; normal dragging works afterward. Mouse clicks and WASD still start normally.
+
+## Previous 1.4.2 changes
 
 - The last five uncollected pieces get larger yellow/white locator rings and small pointers, including barely visible dust.
 - A pieces-left counter stays visible even when the bag-full guidance takes priority.

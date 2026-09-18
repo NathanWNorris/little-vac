@@ -7,6 +7,55 @@ export const timeText = value => Number.isFinite(value) ? `${Math.floor(value / 
 export const action = (id, label, style = 'secondary', extra = '') => `<button class="${style}" data-action="${id}" ${extra}>${label}</button>`;
 export const affordable = career => UPGRADES.filter(u => career.upgrades[u.key] < 5 && upgradePrice(u.key, career.upgrades[u.key]) <= career.coins);
 
+function guideRobot(x, y, full = false) {
+  return `<g transform="translate(${x} ${y})" stroke-linejoin="round">
+    <rect x="-17" y="-27" width="34" height="12" rx="5" fill="#10161b"/><rect x="-17" y="17" width="34" height="12" rx="5" fill="#10161b"/>
+    <rect x="20" y="-21" width="12" height="42" rx="4" fill="#fff0bd" stroke="#315c56" stroke-width="3"/>
+    <rect x="-28" y="-25" width="55" height="52" rx="18" fill="#84d9b3" stroke="#183e3b" stroke-width="3"/>
+    <path d="M-18-17q-4 1-4 7" fill="none" stroke="#d8ffe9" stroke-width="3" stroke-linecap="round"/>
+    <rect x="-20" y="-13" width="17" height="28" rx="4" fill="#254f4e"/>
+    <rect x="-16" y="${full ? -9 : 4}" width="9" height="${full ? 20 : 7}" rx="2" fill="#f5b83d"/>
+    <ellipse cx="10" cy="-9" rx="6" ry="7" fill="#fff9e8"/><ellipse cx="10" cy="9" rx="6" ry="7" fill="#fff9e8"/>
+    <circle cx="12" cy="-9" r="3" fill="#183e3b"/><circle cx="12" cy="9" r="3" fill="#183e3b"/>
+  </g>`;
+}
+
+// Text stays in the surrounding HTML so the same pictures work at any screen size.
+export function guideArt(kind) {
+  const arrow = (path, head, color = '#f5b83d') => `<g fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/><path d="${head}"/></g>`;
+  let picture;
+  if (kind === 'move') {
+    picture = `<circle cx="182" cy="61" r="37" fill="#f5b83d" fill-opacity=".1" stroke="#f5b83d" stroke-width="3"/>
+      ${arrow('M98 80Q119 59 142 59', 'M132 49l11 10-11 10')}
+      <path d="M169 33v49l13-11 13 22 10-6-13-21h23Z" fill="#fff9e8" stroke="#22262d" stroke-width="4" stroke-linejoin="round"/>
+      ${guideRobot(56, 77)}`;
+  } else if (kind === 'touch') {
+    picture = `<circle cx="179" cy="57" r="36" fill="#f5b83d" fill-opacity=".1" stroke="#f5b83d" stroke-width="3"/>
+      ${arrow('M98 80Q119 59 142 59', 'M132 49l11 10-11 10')}
+      <path d="M164 104l-15-20c-7-10 4-18 10-9l7 9V42c0-12 15-12 15 0v25c5-8 15-4 15 3 6-6 15-1 14 6 9-3 15 5 11 15l-7 18h-42Z" fill="#fff0bd" stroke="#22262d" stroke-width="4" stroke-linejoin="round"/>
+      ${guideRobot(56, 77)}`;
+  } else if (kind === 'clean') {
+    picture = `<path d="M93 55l99-36v92L93 91Z" fill="#84d9b3" fill-opacity=".09"/>
+      <g fill="none" stroke="#ffe06b" stroke-width="3"><circle cx="186" cy="39" r="18"/><circle cx="193" cy="99" r="17"/></g>
+      <g fill="#edc38a"><circle cx="182" cy="36" r="5"/><circle cx="190" cy="43" r="4"/><circle cx="189" cy="95" r="5"/><circle cx="197" cy="103" r="4"/></g>
+      <g fill="#f5b83d"><circle cx="151" cy="48" r="4"/><circle cx="140" cy="91" r="3"/><circle cx="124" cy="57" r="3"/></g>
+      ${arrow('M181 69H121', 'M131 59l-11 10 11 10', '#b9ffe0')}
+      ${guideRobot(64, 72)}`;
+  } else if (kind === 'dock') {
+    picture = `<circle cx="184" cy="68" r="42" fill="#84d9b3" fill-opacity=".1" stroke="#a4f5cf" stroke-width="3"/>
+      ${arrow('M95 78Q121 51 141 64', 'M138 51l5 14-15 4', '#a4f5cf')}
+      <g transform="translate(184 67)">
+        <rect x="-29" y="-20" width="58" height="48" rx="12" fill="#2b6965"/>
+        <rect x="-29" y="-24" width="58" height="46" rx="12" fill="#9bdbc0" stroke="#225354" stroke-width="3"/>
+        <rect x="-23" y="-19" width="46" height="13" rx="5" fill="#cff0d8"/>
+        <rect x="-19" y="-2" width="38" height="17" rx="5" fill="#173c44"/>
+        <path d="M-8-17v8m-5-4 5 5 5-5" fill="none" stroke="#315d56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="17" cy="-13" r="3" fill="#4aab82"/>
+      </g>${guideRobot(55, 78, true)}`;
+  } else return '';
+  return `<svg class="guide-art" data-guide-art="${kind}" viewBox="0 0 240 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">${picture}</svg>`;
+}
+
 export function navigation(career, screen, active) {
   const count = active ? 0 : affordable(career).length;
   const selected = screen === 'result' || screen === 'endless' ? 'rooms' : screen === 'shop' ? 'shop' : screen;

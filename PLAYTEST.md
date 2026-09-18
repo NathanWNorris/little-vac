@@ -1,6 +1,12 @@
 # Sweep Shift validation
 
-Current local candidate: **1.4.2**. Earlier sections below are historical evidence.
+Current local candidate: **1.4.3**. Earlier sections below are historical evidence.
+
+## Version 1.4.3 — three-picture instructions
+
+The start screen and How to play now share three numbered SVG illustrations, brief captions, visible WASD keys, and a single 100% goal. Optional tips stay collapsed. The layout uses readable rows on narrow screens and a wider waiting screen on short desktop windows. Waiting instructions allow native vertical scrolling; touch/pen gestures cannot accidentally start the job. Tapping Start then dragging retains normal steering.
+
+Syntax and all **36 app-orchestration groups** passed, including the revised touch/pen scrolling, explicit Start, and subsequent steering regression. Browser checks covered the home help dialog, in-room help, and start screen at normal desktop, 1000×600, and 320×740 sizes. Guide cards had no horizontal overflow; Start was not clipped in an inner scrolling panel. Starting restored the normal canvas layout and touch steering surface. Warning/error logs were empty. These are responsive desktop-browser checks, not physical-phone testing; campaign physics were unchanged and not rerun.
 
 ## Version 1.4.2 — last-piece visibility
 
