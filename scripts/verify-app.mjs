@@ -201,7 +201,7 @@ await test('a sound transaction that sees another tab’s reset discards the old
 await test('another tab’s completion and found treasure refresh the title and treasure shelf', async () => {
   const app = await boot();
   await app.externalCareer(fixtureCareer(1));
-  assert.match(app.nodes.get('#main').innerHTML, /1 \/ 24 rooms complete/);
+  assert.match(app.nodes.get('#main').innerHTML.replace(/<[^>]*>/g,''), /1 \/ 24 rooms complete/);
   assert.match(app.nodes.get('#main').innerHTML, /Room 2 ·/);
   await app.act('collection');
   const latest = fixtureCareer(1); latest.trinkets = [1];
@@ -351,6 +351,42 @@ await test('reopening controls in a later room freezes the run and preserves it 
   assert.match(app.nodes.get('#modalContent').innerHTML, /How to play/);
   await app.act('resume');
   assert.equal(app.run(), active); assert.equal(app.publicState().paused, false);
+});
+
+await test('pause submenus return to Pause, and Main menu preserves the unfinished room', async () => {
+  const app=await boot(fixtureCareer(12));await app.startRoom(13);await app.act('begin-room');
+  const run=app.run();run.time=28;run.robot.bag=7;run.robot.bagValue=11;run.percent=.42;
+  await app.act('pause');await app.act('settings');
+  assert.match(app.nodes.get('#modalContent').innerHTML,/data-action="back-pause"/);
+  await app.act('back-pause');
+  assert.match(app.nodes.get('#modalContent').innerHTML,/class="pause-menu"/);
+  assert.equal(app.publicState().paused,true);
+  await app.act('controls');app.keyEvent('keydown','Escape');
+  assert.match(app.nodes.get('#modalContent').innerHTML,/class="pause-menu"/,'Escape from help goes back to Pause');
+  await app.act('settings');await app.act('new');app.keyEvent('keydown','Escape');
+  assert.match(app.nodes.get('#modalContent').innerHTML,/class="pause-menu"/,'Cancelling reset from paused Settings keeps the job paused');
+  app.frame(1000);app.frame(1100);assert.equal(run.time,28);
+  await app.act('title');
+  assert.equal(app.publicState().screen,'title');assert.equal(app.publicState().paused,true);
+  assert.equal(app.nodes.get('#modal').open,false);
+  const homeText=app.nodes.get('#main').innerHTML.replace(/<[^>]*>/g,'');
+  assert.match(homeText,/Area 1 of 2 · 42% clean/);assert.match(homeText,/Upgrades Locked/);
+  await app.act('continue');assert.equal(app.run(),run);assert.equal(app.publicState().paused,false);
+  assert.equal(run.robot.bag,7);assert.equal(run.robot.bagValue,11);assert.equal(run.percent,.42);
+});
+
+await test('home primary labels match fresh, completed, and endless destinations', async () => {
+  const fresh=await boot();assert.match(fresh.nodes.get('#main').innerHTML,/home-play[^>]*[^]*?<span>Play<\/span>/);
+  await fresh.act('continue');assert.equal(fresh.run().room.id,1);
+  const career=fixtureCareer(24),finish=await boot(career);
+  assert.match(finish.nodes.get('#main').innerHTML,/Finish campaign/);
+  await finish.act('continue');assert.equal(finish.publicState().screen,'ending');
+  career.endingSeen=true;const replay=await boot(career);
+  assert.match(replay.nodes.get('#main').innerHTML,/Choose a room/);
+  await replay.act('continue');assert.equal(replay.publicState().screen,'rooms');
+  career.lastRoom=0;const endless=await boot(career);
+  assert.match(endless.nodes.get('#main').innerHTML,/Play endless/);
+  await endless.act('continue');assert.equal(endless.publicState().screen,'endless');
 });
 
 await test('a quick key tap between simulation frames cancels the old mouse target', async () => {

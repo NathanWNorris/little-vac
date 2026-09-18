@@ -4,7 +4,7 @@ import {createRun,step,runResult} from './simulation.js';
 import {render} from './render.js';
 import {createCareerStore} from './career-store.js';
 import {createInputController} from './input.js';
-import {esc,timeText,money,action,affordable,navigation,pausedRoomBanner,roomsMarkup,shopMarkup,guideArt} from './ui.js';
+import {esc,timeText,money,action,affordable,navigation,pausedRoomBanner,roomsMarkup,shopMarkup,guideArt,roomPreview,menuIcon} from './ui.js';
 
 const $=s=>document.querySelector(s), main=$('#main'),modal=$('#modal'),content=$('#modalContent');
 let storage;try{storage=window.localStorage;}catch{storage={getItem(){throw Error('blocked')},setItem(){throw Error('blocked')}};}
@@ -15,6 +15,7 @@ const store=createCareerStore(storage,{locks:navigator.locks,onWarning:warning,o
 career=store.career;
 const input=createInputController({canvas:()=>canvas,onGesture:clearInput,onChange:({touch})=>{const knob=$('.knob');if(knob)knob.style.transform=touch?`translate(${touch.dx*24}px,${touch.dy*24}px)`:'';}});
 let remoteControl=null,viewRevision=0;
+let dialogScreen='';
 
 const medals=['','Bronze','Silver','Gold'];
 const shells=()=>SHELLS.find(s=>s.id===career.shell)||SHELLS[0];
@@ -31,6 +32,7 @@ function careerChanged(next){
     if(!resetting){rooms();notify('Your career changed in another tab. This view now matches the latest save.');return;}
   }
   updateNav();
+  if(screen==='title')renderHome(false);
 }
 function hasActiveRun(){return !!run && ['playing','exiting','finishing'].includes(run.phase) && !settlement;}
 function updateNav(){const nav=$('#gameNav');if(!nav)return;nav.innerHTML=navigation(career,screen,hasActiveRun());bindActions(nav,false);}
@@ -41,14 +43,23 @@ document.addEventListener('pointerdown',unlockAudio,{once:true});document.addEve
 function clearInput(){if(remoteControl){const control=remoteControl;remoteControl=null;control.resolve({interrupted:true,...publicState()});}keys.clear();input.clear();}
 function prepareScreen(name,keepScroll=false){clearInput();viewRevision++;screen=name;paused=modal.open&&name==='play';main.innerHTML='';canvas=null;ctx=null;document.body.dataset.screen=name;if(!keepScroll)window.scrollTo({top:0,behavior:'instant'});updateNav();}
 function bindActions(root=main,focusHeading=true){if(root===main&&screen!=='play'&&screen!=='title'&&hasActiveRun()&&!root.querySelector('.paused-room'))root.insertAdjacentHTML('afterbegin',pausedRoomBanner(run));root.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{Promise.resolve(act(b.dataset.action,b)).catch(error=>{console.error(error);notify('That action could not finish. Please try again.');});}));if(root===main&&screen!=='play'&&focusHeading){const heading=root.querySelector('h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}}}
-function title(){
-  prepareScreen('title');
-  const active=hasActiveRun(),progressed=career.completed.length>0||Object.values(career.upgrades).some(Boolean);
-  const nextId=career.completed.includes(career.lastRoom)?career.unlocked:(career.lastRoom||career.unlocked);
-  const nextRoom=CAMPAIGN.find(r=>r.id===nextId);
-  const hint=active?`${run.room.name} · Paused at ${Math.floor(run.percent*100)}%`:career.completed.length===24?'All 24 rooms complete':`Room ${nextRoom?.id||1} · ${nextRoom?.name||'First Sweep'}`;
-  main.innerHTML=`<section class="home-menu"><img class="home-robot" src="icon.svg" width="76" height="76" alt=""><h1>SWEEP <span>SHIFT</span></h1><p class="home-tagline">Clean rooms. Upgrade your vacuum.</p>${action('continue',`${active?'Resume room':progressed?'Continue':'Play'} <span aria-hidden="true">▶</span>`,'primary home-play')}<p class="home-next">${esc(hint)}</p><div class="home-links">${action('rooms','Rooms')}${action('shop','Upgrades')}</div>${action('controls','How to play','home-help')}<p class="home-progress">${career.completed.length} / 24 rooms complete &nbsp; · &nbsp; ${money(career.coins)} coins</p></section>`;
-  bindActions();
+function continueTarget(){
+  if(hasActiveRun())return {type:'resume',room:run.room};
+  if(career.completed.length===24&&!career.endingSeen)return {type:'ending'};
+  if(career.lastRoom===0&&career.unlocked===25)return {type:'endless'};
+  const id=career.completed.includes(career.lastRoom)?career.unlocked:(career.lastRoom||career.unlocked);
+  return id===25?{type:'rooms'}:{type:'room',room:CAMPAIGN.find(r=>r.id===id)};
+}
+function title(){prepareScreen('title');renderHome();}
+function renderHome(focus=true){
+  const target=continueTarget(),active=target.type==='resume',room=target.room,progressed=career.completed.length>0||Object.values(career.upgrades).some(Boolean),count=affordable(career).length;
+  const label={resume:'Resume room',ending:'Finish campaign',endless:'Play endless',rooms:'Choose a room',room:progressed?'Continue':'Play'}[target.type];
+  const heading=room?.name||(target.type==='endless'?'Endless Shift':'All rooms complete!');
+  const location=room?`${room.id?'Room '+room.id:'Endless'} · ${LOCATIONS[room.location].name}`:'24 / 24 rooms complete';
+  const detail=active?`${run.started?'Paused':'Ready to start'}${areaCount()>1?` · Area ${areaNumber()} of ${areaCount()}`:''} · ${Math.floor(run.percent*100)}% clean`:target.type==='room'?`${room.areaCount>1?room.areaCount+' connected areas':'One area'} · Clean 100%`:target.type==='endless'?'Fresh layouts. Keep your upgrades.':target.type==='ending'?'You cleaned every room.':'Replay a favorite or try Endless.';
+  const upgradeHint=active?'Finish or quit this job first':count?`${count} ${count===1?'upgrade':'upgrades'} you can afford`:Object.values(career.upgrades).every(n=>n===5)?'Your vacuum is fully upgraded':'Spend your cleaning coins';
+  main.innerHTML=`<section class="home-menu"><header class="home-brand"><img class="home-robot" src="icon.svg" width="48" height="48" alt=""><div><h1>SWEEP <span>SHIFT</span></h1><p class="home-tagline">Clean rooms. Upgrade your vacuum.</p></div></header><div class="home-layout"><div class="home-feature"><div class="home-preview">${room?.id?roomPreview(room.id):guideArt('clean')}</div><div class="home-room-copy"><div class="eyebrow">${esc(location)}</div><h2>${esc(heading)}</h2><p>${esc(detail)}</p></div></div><div class="home-actions">${action('continue',`<span>${label}</span>${menuIcon('play')}`,'primary home-play')}<div class="home-links">${action('rooms',`${menuIcon('rooms')}<span><strong>Rooms</strong><small>Choose or replay a room</small></span>`,'home-link')}${action('shop',`${menuIcon('upgrades')}<span><strong>Upgrades${active?' <span class="home-lock">Locked</span>':count?' <span class="home-ready">'+count+' ready</span>':''}</strong><small>${upgradeHint}</small></span>`,'home-link')}</div>${action('controls',`${menuIcon('help')}<span>How to play</span>`,'home-help')}${active?'<p class="home-paused-note">Your room stays paused here.</p>':''}</div></div><div class="home-progress"><span><strong>${career.completed.length} / 24</strong> rooms complete</span><span><strong>${money(career.coins)}</strong> saved coins</span></div></section>`;
+  bindActions(main,focus);
 }
 function rooms(district=roomDistrict){roomDistrict=Number.isInteger(district)?Math.max(0,Math.min(3,district)):Math.min(3,Math.floor((career.unlocked-1)/6));prepareScreen('rooms');main.innerHTML=roomsMarkup(career,roomDistrict,hasActiveRun());bindActions();}
 function setupCanvas(){canvas=$('#gameCanvas');ctx=canvas.getContext('2d');const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=960*dpr;canvas.height=640*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);const surface=$('.arena');surface.addEventListener('pointerdown',pointerDown);surface.addEventListener('pointermove',pointerMove);surface.addEventListener('pointerup',pointerUp);surface.addEventListener('pointercancel',e=>input.pointerCancel(e));surface.addEventListener('lostpointercapture',e=>input.pointerCancel(e));canvas.addEventListener('pointerleave',e=>input.pointerLeave(e));}
@@ -149,19 +160,21 @@ function collection(){prepareScreen('collection');main.innerHTML=`<div class="pa
 function newSeed(){return `${['sunny','mint','cosy','little','bright','coral'][Math.floor(Math.random()*6)]}-${Math.random().toString(36).slice(2,7)}`;}
 function endless(){if(career.unlocked<25)return;prepareScreen('endless');main.innerHTML=`<section class="result"><div class="result-icon">∞</div><div class="eyebrow" style="justify-content:center">ENDLESS SHIFT</div><h1>Endless rooms</h1><p>Enter a seed to generate a room. Use the same seed to play it again.</p><form class="seed-form" id="seedForm"><input id="seedInput" aria-label="Room seed" value="${esc(newSeed())}" maxlength="40" required><button class="primary" type="submit">Play</button></form><p style="font-size:12px">Your purchased upgrades carry over.</p><div class="button-row">${action('shop','Robot upgrades')}${action('rooms','Back to rooms','ghost')}</div></section>`;$('#seedForm').onsubmit=e=>{e.preventDefault();let seed=$('#seedInput').value.trim().slice(0,40);if(seed)requestStart(0,seed);};bindActions();}
 async function ending(){if(career.completed.length<24)return;const revision=viewRevision;const eligible=await save(c=>{if(c.completed.length<24)return false;c.endingSeen=true;return true;});if(revision!==viewRevision)return;if(!eligible||career.completed.length<24)return rooms();prepareScreen('ending');main.innerHTML=`<section class="result"><div class="eyebrow" style="justify-content:center">CAMPAIGN COMPLETE</div><div class="ending-garden">⌂ <span>✦</span> ♧ <span>☀</span></div><h1>All rooms complete!</h1><p>You cleaned all 24 rooms across four locations.</p><p>Replay rooms for better medals, find missing treasures, or try Endless.</p><div class="bonus-note">Endless Shift and your final robot shell are unlocked.</div><div class="button-row">${action('endless','Start an endless shift ↗','primary')}${action('collection','View treasures')}${action('credits','Credits','ghost')}</div><div class="button-row">${action('rooms','Revisit your favorite room','ghost')}</div></section>`;bindActions();}
-function openModal(html){lastFocus=document.activeElement;paused=screen==='play';clearInput();content.innerHTML=html;bindActions(content);modal.showModal();}
-function closeModal(){modal.close();paused=false;clearInput();lastStamp=performance.now();accumulator=0;if(screen==='play')focusRoom();else if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});else main.querySelector('h1')?.focus({preventScroll:true});}
-function pause(){if(screen!=='play'||!hasActiveRun()||modal.open)return;openModal(`<h2 id="modalTitle">Paused</h2><p>Your room and clock are paused. Finish every area to save this job’s coins, or quit it to visit Upgrades.</p><div class="button-row">${action('resume','Resume','primary')}${action('quit','Quit room & upgrade')}${action('rooms','Browse rooms')}${action('controls','How to play')}${action('settings','Settings')}${action('restart','Restart room','ghost')}</div>`);}
-function settings(){if(modal.open)modal.close();openModal(`<h2 id="modalTitle">Settings</h2><label class="setting-row">Sound effects<input id="muteSetting" type="checkbox" ${!career.settings.muted?'checked':''}></label><label class="setting-row">Effects volume<input id="volumeSetting" aria-label="Effects volume" type="range" min="0" max="1" step=".05" value="${career.settings.effects}"></label><label class="setting-row">Reduced motion<input id="motionSetting" type="checkbox" ${career.settings.reducedMotion?'checked':''}></label><p>Finished rooms, coins, and purchases save automatically. Browsing menus keeps your current room paused. Upgrades open after you finish or quit the room. Restarting, quitting, or closing the game discards unfinished cleaning.</p><div class="button-row">${action('resume','Done','primary')}${action('new','Reset career','ghost')}</div>`);$('#muteSetting').onchange=async e=>{const value=!e.target.checked;await save(c=>{c.settings.muted=value;});};$('#volumeSetting').onchange=async e=>{const value=Number(e.target.value);await save(c=>{c.settings.effects=value;});};$('#motionSetting').onchange=async e=>{const value=e.target.checked;await save(c=>{c.settings.reducedMotion=value;});};}
-function controls(){if(modal.open)modal.close();openModal(`<section class="how-to-play"><h2 id="modalTitle">How to play</h2>${quickGuide()}<details class="guide-tips"><summary>A few extra tips</summary><ul><li><strong>Pause:</strong> press Esc or the Pause button.</li><li><strong>Stop:</strong> move the mouse outside the room, or release your keys / touch.</li><li><strong>Last bits of dirt:</strong> look for yellow circles.</li><li><strong>Heavy dust:</strong> stay over it a little longer.</li><li><strong>Door open?</strong> Follow the arrow into the next area. Your bag comes with you.</li><li><strong>Upgrades:</strong> finish the job, or pause and quit. Quitting loses this job’s unfinished coins.</li></ul></details><div class="button-row">${action('resume',screen==='play'?'Back to room':'Got it','primary')}</div></section>`);}
+function openModal(html,kind=''){lastFocus=document.activeElement;paused=screen==='play';clearInput();dialogScreen=kind;content.innerHTML=html;bindActions(content);modal.showModal();}
+function closeModal(){modal.close();dialogScreen='';paused=false;clearInput();lastStamp=performance.now();accumulator=0;if(screen==='play')focusRoom();else if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});else main.querySelector('h1')?.focus({preventScroll:true});}
+function dismissModal(){const back=dialogScreen==='pause-child';closeModal();if(back)pause();}
+function pause(){if(screen!=='play'||!hasActiveRun()||modal.open)return;openModal(`<section class="pause-menu"><div class="pause-heading"><span class="pause-symbol" aria-hidden="true">Ⅱ</span><div><h2 id="modalTitle">Paused</h2><p>${esc(run.room.name)}</p></div></div><p class="pause-progress">${areaCount()>1?`Area ${areaNumber()} of ${areaCount()} · `:''}${Math.floor(run.percent*100)}% clean</p>${action('resume',`${menuIcon('play')}<span>Resume</span>`,'primary pause-resume')}<div class="pause-shortcuts">${action('controls',`${menuIcon('help')}<span>How to play</span>`)}${action('settings',`${menuIcon('settings')}<span>Settings</span>`)}</div>${action('title',`${menuIcon('home')}<span>Main menu</span>`,'pause-home')}<p class="pause-safe-note">Your room stays paused in the menu.</p><div class="pause-leave"><p>Restarting or quitting loses this job’s unfinished coins.</p><div>${action('restart',`${menuIcon('restart')}<span>Restart</span>`,'ghost')}${action('quit','Quit & upgrade','pause-quit')}</div></div></section>`,'pause');}
+function settings(){const backToPause=dialogScreen==='pause';if(modal.open)modal.close();openModal(`<h2 id="modalTitle">Settings</h2><label class="setting-row">Sound effects<input id="muteSetting" type="checkbox" ${!career.settings.muted?'checked':''}></label><label class="setting-row">Effects volume<input id="volumeSetting" aria-label="Effects volume" type="range" min="0" max="1" step=".05" value="${career.settings.effects}"></label><label class="setting-row">Reduced motion<input id="motionSetting" type="checkbox" ${career.settings.reducedMotion?'checked':''}></label><p>Finished rooms, coins, and purchases save automatically. Browsing menus keeps your current room paused. Upgrades open after you finish or quit the room. Restarting, quitting, or closing the game discards unfinished cleaning.</p><div class="button-row">${action(backToPause?'back-pause':'resume',backToPause?'Back to pause':'Done','primary')}${action('new','Reset career','ghost')}</div>`,backToPause?'pause-child':'');$('#muteSetting').onchange=async e=>{const value=!e.target.checked;await save(c=>{c.settings.muted=value;});};$('#volumeSetting').onchange=async e=>{const value=Number(e.target.value);await save(c=>{c.settings.effects=value;});};$('#motionSetting').onchange=async e=>{const value=e.target.checked;await save(c=>{c.settings.reducedMotion=value;});};}
+function controls(){const backToPause=dialogScreen==='pause';if(modal.open)modal.close();openModal(`<section class="how-to-play"><h2 id="modalTitle">How to play</h2>${quickGuide()}<details class="guide-tips"><summary>A few extra tips</summary><ul><li><strong>Pause:</strong> press Esc or the Pause button.</li><li><strong>Stop:</strong> move the mouse outside the room, or release your keys / touch.</li><li><strong>Last bits of dirt:</strong> look for yellow circles.</li><li><strong>Heavy dust:</strong> stay over it a little longer.</li><li><strong>Door open?</strong> Follow the arrow into the next area. Your bag comes with you.</li><li><strong>Upgrades:</strong> finish the job, or pause and quit. Quitting loses this job’s unfinished coins.</li></ul></details><div class="button-row">${action(backToPause?'back-pause':'resume',backToPause?'Back to pause':screen==='play'?'Back to room':'Got it','primary')}</div></section>`,backToPause?'pause-child':'');}
 function credits(){if(modal.open)modal.close();openModal(`<h2 id="modalTitle">Credits</h2><div class="credit-list"><p><strong>Sweep Shift</strong><br>A tiny cleaning game by Nathan Norris.</p><p>Built with JavaScript, Canvas, and synthesized Web Audio. All game artwork is drawn by original code. No external runtime assets or libraries are required.</p><p>Created with AI assistance for implementation, design iteration, writing, and testing.</p><p>Thanks for playing.</p></div><div class="button-row">${action('resume','Close','primary')}</div>`);}
-function confirmReset(){if(modal.open)modal.close();openModal(`<h2 id="modalTitle">Reset your progress?</h2><p>This resets your rooms, coins, upgrades, medals, and treasures. Your current career cannot be restored afterward.</p><div class="button-row">${action('resume','Keep my career','primary')}${action('reset-confirm','Reset and start again')}</div>`);}
+function confirmReset(){const backToPause=dialogScreen==='pause-child';if(modal.open)modal.close();openModal(`<h2 id="modalTitle">Reset your progress?</h2><p>This resets your rooms, coins, upgrades, medals, and treasures. Your current career cannot be restored afterward.</p><div class="button-row">${action(backToPause?'back-pause':'resume','Keep my career','primary')}${action('reset-confirm','Reset and start again')}</div>`,backToPause?'pause-child':'');}
 function continueShift(){
-  if(hasActiveRun())return playRoom();
-  if(career.completed.length===24&&!career.endingSeen)return ending();
-  if(career.lastRoom===0&&career.unlocked===25)return endless();
-  if(career.completed.includes(career.lastRoom)){if(career.unlocked===25)return rooms();return startRoom(career.unlocked);}
-  return startRoom(career.lastRoom||career.unlocked);
+  const target=continueTarget();
+  if(target.type==='resume')return playRoom();
+  if(target.type==='ending')return ending();
+  if(target.type==='endless')return endless();
+  if(target.type==='rooms')return rooms();
+  return startRoom(target.room.id);
 }
 function restorePurchaseFocus(id){const button=main.querySelector('[data-action="'+id+'"]');const target=button?.disabled?button.closest('article')?.querySelector('h2'):button;target?.focus({preventScroll:true});}
 async function act(a,b){
@@ -176,7 +189,7 @@ async function act(a,b){
     if(screen==='shop'){shop(true);restorePurchaseFocus(a);}if(result.ok&&a.startsWith('buy:'))sound('unload');return notify(result.message);
   }
   switch(a){
-    case'begin-room':beginRoom();break;case'title':title();break;case'continue':return continueShift();case'rooms':rooms();break;case'shop':shop();break;case'collection':collection();break;case'endless':endless();break;case'ending':return ending();case'pause':pause();break;case'resume':closeModal();break;case'resume-room':if(hasActiveRun())playRoom();else rooms();break;case'settings':settings();break;case'controls':controls();break;case'credits':credits();break;case'new':confirmReset();break;
+    case'begin-room':beginRoom();break;case'title':title();break;case'continue':return continueShift();case'rooms':rooms();break;case'shop':shop();break;case'collection':collection();break;case'endless':endless();break;case'ending':return ending();case'pause':pause();break;case'back-pause':closeModal();pause();break;case'resume':closeModal();break;case'resume-room':if(hasActiveRun())playRoom();else rooms();break;case'settings':settings();break;case'controls':controls();break;case'credits':credits();break;case'new':confirmReset();break;
     case'reset-confirm':closeModal();resetting=true;clearInput();try{await save(resetCareer);run=null;settlement=null;roomDistrict=0;return await startRoom(1);}finally{resetting=false;}
     case'replay':return requestStart(run.room.id,run.room.seed);
     case'restart':case'quit':{const restart=a==='restart';modal.close();openModal(`<h2 id="modalTitle">${restart?'Restart this room?':'Quit room & upgrade?'}</h2><p>This room’s unfinished cleaning and coins will be lost. Your previously saved coins, completed rooms, and upgrades are kept.</p><div class="button-row">${action('resume','Keep this room','primary')}${action(restart?'restart-confirm':'quit-confirm',restart?'Restart room':'Quit & open upgrades')}</div>`);break;}
@@ -185,11 +198,11 @@ async function act(a,b){
     case'switch-confirm':{const next=pendingStart;pendingStart=null;closeModal();if(next)return startRoom(next.id,next.seed);break;}
   }
 }
-modal.addEventListener('cancel',e=>{e.preventDefault();closeModal();});
+modal.addEventListener('cancel',e=>{e.preventDefault();dismissModal();});
 $('#homeLink').onclick=e=>{e.preventDefault();if(screen==='play')pause();else title();};$('#soundBtn').onclick=async()=>{unlockAudio();await save(c=>{c.settings.muted=!c.settings.muted;});};$('#settingsBtn').onclick=settings;$('#creditsBtn').onclick=credits;
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey)return;
-  if(e.key==='Escape'){e.preventDefault();if(e.repeat)return;if(modal.open)closeModal();else pause();return;}
+  if(e.key==='Escape'){e.preventDefault();if(e.repeat)return;if(modal.open)dismissModal();else pause();return;}
   if(screen!=='play'||modal.open||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
   if(e.key===' '&&e.target.closest('button,a,summary'))return;
   const key=e.key.length===1?e.key.toLowerCase():e.key;

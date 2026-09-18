@@ -1,6 +1,12 @@
 # Sweep Shift validation
 
-Current local candidate: **1.4.3**. Earlier sections below are historical evidence.
+Current local candidate: **1.4.4**. Earlier sections below are historical evidence.
+
+## Version 1.4.4 — home and pause menus
+
+Home pairs an actual room-layout preview with a prominent Play/Continue/Resume button, labeled menu icons, and explicit upgrade availability or an unfinished-job lock. Its primary label and action share the same destination, including completed-career and Endless states. Multi-area paused jobs show the current area number and percentage. Pause separates Resume and safe navigation from confirmed restart/quit actions; Main menu retains the unfinished run. Help, Settings, and cancelled reset prompts reached through Pause return to Pause.
+
+Syntax and **38 app-orchestration groups** passed. New navigation regressions cover nested Back/Escape paths, home/resume retention of bag/value/time/progress, and fresh/completed/Endless primary destinations. Browser checks on the isolated earned-12 fixture verified the desktop and 320×740 home/pause layouts with no horizontal overflow, Settings → Back to pause, Main menu with a locked upgrade button, and a live paused-state reading. Warning/error logs were empty. No real user save was changed. These are targeted menu checks, not a full campaign replay or physical-phone test.
 
 ## Version 1.4.3 — three-picture instructions
 

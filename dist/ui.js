@@ -7,6 +7,19 @@ export const timeText = value => Number.isFinite(value) ? `${Math.floor(value / 
 export const action = (id, label, style = 'secondary', extra = '') => `<button class="${style}" data-action="${id}" ${extra}>${label}</button>`;
 export const affordable = career => UPGRADES.filter(u => career.upgrades[u.key] < 5 && upgradePrice(u.key, career.upgrades[u.key]) <= career.coins);
 
+export function menuIcon(kind) {
+  const shapes = {
+    play: '<path d="M8 5l11 7-11 7Z"/>',
+    rooms: '<path d="M5 21V3h14v18M3 21h18"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/>',
+    upgrades: '<path d="M12 16V4m-6 6 6-6 6 6M5 20h14"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.4 8.5a2.6 2.6 0 0 1 5 1c0 1.8-2.4 1.7-2.4 3.5"/><circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none"/>',
+    home: '<path d="m3 11 9-8 9 8M5 9.3V21h5v-7h4v7h5V9.3"/>',
+    restart: '<path d="M4 3v5h5M4.8 7.2a8 8 0 1 1-.4 9"/>',
+    settings: '<path d="M6 3v4m0 6v8M12 3v9m0 6v3M18 3v4m0 6v8"/><circle cx="6" cy="10" r="3"/><circle cx="12" cy="15" r="3"/><circle cx="18" cy="10" r="3"/>',
+  };
+  return shapes[kind] ? `<svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">${shapes[kind]}</svg>` : '';
+}
+
 function guideRobot(x, y, full = false) {
   return `<g transform="translate(${x} ${y})" stroke-linejoin="round">
     <rect x="-17" y="-27" width="34" height="12" rx="5" fill="#10161b"/><rect x="-17" y="17" width="34" height="12" rx="5" fill="#10161b"/>

@@ -1,17 +1,25 @@
-# Sweep Shift 1.4.3 local release candidate
+# Sweep Shift 1.4.4 local release candidate
 
-The current **1.4.3** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.4.4** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **60,208 bytes**.
-- SHA-256: **63423c4a8c430228d6f6d038e4693aec3fbd28b12241aebec1b3650038d86cb8**.
+- Size: **62,055 bytes**.
+- SHA-256: **e38aeb01f3a8bb35239c395d5f6918c49b20fe3d66121f24358f5d2b256a56a2**.
 - All source, archive, and extracted hashes match.
-- This instruction/UI patch passed syntax and 36 app-orchestration groups, plus responsive browser checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
+- This menu patch passed syntax and 38 app-orchestration groups, plus responsive browser checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-## What changed in 1.4.3
+## What changed in 1.4.4
+
+- Home shows a room-layout preview beside clear Play/Continue, Rooms, Upgrades, and How to play buttons. Icons, readable captions, and saved-coin/progress totals replace the sparse text-only layout.
+- Upgrade availability is visible; an unfinished job explicitly shows the lock. Paused multi-area jobs show their current area and percentage.
+- The primary label uses the same destination as its action, including finished-campaign and Endless states.
+- Pause highlights Resume, groups Help/Settings and Main menu, and separates confirmed Restart/Quit actions. Main menu preserves the unfinished job.
+- Help/Settings opened from Pause, including a cancelled reset confirmation, return to Pause instead of unexpectedly resuming. Back and Escape both keep the run frozen.
+
+## Previous 1.4.3 changes
 
 - Three numbered pictures replace long start/help instructions: Move, Clean, Empty. Original SVG diagrams show the robot, dirt, cursor/touch gesture, and green dock.
 - Short captions, WASD keycaps, and a clear 100% goal explain the essentials. Extra tips are optional and collapsed.
