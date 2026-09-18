@@ -467,4 +467,72 @@ await test('touch can start then drag, and a start action cannot bypass pending 
   app.pointerUp(touch);
 });
 
+
+await test('an open area exit is still an unfinished job and cannot settle or buy upgrades', async () => {
+  const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
+  const run=app.run(),before=app.publicState().career;
+  assert.equal(run.areaCount,2);run.phase='exiting';run.percent=1;run.coins=200;
+  await app.completed();assert.deepEqual(app.publicState().career,before);
+  assert.equal(app.publicState().screen,'play');
+  app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:250,clientY:500});
+  assert.equal(app.pointer().x,250,'Mouse steering remains available on the way to an exit');
+  await app.act('pause');await app.act('shop');await app.act('buy:pull');
+  assert.deepEqual(app.publicState().career,before);assert.notEqual(app.publicState().screen,'shop');
+  await app.act('resume');assert.equal(app.run(),run);
+});
+
+async function enterSecondArea(app){
+  const run=app.run();run.phase='exiting';run.percent=1;run.coins=200;
+  Object.assign(run.robot,{x:run.room.exit.x,y:run.room.exit.y+29,bag:0,bagValue:0});
+  app.keyEvent('keydown','w');app.frame(100);
+  assert.equal(run.areaIndex,1,'Normal movement across the open doorway changes area');
+  return run;
+}
+await test('walking through a door enters from the left and keeps control without a new start screen', async () => {
+  const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
+  const id=app.run().runId,before=app.publicState().career,run=await enterSecondArea(app);
+  assert.equal(run.runId,id);assert.equal(run.coins,200);assert(run.time>0);
+  assert.equal(run.percent,0);assert.equal(run.robot.bag,0);
+  assert.deepEqual({x:run.robot.x,y:run.robot.y},run.room.entry);
+  assert.notDeepEqual(run.room.entry,run.room.stations[0],'An annex is entered through its left doorway, not its dock');
+  assert.equal(app.publicState().awaitingStart,false);assert.equal(app.publicState().area.number,2);
+  assert.match(app.nodes.get('#areaGuide').outerHTML,/Area 2 of 2/);
+  assert.match(app.nodes.get('#areaGuide').outerHTML,/Final area/);
+  assert.equal(app.nodes.get('#roomStart').hidden,true);
+  assert.equal(app.focused(),app.nodes.get('#gameCanvas'));
+  const entered={x:run.robot.x,y:run.robot.y},time=run.time;
+  app.frame(200);assert(run.time>time);assert(run.robot.y<entered.y,'A held keyboard direction continues across the doorway');
+  app.keyEvent('keyup','w');
+  app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:650,clientY:300});
+  assert(app.pointer(),'Mouse steering resumes on movement without any click');
+  app.frame(300);assert(run.robot.x>entered.x);
+  assert.deepEqual(app.publicState().career,before,'Area transitions never bank career coins');
+});
+
+await test('restart returns a multi-area job to its original first area and quit loses its pending coins', async () => {
+  const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
+  const original=app.run().jobRoom,before=app.publicState().career;
+  await enterSecondArea(app);await app.act('restart-confirm');
+  assert.equal(app.run().areaIndex,0);assert.deepEqual(app.run().room,original);
+  assert.equal(app.run().coins,0);assert.equal(app.run().time,0);assert.equal(app.run().started,false);
+  await app.act('begin-room');await enterSecondArea(app);
+  await app.act('pause');await app.act('quit');await app.act('quit-confirm');
+  assert.equal(app.run(),null);assert.equal(app.publicState().screen,'shop');
+  assert.deepEqual(app.publicState().career,before);
+});
+
+await test('a held touch drag continues across an internal doorway on the same canvas', async () => {
+  const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
+  const run=app.run(),surface=app.nodes.get('#gameCanvas');run.phase='exiting';run.percent=1;
+  Object.assign(run.robot,{x:run.room.exit.x,y:run.room.exit.y+29});
+  const touch={pointerId:2,pointerType:'touch',isPrimary:true,button:0,clientX:300,clientY:400};
+  app.pointerDown(touch);app.pointerMove({...touch,clientY:360});app.frame(100);
+  assert.equal(run.areaIndex,1);assert.equal(run.started,true);
+  assert.equal(app.nodes.get('#gameCanvas'),surface);
+  const enteredY=run.robot.y;app.frame(200);
+  assert(run.robot.y<enteredY,'Crossing the doorway must not drop an active touch gesture');
+  app.pointerUp(touch);const stopped={x:run.robot.x,y:run.robot.y};app.frame(300);
+  assert.deepEqual({x:run.robot.x,y:run.robot.y},stopped);
+});
+
 console.log(`App orchestration verified: ${checks} checks passed.`);

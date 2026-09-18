@@ -1558,3 +1558,25 @@ dialog .button-row button {
 
 /* The play HUD already shows the balance; keep narrow navigation on one row. */
 body[data-screen="play"] .nav-wallet { display:none; }
+
+.area-guide {
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  margin:0 0 12px; padding:11px 14px; border-left:3px solid var(--accent);
+  background:#242a31;
+}
+.area-guide strong { display:block; font-size:13px; color:var(--text); }
+.area-guide span { display:block; margin-top:4px; font-size:12px; color:var(--muted); line-height:1.4; }
+.area-guide.exit-open { background:#3a3020; border-color:#f5bf55; }
+.area-guide.exit-open span { color:#ffdb91; font-weight:700; }
+.area-steps { display:flex; flex-shrink:0; gap:5px; margin:0; padding:0; list-style:none; }
+.area-steps li { display:grid; place-items:center; width:26px; height:26px; border:1px solid #606773; color:#b0b6bf; font-size:12px; border-radius:4px; }
+.area-steps .current { color:#211d15; background:var(--accent); border-color:var(--accent); font-weight:800; }
+.area-steps .done { color:#a8ddbb; border-color:#70a88a; }
+.start-area { color:var(--accent); font-size:12px; margin:6px 0 12px; }
+@media(max-width:660px) {
+  .area-guide { padding:9px 10px; gap:8px; }
+  .area-guide strong { font-size:12px; }
+  .area-guide span { font-size:11px; }
+  .area-steps { gap:3px; }
+  .area-steps li { width:22px; height:22px; font-size:11px; }
+}

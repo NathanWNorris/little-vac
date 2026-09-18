@@ -1,6 +1,25 @@
 # Sweep Shift validation
 
-Current local candidate: **1.1.2**. See the [second deep audit](docs/AUDIT-1.1.2.md) for the new control and transition fixes, research-informed UI changes, full deep verification, and 144-run build matrix at 120 Hz. The itch.io draft still contains **1.1.0** and was not updated during this change. The sections below retain prior-version evidence.
+Current local candidate: **1.4.0**. Earlier sections below are historical evidence.
+
+## Version 1.4.0 — connected areas and full cleaning
+
+The local campaign now contains 50 distinct areas across 24 jobs. Rooms 1–8 have one area, 9–17 have two, 18–21 have three, and 22–24 have four. Every area has one dock. The initial job starts parked; internal doorways keep the same canvas, steering gesture, job time, and provisional coins. A right-hand exit leads to a left-hand entrance at matching height.
+
+All pieces must be physically collected before an area clears. Focused regressions verify that 95% and 99.9995% remain incomplete. Dust and stuck debris resistance rises from 1 to 2.6 across the campaign; upgrades reduce collection time without making any build mandatory. Faint residual dust retains its golden locator ring.
+
+Verification on 2026-09-18:
+
+- Syntax; 16 progression, 17 input, 10 store, and 34 app-orchestration groups passed.
+- 50 unique campaign layouts, 240 alternate campaign seeds, and 1,000 Endless layouts passed connectivity, entrance alignment, one-dock, material reachability, and deterministic generation checks.
+- All 24 jobs / 50 areas completed using ordinary simulated movement and earned upgrades. Every pickup was physical, with zero automatic cleanup. Total simulated campaign time: 2,036.35 seconds; this is not human playtime.
+- Deep checks completed the entire campaign with starter stats, 40 additional Endless rooms, and 86,400 random-movement frames.
+- The 120 Hz matrix completed 144 campaign runs across starter, width-only, bag-only, speed-only, suction-only, and maximum builds, plus nine Endless seed inputs.
+- UI lifecycle tests verify doorway input continuity (keyboard and held touch), no intermediate reward or upgrade access, whole-job restart/quit behavior, and fresh click/WASD activation only at the start of a job.
+- An isolated browser preview confirmed the 100% instructions, late-job counter, initial dock gate, and no console warnings/errors. Original two-area browser play checked an opened exit and progression into the next area before the final seamless-entry revision. The final revision's transition behavior is covered by the real simulation and app tests above, not claimed as a full manual replay.
+- A static browser gallery visually checked final left entrances, right exits, arrows around furniture, and greenhouse/rooftop artwork. Static fixtures are visual checks, not completed playthroughs.
+
+Bronze completion without treasures or replays earns 17,926 coins and can buy all 20 upgrade ranks by room 21. The earlier career format is unchanged. Existing progress and purchases remain valid. The local release ZIP is verified in RELEASE.md; no public upload occurred.
 
 ## Previous 1.1.1 candidate
 

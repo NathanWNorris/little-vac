@@ -1,22 +1,25 @@
-# Sweep Shift 1.3.1 local release candidate
+# Sweep Shift 1.4.0 local release candidate
 
-The current **1.3.1** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.4.0** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **51,829 bytes**.
-- SHA-256: **721fffbdb078df7d635fdf29eec47c474f3b031db4df223321f159c421c9dc60**.
+- Size: **57,814 bytes**.
+- SHA-256: **8f355e5841b19dea9dd00954d678c578e1c51103727c27ae8b20f789e989c89a**.
 - All source, archive, and extracted hashes match.
-- Syntax and standard verification passed: 16 progression, 17 input, 10 store, and 30 app groups; 1,000 generated layouts; 24 earned-upgrade campaign completions; 3 Endless completions; replay. All campaign and sampled Endless starts match the first dock exactly.
-- Isolated browser checks confirmed the vacuum stays at dock coordinates (100, 540), time 0, and 0% clean while waiting. A physical D-key event activated the room; ordinary movement then left the dock. Restart returned to the dock and waited at time 0 again. Clicking the room itself also activated it. No browser errors or warnings were reported.
-- The previous 1.3.0 art check drew all 24 campaign rooms plus one Endless room per district in an isolated browser gallery: 28/28 rendered, zero errors. Visual review covered all four settings, furniture silhouettes, cutouts, debris contrast, and readable docks.
-- Previous 1.3.0 live browser checks covered starting and cleaning in Arcade and Greenhouse, starting Rooftop, between-room navigation, and the new room list. Mouse/WASD instructions fit a 320×640 viewport with the Start button visible and no internal or horizontal scrolling. No browser errors or warnings were reported.
-- The previous 1.2.2 checks covered click/Space activation and restart readiness; all 28 app regression groups passed again. The 1.2.1 audit covered a deeper campaign matrix and full room-13/room-1 browser runs. The entire campaign was not manually replayed for this art update.
-- Existing v1 saves migrate consistently without losing progress. Player save data was not used for testing or reset.
+- Syntax, standard, deep, and 144-run upgrade-build verification passed. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-See [the previous deep audit](docs/AUDIT-1.2.1.md) for earlier evidence and limits. Phone layout checks used browser viewports, not physical devices. Touch start-and-drag behavior is covered by the input/app tests; a physical touchscreen was not tested.
+## What changed in 1.4.0
+
+- 24 campaign jobs now contain **50 different areas**. From room 9 onward, jobs expand from two connected areas to four.
+- Clean **100%** to open the next-area door or finish. No leftover dirt is automatically collected; golden rings reveal even very faint remaining dust.
+- Follow the amber arrow into the right-hand door and continue from the left side of the next area. Mouse, held keyboard, and touch controls stay active; there is no internal Start screen.
+- Exactly **one dock per area**, including Endless. New jobs still begin parked until a left click or WASD.
+- Later dust and stuck scraps resist suction more strongly. Suction upgrades clear them faster; every build remains capable of finishing.
+- Area counters, door guidance, whole-job medal targets, and descriptions explain the new rules. Coins are saved and upgrades reopen only after the final area; quitting/restarting loses the whole unfinished job's pending coins.
+- Closed doors render beneath dirt and do not cover it with a sign. The only treasure in a connected job is in its final area.
 
 ## What changed in 1.3.1
 

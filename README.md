@@ -2,28 +2,30 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.3.1** starts the vacuum parked in the drop-off dock. Mouse hovering cannot start a new room: left-click inside the room or press WASD / an arrow key to begin. Time and suction stay stopped until then. The four themed environments and prominent steering reminders from 1.3.0 remain. See the [previous deep audit](docs/AUDIT-1.2.1.md), [1.2.0 redesign](docs/REDESIGN-1.2.0.md), and historical [playtest results](PLAYTEST.md).
+Version **1.4.0** expands the campaign to **50 distinct areas across 24 jobs**. Rooms 1–8 stay small; rooms 9–17 have two areas, 18–21 have three, and 22–24 have four. Clear an area to open its marked doorway, then follow the arrow into the next. Later dust and stuck leaves take more suction, with fixed difficulty that stronger upgrades make faster. Each job begins parked at its dock and waits for a left click or WASD; connected areas continue seamlessly through opposite doorways. Every area has one dock and requires 100% cleaning.
 
 Sweep Shift is a browser game about a vacuum robot cleaning messy rooms. Collect debris, dock to empty the bag, and spend earned coins on upgrades.
 
-The campaign has 24 authored rooms across a workshop, an after-hours arcade, a greenhouse, and a rooftop party. Finish the campaign to unlock Endless Shift: reproducible generated rooms that can be revisited using a seed.
+The campaign has 24 jobs with 50 authored areas across a workshop, an after-hours arcade, a greenhouse, and a rooftop party. Finish the campaign to unlock Endless Shift: reproducible generated rooms that can be revisited using a seed.
 
 - **Workshop:** wood floors, tools, workbenches, and sawdust.
 - **After-Hours Arcade:** dark patterned carpet, neon cabinets, game screens, and leftover tickets.
 - **Greenhouse:** glass framing, plant beds, potting benches, soil, and fallen leaves.
 - **Rooftop Party:** a deck above the city, railings, string lights, lounge furniture, and confetti.
 
-Endless rooms use the same location artwork. Decorative scenery is kept outside the walkable floor or within existing furniture footprints; room paths and collision geometry are unchanged.
+Endless rooms use the same location artwork. Decorative scenery is kept outside the walkable floor or within existing furniture footprints; each area has its own connected, walkable floor plan.
 
 ## Play
 
-- Every room starts **parked in the drop-off dock**. **Left-click inside the room**, or press **WASD / an arrow key** to start and steer. Mouse hovering, held-key repeats from a previous room, and unrelated keys cannot start it. The focused Start button also supports Enter / Space.
+- Every new job starts **parked in the drop-off dock**. **Left-click inside the room**, or press **WASD / an arrow key** to start and steer. Mouse hovering, held-key repeats from a previous room, and unrelated keys cannot start it. The focused Start button also supports Enter / Space.
 - After starting, move with **WASD or the arrow keys**, or **move your mouse over the room** and the robot follows it. No holding is needed; leaving the play area stops mouse steering.
 - On a touchscreen, **tap to start**, then **drag to steer** with the movement joystick or room.
-- Suction is automatic. Park beside a **collection station** to empty the bag automatically.
+- Suction is automatic. Each area has **one collection station**. Park beside it to empty the bag automatically.
 - A full bag stops suction, but the robot can still move normally.
 - Optional keepsakes go to their own collection shelf, even when the dirt bag is full.
-- Clean **95%** of a room to trigger its finishing sweep. The remaining scraps and everything in the bag are paid automatically.
+- Clean **100%** of an area. Every piece must be collected; none are swept away automatically. Golden rings help locate the remaining dirt. In later rooms, follow the amber arrow through the **NEXT AREA** doorway on the right and enter the next area from the left. Mouse, keyboard, and touch control continue without another Start screen.
+- A job’s coins remain pending until **every area** is complete. Quitting or restarting discards all its unfinished areas and coins. The optional treasure is in the final area.
+- Later dust and stuck leaves need steady suction. Stronger suction clears them faster; no upgrade is mandatory. Medal targets include the whole job.
 - Press **Escape** or use **Pause** for a break. Sound and reduced motion are available in Settings.
 - Choose **Pause → How to play** to reopen the controls and rules in any room.
 

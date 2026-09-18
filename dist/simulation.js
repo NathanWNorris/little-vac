@@ -1,7 +1,15 @@
 import {isWalkable} from './rooms.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function createRun(room,stats,runId='run-'+Date.now()) {
-  return {room,stats:{...stats},runId,phase:'playing',robot:{...room.spawn,angle:0,move:0,bag:0,bagValue:0,squash:0},debris:room.debris.map((d,i)=>({...d,vx:0,vy:0,angle:i*2.39996,amount:1,collected:false,progress:0,loose:d.type!=='stuck'})),trinket:{...room.trinket,collected:false},cleaned:0,total:room.debris.length,percent:0,coins:0,time:0,unloading:0,nearestStation:0,full:false,finishProgress:0,particles:[],events:[],collectedCount:0,pickupCooldown:0,fullNotified:false};
+  const areas=[room,...(room.nextAreas||[])];
+  const run={jobRoom:room,stats:{...stats},runId,areaIndex:0,areaCount:areas.length,jobTotal:areas.reduce((sum,area)=>sum+area.debris.length,0),coins:0,time:0,events:[],collectedCount:0};
+  enterArea(run,room);
+  return run;
+}
+function enterArea(r,room) {
+  const position=r.areaIndex>0&&room.entry?room.entry:room.spawn;
+  Object.assign(r,{room,phase:'playing',robot:{...position,angle:0,move:0,bag:0,bagValue:0,squash:0},debris:room.debris.map((d,i)=>({...d,resistance:Number.isFinite(d.resistance)?Math.max(1,d.resistance):1,vx:0,vy:0,angle:i*2.39996,amount:1,collected:false,progress:0,loose:d.type!=='stuck'})),trinket:{...room.trinket,collected:false},cleaned:0,total:room.debris.length,percent:0,unloading:0,nearestStation:0,full:false,finishProgress:0,particles:[],pickupCooldown:0,fullNotified:false});
+  // Connected areas continue through the opposite doorway without a new start gate.
 }
 export function clearLine(room,ax,ay,bx,by) {
   if(![ax,ay,bx,by].every(Number.isFinite)||!isWalkable(room,ax,ay,2)||!isWalkable(room,bx,by,2))return false;
@@ -23,16 +31,17 @@ export function clearLine(room,ax,ay,bx,by) {
 function burst(r,x,y,color,count=4) {
   for(let i=0;i<count&&r.particles.length<110;i++){let a=(i*2.4+r.time)*3,s=20+(i%4)*12;r.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.45,maxLife:.45,color,size:2+i%3});}
 }
-function finish(r) {
-  r.phase='finishing'; r.coins+=r.robot.bagValue; r.robot.bag=0;r.robot.bagValue=0;r.unloading=0;
-  for(const d of r.debris)if(!d.collected){r.coins+=d.value;d.collected=true;d.amount=0;}
-  r.cleaned=r.total;r.percent=1;r.full=false;r.events.push({type:'finish',value:r.coins});
+function finishArea(r) {
+  r.coins+=r.robot.bagValue; r.robot.bag=0;r.robot.bagValue=0;r.unloading=0;
+  r.cleaned=r.total;r.percent=1;r.full=false;
+  if(r.areaIndex<r.areaCount-1){r.phase='exiting';r.events.push({type:'area-clear',areaIndex:r.areaIndex,value:r.coins});}
+  else {r.phase='finishing';r.events.push({type:'finish',value:r.coins});}
 }
 export function step(r,dt,input={x:0,y:0}) {
   dt=clamp(Number.isFinite(dt)?dt:0,0,.05); if(!dt)return;
+  if(r.started===false||!['playing','exiting','finishing'].includes(r.phase))return;
   for(const p of r.particles){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=40*dt;}
   r.particles=r.particles.filter(p=>p.life>0);r.robot.squash=Math.max(0,r.robot.squash-dt*5);
-  if(r.phase==='complete')return;
   if(r.phase==='finishing'){r.finishProgress+=dt/1.2;if(r.finishProgress>=1){r.finishProgress=1;r.phase='complete';}return;}
   r.time+=dt;r.pickupCooldown=Math.max(0,r.pickupCooldown-dt);
   let ix=Number.isFinite(input.x)?input.x:0,iy=Number.isFinite(input.y)?input.y:0,m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m;}
@@ -41,6 +50,15 @@ export function step(r,dt,input={x:0,y:0}) {
   if(isWalkable(r.room,b.x,b.y+dy,17))b.y+=dy;
   b.move=Math.hypot(b.x-oldX,b.y-oldY)/dt;
   if(b.move>3){const target=Math.atan2(b.y-oldY,b.x-oldX);let diff=Math.atan2(Math.sin(target-b.angle),Math.cos(target-b.angle));b.angle+=diff*Math.min(1,dt*14);}
+  if(r.phase==='exiting'){
+    const exit=r.room.exit;
+    if(exit&&b.move>0&&Math.hypot(exit.x-b.x,exit.y-b.y)<28){
+      r.areaIndex++;
+      enterArea(r,r.jobRoom.nextAreas[r.areaIndex-1]);
+      r.events.push({type:'area-enter',areaIndex:r.areaIndex,areaName:r.room.areaName});
+    }
+    return;
+  }
   let nearest=Infinity;r.room.stations.forEach((s,i)=>{let d=Math.hypot(s.x-b.x,s.y-b.y);if(d<nearest){nearest=d;r.nearestStation=i;}});
   if(nearest<48&&b.bag>0){
     r.unloading=Math.min(1,r.unloading+dt/0.85);
@@ -54,12 +72,12 @@ export function step(r,dt,input={x:0,y:0}) {
       let tx=b.x-d.x,ty=b.y-d.y,dist=Math.hypot(tx,ty),near=dist<r.stats.radius&&clearLine(r.room,b.x,b.y,d.x,d.y);
       if(near&&b.bag<r.stats.capacity){
         if(d.type==='dust'){
-          const before=d.amount;d.amount=Math.max(0,d.amount-dt*1.9*r.stats.pull);
+          const before=d.amount;d.amount=Math.max(0,d.amount-dt*1.9*r.stats.pull/d.resistance);
           if(d.amount<=.00001)d.amount=0;
           r.cleaned+=before-d.amount;
           if(d.amount>0)continue;
         } else if(d.type==='stuck'&&!d.loose){
-          d.progress+=dt*r.stats.pull/.55;if(d.progress<1)continue;d.loose=true;burst(r,d.x,d.y,'#b7c36c',3);
+          d.progress+=dt*r.stats.pull/(.55*d.resistance);if(d.progress<1)continue;d.loose=true;burst(r,d.x,d.y,'#b7c36c',3);
         }
         if(d.type!=='dust'){
           const acceleration=410*r.stats.pull*(1+.35*(1-dist/r.stats.radius));
@@ -79,7 +97,7 @@ export function step(r,dt,input={x:0,y:0}) {
   }
   // Keepsakes have their own collection shelf; a full dirt bag does not block them.
   const t=r.trinket;
-  if(!t.collected&&Math.hypot(t.x-b.x,t.y-b.y)<30&&clearLine(r.room,t.x,t.y,b.x,b.y)){t.collected=true;r.events.push({type:'trinket'});burst(r,t.x,t.y,'#ffdf78',10);}
+  if(!t.hidden&&!t.collected&&Math.hypot(t.x-b.x,t.y-b.y)<30&&clearLine(r.room,t.x,t.y,b.x,b.y)){t.collected=true;r.events.push({type:'trinket'});burst(r,t.x,t.y,'#ffdf78',10);}
   // Loose pieces always remain on reachable floor; fans never create new dirt.
   for(const d of r.debris)if(!d.collected&&d.type!=='dust'&&d.loose){
     for(const f of r.room.fans||[])if(d.x>=f.x&&d.x<=f.x+f.w&&d.y>=f.y&&d.y<=f.y+f.h){d.vx+=f.dx*f.strength*dt*(d.type==='confetti'?1:.3);d.vy+=f.dy*f.strength*dt*(d.type==='confetti'?1:.3);}
@@ -90,10 +108,10 @@ export function step(r,dt,input={x:0,y:0}) {
     const friction=Math.exp(-dt*4.2);d.vx*=friction;d.vy*=friction;d.angle+=dt*(d.vx-d.vy)*.022;
   }
   r.percent=clamp(r.cleaned/r.total,0,1);r.full=b.bag>=r.stats.capacity;
-  // Summed dust fractions can land a few rounding bits below exactly 95%.
-  if(r.percent>=.95-1e-12)finish(r);
+  // Completion requires real pickups; rounded percentages never sweep away stragglers.
+  if(r.debris.every(d=>d.collected))finishArea(r);
 }
 export function runResult(r) {
-  if(r.phase!=='complete')return null;
-  return {runId:r.runId,roomId:r.room.id,coins:r.coins,time:Math.round(r.time*100)/100,medal:r.time<=r.room.goldTime?3:r.time<=r.room.silverTime?2:1,trinket:r.trinket.collected};
+  if(r.phase!=='complete'||r.areaIndex!==r.areaCount-1)return null;
+  return {runId:r.runId,roomId:r.jobRoom.id,coins:r.coins,time:Math.round(r.time*100)/100,medal:r.time<=r.jobRoom.goldTime?3:r.time<=r.jobRoom.silverTime?2:1,trinket:r.trinket.collected};
 }

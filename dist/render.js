@@ -1,9 +1,10 @@
 /* Original Canvas artwork for Sweep Shift. No downloaded art, fonts, or assets. */
-import { LOCATIONS } from './rooms.js';
+import { LOCATIONS, isWalkable } from './rooms.js';
 const W = 960, H = 640, CELL = 40;
 const PALETTES = LOCATIONS.map(location => location.palette);
 const CONFETTI = ['#ed826e', '#f6d570', '#c4f2df', '#76cbd2', '#fcf0d7'];
 const cache = new WeakMap();
+const exitPaths = new WeakMap();
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const noise = (a, b = 0) => { const n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return n - Math.floor(n); };
 
@@ -419,21 +420,34 @@ function debris(ctx, d, loc, time, still) {
   if (d.collected || d.amount <= 0) return;
   const id = typeof d.id === 'number' ? d.id : Math.round(d.x * 17 + d.y), variation = noise(id);
   const angle = Number.isFinite(d.angle) ? d.angle : variation * 6.28;
+  const weight = clamp(((d.resistance ?? 1) - 1) / 1.6, 0, 1);
   ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(angle);
   if (d.type === 'dust') {
     ctx.globalAlpha = clamp(d.amount ?? 1, 0, 1) * .77;
     const color = loc === 1 ? '#cab6da' : loc === 2 ? '#6e7050' : '#766046';
-    const r = 10 + variation * 6;
+    const r = 10 + variation * 6 + weight * 2;
     const grad = ctx.createRadialGradient(0, 0, r * .25, 0, 0, r);
     grad.addColorStop(0, color + 'aa'); grad.addColorStop(.6, color + '70'); grad.addColorStop(1, color + '00');
     ctx.fillStyle = grad; ctx.beginPath(); ctx.ellipse(0, 0, r, r * .74, 0, 0, Math.PI * 2); ctx.fill();
-    for (let n = 0; n < 4; n++) circle(ctx, (noise(id, n + 4) - .5) * r * 1.2, (noise(id, n + 9) - .5) * r, .9 + noise(id, n + 15), color + '66');
+    for (let n = 0; n < 4 + Math.floor(weight * 5); n++) circle(ctx, (noise(id, n + 4) - .5) * r * 1.2, (noise(id, n + 9) - .5) * r, .9 + noise(id, n + 15) + weight * .4, color + (weight > .3 ? '99' : '66'));
+    if (weight > .3) {
+      // Compacted dirt has a darker, cracked center. All of it fades with the
+      // real remaining amount, so the tougher patch still shows its progress.
+      ctx.strokeStyle = color + '88'; ctx.lineWidth = .9 + weight * .4;
+      ctx.beginPath(); ctx.moveTo(-4, -2); ctx.lineTo(0, 1); ctx.lineTo(4, -2); ctx.moveTo(0, 1); ctx.lineTo(-1, 5); ctx.stroke();
+    }
   } else if (d.type === 'confetti') {
     const color = CONFETTI[Math.floor(variation * CONFETTI.length)];
     const flutter = still ? 1 : .75 + Math.sin(time * 5 + id) * .25;
     box(ctx, -2, -4, 5, 9, 1, '#24384125');
     ctx.scale(flutter, 1); box(ctx, -3, -5, 5, 9, .8, color); line(ctx, -2, -4, 1, -3, '#fff9ee77', 1);
   } else if (d.type === 'stuck') {
+    if (weight > .2 && !d.loose) {
+      // The fastening ring disappears as the scrap loosens; it is not another
+      // collectible or a second progress meter covering the actual scrap.
+      ctx.strokeStyle = loc === 1 ? '#e3c29690' : '#68533899'; ctx.lineWidth = 1 + weight;
+      ctx.beginPath(); ctx.arc(0, 0, 10 + weight * 2, -.5 * Math.PI + clamp(d.progress || 0, 0, 1) * Math.PI * 2, Math.PI * 1.5); ctx.stroke();
+    }
     const pulling = Math.hypot(d.vx || 0, d.vy || 0) > 1 || (d.progress || 0) > 0 || (d.amount ?? 1) < 1;
     if (pulling && !still) ctx.rotate(Math.sin(time * 35 + id) * .13);
     if (loc === 2) {
@@ -458,7 +472,7 @@ function debris(ctx, d, loc, time, still) {
   ctx.restore();
 }
 function trinket(ctx, t, time, still) {
-  if (!t || t.collected) return;
+  if (!t || t.hidden || t.collected) return;
   const bob = still ? 0 : Math.sin(time * 2.5) * 2;
   const glow = ctx.createRadialGradient(t.x, t.y, 2, t.x, t.y, 24);
   glow.addColorStop(0, '#fff0a26b'); glow.addColorStop(1, '#fff0a200');
@@ -556,12 +570,142 @@ function remainingDebrisHints(ctx, run) {
   // These outlines are static and drawn only for real, still-collectible debris.
   ctx.save();
   for (const d of run.debris) {
-    if (d.collected || (d.amount ?? 1) <= .05) continue;
+    if (d.collected || (d.amount ?? 1) <= 0) continue;
     const radius = d.type === 'dust' ? 17 : d.type === 'crumb' ? 7.5 : 10;
     circle(ctx, d.x, d.y, radius, '#ffe89a1c');
     ctx.beginPath(); ctx.arc(d.x, d.y, radius, 0, Math.PI * 2);
     ctx.strokeStyle = '#fff1afa8'; ctx.lineWidth = 2.8; ctx.stroke();
     ctx.strokeStyle = '#a7833dc7'; ctx.lineWidth = .9; ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function clearRouteSegment(room, from, to) {
+  const steps = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) / 6));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    if (!isWalkable(room, from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t, 18)) return false;
+  }
+  return true;
+}
+function exitRoute(room, robot) {
+  const door = room.exit;
+  if (!door) return [];
+  const cols = room.grid[0].length, rows = room.grid.length;
+  let data = exitPaths.get(room);
+  if (!data) {
+    // A reverse breadth-first search is computed once per area. Arrows follow
+    // its open floor cells instead of sending players through the furniture.
+    const next = new Int16Array(cols * rows).fill(-1), queue = [];
+    const end = Math.floor(door.y / CELL) * cols + Math.floor(door.x / CELL);
+    next[end] = end; queue.push(end);
+    for (let head = 0; head < queue.length; head++) {
+      const cell = queue[head], x = cell % cols, y = Math.floor(cell / cols);
+      for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, index = ny * cols + nx;
+        if (nx < 0 || nx >= cols || ny < 0 || ny >= rows || next[index] !== -1 || !isWalkable(room, nx * CELL + CELL / 2, ny * CELL + CELL / 2, 18)) continue;
+        next[index] = cell; queue.push(index);
+      }
+    }
+    data = { next, end, start: -1, points: [] }; exitPaths.set(room, data);
+  }
+  const start = Math.floor(robot.y / CELL) * cols + Math.floor(robot.x / CELL);
+  if (start !== data.start) {
+    data.start = start; data.points = [];
+    if (data.next[start] >= 0) {
+      let cell = start;
+      for (let count = 0; count < cols * rows; count++) {
+        data.points.push({ x: (cell % cols) * CELL + CELL / 2, y: Math.floor(cell / cols) * CELL + CELL / 2 });
+        if (cell === data.end) break;
+        cell = data.next[cell];
+      }
+      data.points.push({ x: door.x, y: door.y });
+    }
+  }
+  return data.points;
+}
+function exitGuidance(ctx, run, time, still) {
+  const route = exitRoute(run.room, run.robot);
+  if (!route.length) return;
+  // Smooth only the first few steps, and only when the vacuum itself fits on
+  // that line. This stops a diagonal arrow clipping the corner of a cabinet.
+  let first = 0;
+  for (let i = 0; i < Math.min(route.length, 5); i++) {
+    if (clearRouteSegment(run.room, run.robot, route[i])) first = i;
+  }
+  const target = route[first], dx = target.x - run.robot.x, dy = target.y - run.robot.y, distance = Math.hypot(dx, dy);
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(run.robot.x, run.robot.y);
+  let last = run.robot, length = 0;
+  for (let i = first; i < route.length; i++) {
+    const point = route[i], segment = Math.hypot(point.x - last.x, point.y - last.y);
+    if (length + segment > 220) {
+      const portion = (220 - length) / Math.max(1, segment);
+      ctx.lineTo(last.x + (point.x - last.x) * portion, last.y + (point.y - last.y) * portion); break;
+    }
+    ctx.lineTo(point.x, point.y); length += segment; last = point;
+  }
+  ctx.strokeStyle = '#493a2199'; ctx.lineWidth = 4; ctx.setLineDash([3, 10]); ctx.stroke();
+  ctx.strokeStyle = '#ffdd7d'; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+  if (distance > 28) {
+    const angle = Math.atan2(dy, dx), reach = Math.min(distance - 4, 51 + (still ? 0 : Math.sin(time * 3) * 3));
+    ctx.translate(run.robot.x + Math.cos(angle) * reach, run.robot.y + Math.sin(angle) * reach); ctx.rotate(angle);
+    ctx.beginPath(); ctx.moveTo(-9, -8); ctx.lineTo(0, 0); ctx.lineTo(-9, 8);
+    ctx.strokeStyle = '#493a21'; ctx.lineWidth = 7; ctx.stroke();
+    ctx.strokeStyle = '#ffe499'; ctx.lineWidth = 3.5; ctx.stroke();
+  }
+  ctx.restore();
+}
+function areaEntry(ctx, room) {
+  const door = room.entry;
+  if (!door) return;
+  // The matching left-hand doorway marks where this area was entered. It stays
+  // quiet and beneath the dirt; only the outgoing doorway gets a glowing cue.
+  ctx.save();
+  box(ctx, door.x - 36, door.y - 33, 25, 66, 4, '#243139');
+  box(ctx, door.x - 31, door.y - 29, 15, 58, 2, '#384542');
+  line(ctx, door.x - 13, door.y - 32, door.x - 13, door.y + 32, '#a2aba3', 3);
+  line(ctx, door.x - 8, door.y, door.x + 10, door.y, '#d0d6bf70', 2);
+  line(ctx, door.x + 4, door.y - 5, door.x + 10, door.y, '#d0d6bf70', 2);
+  line(ctx, door.x + 4, door.y + 5, door.x + 10, door.y, '#d0d6bf70', 2);
+  ctx.restore();
+}
+function areaDoor(ctx, run, time, still) {
+  const door = run.room.exit;
+  if (!door) return;
+  const open = run.phase === 'exiting', color = open ? '#ffdb83' : '#bac0ad';
+  ctx.save();
+  if (open) {
+    const pulse = still ? .6 : .5 + Math.sin(time * 3) * .5;
+    circle(ctx, door.x, door.y, 31, `rgba(255,216,116,${.13 + pulse * .1})`);
+    ctx.strokeStyle = '#ffdf90'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(door.x, door.y, 28, 0, Math.PI * 2); ctx.stroke();
+  }
+  // A narrow frame on the far side leaves the arrival circle visible and
+  // clearly walkable; its amber floor arrow is the actual destination.
+  box(ctx, door.x + 11, door.y - 33, 25, 66, 4, '#243139');
+  box(ctx, door.x + 16, door.y - 29, 15, 58, 2, open ? '#493b26' : '#69716b');
+  line(ctx, door.x + 13, door.y - 32, door.x + 13, door.y + 32, color, 3);
+  if (open) {
+    line(ctx, door.x - 13, door.y, door.x + 13, door.y, color, 4);
+    line(ctx, door.x + 5, door.y - 8, door.x + 13, door.y, color, 4);
+    line(ctx, door.x + 5, door.y + 8, door.x + 13, door.y, color, 4);
+  } else {
+    box(ctx, door.x + 18, door.y - 1, 10, 9, 2, '#d0d0b7');
+    ctx.strokeStyle = '#d0d0b7'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(door.x + 23, door.y - 2, 3.5, Math.PI, 0); ctx.stroke();
+  }
+  if (open) {
+    const labelWidth = 132, labelX = clamp(door.x + 30 - labelWidth, 44, W - labelWidth - 44), labelY = clamp(door.y - 66, 44, H - 92);
+    box(ctx, labelX, labelY, labelWidth, 25, 5, '#302b20');
+    ctx.font = 'bold 12px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = color;
+    ctx.fillText('NEXT AREA  →', labelX + labelWidth / 2, labelY + 13);
+    if (door.nextName) {
+      const caption = String(door.nextName);
+      box(ctx, labelX, labelY - 20, labelWidth, 19, 4, '#302b20e6');
+      ctx.font = '10px system-ui, sans-serif'; ctx.fillStyle = '#f8edcb';
+      ctx.fillText(caption, labelX + labelWidth / 2, labelY - 10, labelWidth - 10);
+    }
   }
   ctx.restore();
 }
@@ -579,12 +723,18 @@ export function render(ctx, run, options = {}) {
   ctx.restore();
   const fill = run.robot.bag / Math.max(1, run.stats.capacity);
   run.room.stations.forEach((s, i) => station(ctx, s, fill >= .8 && i === run.nearestStation, run.unloading > 0 && i === run.nearestStation, time, still));
+  areaEntry(ctx, run.room);
+  if (run.phase !== 'exiting') areaDoor(ctx, run, time, still);
   remainingDebrisHints(ctx, run);
   for (const d of run.debris) if (d.type === 'dust') debris(ctx, d, run.room.location, time, still);
   suction(ctx, run, time, still);
   for (const d of run.debris) if (d.type !== 'dust') debris(ctx, d, run.room.location, time, still);
   trinket(ctx, run.trinket, time, still);
-  if (options.pointer && run.phase === 'playing') {
+  if (run.phase === 'exiting') {
+    ctx.save(); ctx.clip(background.floorPath); exitGuidance(ctx, run, time, still); ctx.restore();
+    areaDoor(ctx, run, time, still);
+  }
+  if (options.pointer && ['playing', 'exiting'].includes(run.phase)) {
     const p = options.pointer;
     ctx.strokeStyle = '#fffcdf9a'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI * 2); ctx.stroke();

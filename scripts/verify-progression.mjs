@@ -161,7 +161,7 @@ test('all 24 rooms unlock in order; actual bronze room earnings fund all 20 rank
     assert.equal(isRoomUnlocked(career, id + 1), false);
     assert.equal(selectShell(career, 'sky').ok, false);
     const room = makeRoom(id);
-    const actualCoins = room.debris.reduce((sum, piece) => sum + piece.value, 0);
+    const actualCoins = [room,...room.nextAreas].reduce((sum, area) => sum + area.debris.reduce((value, piece) => value + piece.value, 0), 0);
     const award = settleRun(career, result(id, { coins: actualCoins, time: room.silverTime + 60, medal: 1, trinket: false }));
     assert.equal(award.ok, true);
     earned += award.coins;
@@ -213,7 +213,7 @@ test('campaign completion does not require upgrades, medal targets, or optional 
   const collector = defaultCareer();
   for (let id = 1; id <= 24; id++) {
     const room = makeRoom(id);
-    const actualCoins = room.debris.reduce((sum, piece) => sum + piece.value, 0);
+    const actualCoins = [room,...room.nextAreas].reduce((sum, area) => sum + area.debris.reduce((value, piece) => value + piece.value, 0), 0);
     for (const [career, trinket] of [[plain, false], [collector, true]]) {
       assert.equal(isRoomUnlocked(career, id), true);
       assert.equal(settleRun(career, result(id, { coins: actualCoins, time: room.silverTime + 600, medal: 1, trinket })).ok, true);

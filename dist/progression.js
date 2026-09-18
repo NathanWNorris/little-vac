@@ -14,7 +14,7 @@ export const UPGRADES = Object.freeze([
   Object.freeze({ key: 'width', name: 'Wider sweep', description: 'Reach more debris on each pass.' }),
   Object.freeze({ key: 'bag', name: 'Bigger bag', description: 'Collect more between station visits.' }),
   Object.freeze({ key: 'speed', name: 'Quicker wheels', description: 'Move around the room faster.' }),
-  Object.freeze({ key: 'pull', name: 'Stronger suction', description: 'Pull scraps faster and loosen stuck debris sooner.' }),
+  Object.freeze({ key: 'pull', name: 'Stronger suction', description: 'Clear heavy dust and loosen stuck leaves faster.' }),
 ]);
 
 export const SHELLS = Object.freeze([
