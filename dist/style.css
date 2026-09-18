@@ -604,6 +604,7 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
 .upgrade-card>button {
   font-size:12px;
   padding:10px 7px;
+  margin-top:auto;
   width:100%
 }
 .shell-row {
@@ -1068,12 +1069,20 @@ dialog:has(.how-to-play) {
   font-size:13px;
   text-align:left
 }
-.ending-garden {
-  font-size:45px;
-  letter-spacing:8px;
+.ending-stamp {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  width:174px;
+  min-height:132px;
+  margin:30px auto;
+  border:4px double currentColor;
   color:var(--accent);
-  margin:20px 0
+  transform:rotate(-4deg)
 }
+.ending-stamp strong {font-family:var(--heading-font);font-size:58px;line-height:1.1}
+.ending-stamp strong span {font-size:30px}
+.ending-stamp>span {font:700 11px/1.6 'Courier New',monospace;letter-spacing:1px}
 .seed-form {
   display:flex;
   gap:10px;

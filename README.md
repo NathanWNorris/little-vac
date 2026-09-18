@@ -2,7 +2,9 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.6.0** connects later areas with walkable hallways and a smoothly following camera. A physical gate says **LOCKED — Clean this area to 100% to open**. Once unlocked, the hallway stays open in both directions. Previous rooms retain their cleaned floor, dirt, and treasures; the bag and its coin value travel with the vacuum. You can return to an earlier dock without losing or duplicating earnings. Yellow edge arrows point toward the last few dirt pieces if they are outside the camera view.
+Version **1.6.1** follows a full campaign and hallway audit with clearer saving instructions, simpler upgrade cards, and a paper completion stamp in the ending. Coins save when the whole job is finished. The simulation and save format are unchanged.
+
+Later areas connect through walkable hallways with a smoothly following camera. A physical gate says **LOCKED — Clean this area to 100% to open**. Once unlocked, the hallway stays open in both directions. Previous rooms retain their cleaned floor, dirt, and treasures; the bag and its coin value travel with the vacuum. You can return to an earlier dock without losing or duplicating earnings. Yellow edge arrows point toward the last few dirt pieces if they are outside the camera view.
 
 The play screen keeps one compact bar: **clean percentage, bag space, and Pause**. Pause contains Rooms, Upgrades, and optional job/coin details. Every screen keeps the cream/red workshop theme and each location its distinct artwork. Opening Upgrades during a job asks once: **Keep playing** or **Quit & upgrade**. Help and Settings opened from Pause return there; Main menu keeps the unfinished job paused.
 
@@ -24,22 +26,22 @@ Endless rooms use the same location artwork. Decorative scenery is kept outside 
 - Every new job starts **parked in the drop-off dock**. **Left-click inside the room**, or press **WASD / an arrow key** to start and steer. Mouse hovering, held-key repeats from a previous room, and unrelated keys cannot start it. The focused Start button also supports Enter / Space.
 - After starting, move with **WASD or the arrow keys**, or **move your mouse over the room** and the robot follows it. No holding is needed; leaving the play area stops mouse steering.
 - On a touchscreen, **tap the Start button**, then **drag to steer** with the movement joystick or room. Swiping the instructions scrolls them without starting the job.
-- Suction is automatic. Each area has **one collection station**. Park beside it to empty the bag automatically.
-- A full bag stops suction, but the robot can still move normally. Follow the green arrow to the drop-off dock. Bag contents and their coin value carry through internal doorways; clearing an area does not empty the bag. The HUD shows the value still in your bag.
+- Suction is automatic. Each area has **one drop-off dock**. Park beside it to empty the bag automatically.
+- A full bag stops suction, but the robot can still move normally. Follow the green arrow to the drop-off dock. Bag contents and their coin value carry through internal doorways; clearing an area does not empty the bag. **Pause → Job details & coins** shows the value still in your bag and the whole job's pending earnings.
 - Optional keepsakes go to their own collection shelf, even when the dirt bag is full.
-- Clean **100%** of an area. Every piece must be collected; none are swept away automatically. Golden rings help locate the remaining dirt; the final five pieces get larger, brighter rings and pointers. Reduced motion keeps these markers still. In later rooms, follow the amber arrow through the **NEXT AREA** doorway on the right and enter the next area from the left. Mouse, keyboard, and touch control continue without another Start screen.
+- Clean **100%** of an area. Every piece must be collected; none are swept away automatically. Golden rings help locate the remaining dirt; the final five pieces get larger, brighter rings and pointers. Reduced motion keeps these markers still. In later rooms, follow the amber arrow through the unlocked hallway on the right. Open hallways allow return trips. Mouse, keyboard, and touch control continue without another Start screen.
 - A job’s coins remain pending until **every area** is complete. Quitting or restarting discards all its unfinished areas and coins. The optional treasure is in the final area.
 - Later dust and stuck leaves need steady suction. Stronger suction clears them faster; no upgrade is mandatory. Medal targets include the whole job.
 - Press **Escape** or use **Pause** for a break. Sound and reduced motion are available in Settings.
 - Choose **Pause → How to play** to reopen the controls and rules in any room.
 
-There are no lives or mandatory time limits. Bronze rewards finishing; optional silver and gold medals reward faster routes. The timer and target times are tucked into Room details.
+There are no lives or mandatory time limits. Bronze rewards finishing; optional silver and gold medals reward faster routes. The timer and target times are in **Pause → Job details & coins**.
 
 ## Progression
 
 Four upgrade categories each have five purchasable ranks: cleaning width, bag capacity, movement speed, and pull strength. Every location completed unlocks another cosmetic shell, for five shells in total. Each campaign room also contains one optional trinket for the collection shelf.
 
-Use **Rooms** to see your next room, browse location previews, or replay a completed room. Use **Upgrades** to compare your current robot with the next rank, see what you can afford, and change its color. Purchases use saved career coins. Upgrades unlock only after finishing a room or using **Pause → Quit room & upgrade** and confirming. Pausing or browsing rooms alone does not unlock purchases. Quitting discards only the unfinished room’s cleaning and coins.
+Use **Rooms** to see your next room, browse location previews, or replay a completed room. Use **Upgrades** to compare your current robot with the next rank, see what you can afford, and change its color. Purchases use saved career coins. Upgrades unlock only after finishing a room or using **Pause → Quit & upgrade** and confirming. Pausing or browsing rooms alone does not unlock purchases. Quitting discards only the unfinished room’s cleaning and coins.
 
 Completing a room unlocks the next one regardless of medal, trinket, or upgrade choices. Replays pay their cleaning coins again; completion bonuses, medal improvements, and trinket bonuses are awarded only when newly earned.
 

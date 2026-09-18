@@ -1,6 +1,16 @@
 # Sweep Shift validation
 
-Current local candidate: **1.6.0**. Earlier sections below are historical evidence.
+Current local candidate: **1.6.1**. Earlier sections below are historical evidence.
+
+## Version 1.6.1 — deep playthrough and interface cleanup
+
+The audit found no confirmed simulation bug. This patch clarifies that coins save only when the whole job is finished, uses consistent dock terminology, removes repeated upgrade purchase/status labels, and replaces unrelated ending glyphs with a paper **24 / 24** completion stamp and shorter buttons. The simulation and save format are unchanged.
+
+Automated checks completed the standard **24 campaign jobs / 50 areas and 3 Endless runs**. Deep checks also completed all 24 jobs at starter stats, 40 additional Endless rooms, and 86,400 random-movement frames. The six-build matrix at the production 120 Hz timestep completed **144 campaign clears and 9 Endless runs**. An independent hallway geometry audit checked **139,178 hallway positions and 4,199,296 robot-body probes**. All **82 control, storage, progression, and app groups** passed: 39 app, 17 input, 10 store, and 16 progression groups. These automated checks are not human playtime or a physical-device playthrough.
+
+The live browser playthrough used the ordinary isolated `?career=12` QA career and completed both areas of Room 13 at **100%**, using normal WebMCP steering, suction, collision, and unloading. It did not artificially complete an area or alter the active run. Backtracking preserved a carried bag of **23 pieces worth 45 coins**. The final three dirt markers were visible and helped locate the remaining pieces. Completion took **3:11 of game time**, earned **753 cleaning coins + 115 bonus coins = 868 coins**, moved the saved balance from **510 to 1,378**, found the **Seed locket**, and unlocked **Room 14**. The initial QA career is a fixture, separate from real player saves; the subsequent job was played through normally. This is one complete two-area browser job, not a manual replay of all 24 jobs.
+
+Reloading retained Room 14 and the earned balance. A normal Wider sweep purchase cost **1,350 coins**, changed its rank from **4 to 5**, and left **28 coins**. The maximum-rank button was disabled, and unavailable upgrades correctly showed shortages of **872** and **1,322** coins. Updated upgrade cards passed desktop and 320px visual checks. A separate completed-career `?career=24` fixture verified the actual ending screen and new completion stamp at desktop and 320px with no horizontal page overflow; **Play endless** opened Endless successfully. Warning/error logs were empty for both browser sessions. Responsive browser sizing was reset afterward; these layout checks are not physical-phone tests.
 
 ## Version 1.6.0 — walkable hallways and backtracking
 

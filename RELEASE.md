@@ -1,17 +1,24 @@
-# Sweep Shift 1.6.0 local release candidate
+# Sweep Shift 1.6.1 local release candidate
 
-The current **1.6.0** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.6.1** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **12 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **64,661 bytes**.
-- SHA-256: **e714878ef6db96a56868a030de623dae49e23e1bad967fa6e5508d2fca1330a2**.
+- Size: **64,683 bytes**.
+- SHA-256: **573520085d2c25f00144c4e8562cae6b14841809fac374071446d27da5f67d00**.
 - All source, archive, and extracted hashes match.
-- Passed the standard 24-job/50-area earned campaign, 3 Endless runs, 39 app groups, and supporting input/progression/store/generation checks. Targeted browser checks cover blocked gates, camera travel, backtracking, and narrow layout. Older deep-physics evidence below belongs to 1.4.1; see [PLAYTEST.md](PLAYTEST.md) for current validation scope.
+- Passed the standard 24-job/50-area earned campaign and 3 Endless runs, plus a fresh deep physics audit: a starter campaign, 40 Endless runs, 86,400 random movement frames, and 144 campaign clears across six upgrade builds at 120Hz. All 82 app/input/store/progression groups passed. A full two-area browser job verified cleaning, backtracking with a loaded bag, treasure, payout, reload persistence, and the next-room unlock. See [PLAYTEST.md](PLAYTEST.md) for exact scope and limitations.
 
-## What changed in 1.6.0
+## What changed in 1.6.1
+
+- Clearer coin-saving instructions: earnings save when the whole job is finished.
+- Consistent dock wording and leaner upgrade cards, with shortages and maximum levels still explicit.
+- A matching 24/24 completion stamp replaces placeholder ending symbols; ending actions use short, direct labels.
+- Desktop and 320px upgrade/ending checks passed. The audit found no reproducible gameplay defect, so the simulation, balance, and save format are unchanged.
+
+## Previous 1.6.0 changes
 
 - Real hallways join later areas in one world; the camera follows smoothly through them.
 - A physical locked gate explains the 100% cleaning requirement. Unlocked passages stay open for travel in both directions.
