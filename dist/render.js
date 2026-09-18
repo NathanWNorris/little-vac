@@ -1,11 +1,7 @@
 /* Original Canvas artwork for Sweep Shift. No downloaded art, fonts, or assets. */
+import { LOCATIONS } from './rooms.js';
 const W = 960, H = 640, CELL = 40;
-const PALETTES = [
-  { floor: '#e7c99f', floor2: '#ddbb8c', wall: '#244a4d', accent: '#e8a460', dark: '#213c3e' },
-  { floor: '#8a72b1', floor2: '#8067a6', wall: '#292640', accent: '#77dce3', dark: '#27243e' },
-  { floor: '#e5e7c6', floor2: '#daddb6', wall: '#33544b', accent: '#83bc83', dark: '#2d4d43' },
-  { floor: '#dfab95', floor2: '#d39c89', wall: '#464458', accent: '#efbc63', dark: '#343546' },
-];
+const PALETTES = LOCATIONS.map(location => location.palette);
 const CONFETTI = ['#ed826e', '#f6d570', '#c4f2df', '#76cbd2', '#fcf0d7'];
 const cache = new WeakMap();
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
@@ -38,46 +34,140 @@ function star(ctx, x, y, size, color, points = 5) {
 }
 function floor(ctx, room, palette) {
   ctx.fillStyle = palette.dark; ctx.fillRect(0, 0, W, H);
-  // Quiet architectural lines give the space outside the playable floor some depth.
-  ctx.strokeStyle = '#ffffff07'; ctx.lineWidth = 1;
-  for (let y = 0; y < H; y += 40) line(ctx, 0, y, W, y, '#ffffff06');
-  for (let x = 0; x < W; x += 40) line(ctx, x, 0, x, H, '#ffffff05');
   const grid = room.grid, loc = room.location || 0;
+  // The outside of the real collision grid supplies the architecture. Every
+  // district keeps the exact same safe play area and caches its art once.
+  if (loc === 0) {
+    for (let y = 8; y < H; y += 12) for (let x = 8; x < W; x += 12) circle(ctx, x, y, 1.3, '#a1815563');
+  } else if (loc === 1) {
+    for (let y = 0; y < H; y += 20) {
+      line(ctx, 0, y, W, y, '#53627b45');
+      for (let x = y % 40 ? 0 : 30; x < W; x += 60) line(ctx, x, y, x, y + 20, '#53627b45');
+    }
+  } else if (loc === 2) {
+    ctx.fillStyle = '#294f43'; ctx.fillRect(0, 0, W, H);
+    for (let x = 0; x < W; x += 80) {
+      box(ctx, x + 4, 4, 72, H - 8, 2, x % 160 ? '#82b29b' : '#9ac4a8');
+      line(ctx, x + 7, 8, x + 72, 80, '#e1f5cd69', 3);
+      for (let y = 4; y < H; y += 80) line(ctx, x, y, x + 80, y, '#325e51', 5);
+    }
+  } else {
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#426b86'); sky.addColorStop(1, '#152736'); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (let x = -12, i = 0; x < W; x += 37, i++) {
+      const h = 18 + noise(i, 2) * 17;
+      ctx.fillStyle = i % 2 ? '#233e52' : '#1b3448'; ctx.fillRect(x, 39 - h, 31, h);
+      ctx.fillRect(x + 8, 635 - h, 32, h + 10);
+      for (let xx = x + 5; xx < x + 28; xx += 8) for (let yy = 42 - h; yy < 36; yy += 8) {
+        ctx.fillStyle = noise(xx, yy) > .35 ? '#edcf8280' : '#92bbca39'; ctx.fillRect(xx, yy, 3, 4);
+        ctx.fillRect(xx + 8, yy + 597, 3, 4);
+      }
+    }
+  }
   for (let gy = 0; gy < grid.length; gy++) {
     for (let gx = 0; gx < grid[gy].length; gx++) {
       if (!grid[gy][gx]) continue;
       const x = gx * CELL, y = gy * CELL;
-      ctx.fillStyle = (gx + gy) % 2 ? palette.floor : palette.floor2;
+      ctx.fillStyle = loc === 1 ? ((gx + gy) % 2 ? palette.floor : palette.floor2) : ((gx + Math.floor(gy / 2)) % 3 ? palette.floor : palette.floor2);
       ctx.fillRect(x, y, CELL, CELL);
-      ctx.fillStyle = '#fff8e70b'; ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
       if (loc === 0 || loc === 3) {
-        line(ctx, x, y + 39.5, x + 40, y + 39.5, '#553c301c');
-        line(ctx, x + 39.5, y, x + 39.5, y + 40, '#553c300e');
-        line(ctx, x + 4, y + 12, x + 18 + noise(gx, gy) * 16, y + 12, '#745c4110');
-        line(ctx, x + 14, y + 29, x + 35, y + 29, '#fff2d42a');
+        for (let py = 0; py < 40; py += 20) {
+          line(ctx, x, y + py + .5, x + 40, y + py + .5, loc === 0 ? '#795c386a' : '#443d384c');
+          line(ctx, x + 4, y + py + 5, x + 34, y + py + 5, '#fff1c522');
+          line(ctx, x + 9, y + py + 12, x + 26 + noise(gx, gy) * 10, y + py + 12, '#60433125');
+          if ((gx + gy + py) % 4 === 0) line(ctx, x + 39, y + py, x + 39, y + py + 20, '#5e443657');
+        }
       } else if (loc === 1) {
-        ctx.strokeStyle = '#d4d3ef24'; ctx.lineWidth = 1;
-        ctx.strokeRect(x + .5, y + .5, 39, 39);
-        if ((gx * 3 + gy) % 7 === 0) star(ctx, x + 20, y + 20, 3, '#d4d4f02e', 4);
+        // Large repeated woven shapes read as carpet, never collectible scraps.
+        ctx.strokeStyle = (gx + gy) % 2 ? '#be57852c' : '#62bbc42c'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x + 4, y + 20); ctx.lineTo(x + 20, y + 4); ctx.lineTo(x + 36, y + 20); ctx.lineTo(x + 20, y + 36); ctx.closePath(); ctx.stroke();
+        line(ctx, x + 5, y + 6, x + 15, y + 6, '#b1a1df19');
+        line(ctx, x + 25, y + 34, x + 35, y + 34, '#b1a1df19');
       } else {
-        ctx.strokeStyle = '#64765920'; ctx.lineWidth = 1;
-        ctx.strokeRect(x + .5, y + .5, 39, 39);
-        circle(ctx, x + 8 + noise(gx, gy) * 20, y + 8, 1, '#68825c20');
-        circle(ctx, x + 27, y + 26, .8, '#fffef160');
+        // Warm paving and an occasional terracotta tile under the glasshouse.
+        if ((gx + gy * 3) % 7 === 0) { ctx.fillStyle = '#bc8e70'; ctx.fillRect(x + 2, y + 2, 36, 36); }
+        ctx.strokeStyle = '#706d5750'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, 38, 38);
+        line(ctx, x + 4, y + 4, x + 35, y + 4, '#fff7d13d');
+        if ((gx + gy) % 5 === 0) { ctx.fillStyle = '#fff9d316'; ctx.fillRect(x, y, 40, 40); }
       }
       if (!grid[gy - 1]?.[gx]) {
-        ctx.fillStyle = '#fff3db70'; ctx.fillRect(x, y, 40, 3);
-        ctx.fillStyle = '#1a323b35'; ctx.fillRect(x, y + 3, 40, 4);
+        ctx.fillStyle = loc === 1 ? '#e992d18a' : loc === 2 ? '#51796b' : '#ead4ab70'; ctx.fillRect(x, y, 40, 3);
+        ctx.fillStyle = '#14263240'; ctx.fillRect(x, y + 3, 40, 4);
       }
-      if (!grid[gy + 1]?.[gx]) { ctx.fillStyle = '#1e343440'; ctx.fillRect(x, y + 36, 40, 4); }
-      if (!grid[gy]?.[gx - 1]) { ctx.fillStyle = '#fff3db50'; ctx.fillRect(x, y, 2, 40); }
-      if (!grid[gy]?.[gx + 1]) { ctx.fillStyle = '#1e343433'; ctx.fillRect(x + 37, y, 3, 40); }
+      if (!grid[gy + 1]?.[gx]) { ctx.fillStyle = loc === 1 ? '#62cde67a' : '#1e343450'; ctx.fillRect(x, y + 36, 40, 4); }
+      if (!grid[gy]?.[gx - 1]) { ctx.fillStyle = loc === 1 ? '#e992d16a' : '#fff3db50'; ctx.fillRect(x, y, 2, 40); }
+      if (!grid[gy]?.[gx + 1]) { ctx.fillStyle = loc === 1 ? '#62cde66a' : '#1e343450'; ctx.fillRect(x + 37, y, 3, 40); }
     }
   }
-  // Static ambient light has no frame-time cost after the room is cached.
-  const light = ctx.createLinearGradient(0, 0, W, H);
-  light.addColorStop(0, '#fff7dd13'); light.addColorStop(.7, '#fff7dd00'); light.addColorStop(1, '#182f4018');
-  ctx.fillStyle = light; ctx.fillRect(0, 0, W, H);
+  architecture(ctx, room, loc);
+}
+
+function wallLabel(ctx, text, x, y, width, color, background) {
+  box(ctx, x, y, width, 23, 3, background);
+  ctx.strokeStyle = color; ctx.lineWidth = 1; rounded(ctx, x + 2, y + 2, width - 4, 19, 2); ctx.stroke();
+  ctx.font = 'bold 12px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = color;
+  ctx.fillText(text, x + width / 2, y + 12);
+}
+function architecture(ctx, room, loc) {
+  // All foreground structure is clipped to non-walkable cells, including
+  // irregular wall cutouts; it can never hide the vacuum or imply a new wall.
+  ctx.save();
+  ctx.beginPath(); room.grid.forEach((row, gy) => row.forEach((v, gx) => { if (!v) ctx.rect(gx * CELL, gy * CELL, CELL, CELL); })); ctx.clip();
+  if (loc === 0) {
+    for (const y of [2, 607]) {
+      box(ctx, 38, y, W - 76, 31, 3, '#8b6440');
+      for (let x = 46; x < W - 45; x += 12) for (let yy = y + 6; yy < y + 30; yy += 10) circle(ctx, x, yy, 1, '#4d3929');
+    }
+    wallLabel(ctx, 'WOODWORK SHOP', 393, 7, 174, '#efd49d', '#3c372c');
+    for (const x of [112, 222, 687, 797]) {
+      line(ctx, x, 10, x + 23, 27, '#d8c39c', 4); box(ctx, x + 17, 21, 17, 7, 1, '#445b5c');
+      box(ctx, x + 37, 10, 25, 16, 2, '#cfab74'); line(ctx, x + 40, 13, x + 58, 22, '#745533', 2);
+    }
+    wallLabel(ctx, 'MEASURE TWICE', 414, 608, 132, '#d9c094', '#4a3d2e');
+  } else if (loc === 1) {
+    line(ctx, 43, 8, 917, 8, '#f485cf', 3); line(ctx, 44, 31, 916, 31, '#6ad9f1', 2);
+    wallLabel(ctx, 'AFTER HOURS', 386, 9, 188, '#f49be1', '#21182f');
+    wallLabel(ctx, 'CLOSED', 752, 9, 99, '#7de5ef', '#161e34');
+    wallLabel(ctx, 'INSERT COIN', 112, 9, 125, '#f9cf83', '#21182f');
+    // Flush wall displays remain visible even in rooms with one small machine.
+    for (let y = 75; y < 576; y += 105) for (const x of [5, 926]) {
+      box(ctx, x, y, 29, 71, 3, '#765078'); box(ctx, x + 3, y + 4, 23, 61, 2, '#193a50');
+      for (let p = 0; p < 4; p++) box(ctx, x + 7 + (p % 2) * 10, y + 12 + p * 10, 6, 6, 0, p % 2 ? '#75d2dd' : '#cc79b2');
+    }
+    line(ctx, 48, 610, 912, 610, '#bc5e9c', 2); line(ctx, 48, 627, 912, 627, '#5bafcb', 2);
+    wallLabel(ctx, 'HIGH SCORES  •  08 420', 373, 607, 214, '#e8c978', '#21182f');
+  } else if (loc === 2) {
+    for (let x = 43; x < 923; x += 80) {
+      line(ctx, x, 0, x, H, '#3b6d5d', 6);
+      line(ctx, x + 4, 0, x + 4, H, '#d7eac383', 2);
+      for (let y = 9; y < H; y += 80) line(ctx, x + 6, y, x + 68, y + 59, '#eaffd742', 2);
+    }
+    line(ctx, 0, 35, W, 35, '#2d5c4d', 7); line(ctx, 0, 605, W, 605, '#2d5c4d', 7);
+    wallLabel(ctx, 'THE GLASSHOUSE', 384, 7, 192, '#f5e7be', '#43664e');
+    for (let y = 87; y < 591; y += 94) {
+      ellipse(ctx, 18, y, 13, 19, '#92715b'); leaves(ctx, 18, y - 4, 18);
+      ellipse(ctx, 943, y + 15, 13, 18, '#92715b'); leaves(ctx, 943, y + 10, 18, 1);
+    }
+    wallLabel(ctx, 'SEEDLINGS  /  GROWING', 377, 608, 206, '#dce8b9', '#365b47');
+  } else {
+    // City silhouettes, steel parapet, and a party-light cable frame the deck.
+    for (const x of [26, 934]) {
+      line(ctx, x, 45, x, 599, '#a6bcc4', 4);
+      for (let y = 50; y < 600; y += 40) line(ctx, x - 10, y, x + 10, y, '#7b929d', 3);
+    }
+    for (const y of [37, 602]) {
+      line(ctx, 36, y, 924, y, '#bdc5be', 4);
+      for (let x = 40; x <= 920; x += 40) line(ctx, x, y - 13, x, y + 5, '#7c929c', 3);
+    }
+    ctx.strokeStyle = '#152733'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(46, 7); ctx.quadraticCurveTo(245, 34, 438, 9); ctx.quadraticCurveTo(670, 34, 914, 7); ctx.stroke();
+    for (let x = 66; x < 922; x += 47) {
+      const yy = 10 + Math.sin((x - 46) / 868 * Math.PI * 2) ** 2 * 12;
+      line(ctx, x, yy, x, yy + 5, '#29313a', 2);
+      circle(ctx, x, yy + 9, 7, '#f4cd5b26'); circle(ctx, x, yy + 9, 3.4, '#fff0ac');
+    }
+    wallLabel(ctx, 'ROOFTOP SOCIAL CLUB', 365, 608, 230, '#f8dcad', '#233b49');
+  }
+  ctx.restore();
 }
 function bolt(ctx, x, y) { circle(ctx, x, y, 2, '#efe5c690'); line(ctx, x - 1, y, x + 1, y, '#42504a', .8); }
 function cup(ctx, x, y, color = '#fbefdb') {
@@ -86,12 +176,66 @@ function cup(ctx, x, y, color = '#fbefdb') {
   circle(ctx, x, y, 6, color); circle(ctx, x, y, 3.4, '#6e4f40'); circle(ctx, x - 1, y - 1, 1.4, '#b79569');
 }
 function leaves(ctx, x, y, size, tint = 0) {
-  const colors = tint ? ['#83bd96', '#a9d69e', '#568d7e'] : ['#66a880', '#91c995', '#40866a'];
+  const colors = tint ? ['#82ab65', '#a5c574', '#4e814d'] : ['#44875b', '#72ad67', '#2d6549'];
   for (let i = 0; i < 7; i++) {
     const a = i * Math.PI * 2 / 7 + .3;
     ellipse(ctx, x + Math.cos(a) * size * .42, y + Math.sin(a) * size * .42, size * .57, size * .24, colors[i % 3], a);
   }
   circle(ctx, x, y, size * .2, '#c4e3ad');
+}
+function arcadeMachine(ctx, x, y, w, h, variant = 0, cocktail = false) {
+  const neon = variant % 2 ? '#ee85bf' : '#74dce8';
+  box(ctx, x, y + 3, w, h - 3, 5, '#111624');
+  box(ctx, x + 2, y, w - 4, h - 5, 5, '#484568');
+  box(ctx, x + 5, y + 3, w - 10, cocktail ? 9 : Math.max(12, h * .12), 2, variant % 2 ? '#a3427b' : '#317c9b');
+  line(ctx, x + 8, y + 7, x + w - 8, y + 7, neon, 2);
+  const sy = y + h * .19, sh = h * .47, sx = x + 9, sw = w - 18;
+  box(ctx, sx - 3, sy - 3, sw + 6, sh + 6, 3, '#171d30');
+  box(ctx, sx, sy, sw, sh, 2, '#153649');
+  const glow = ctx.createLinearGradient(sx, sy, sx, sy + sh); glow.addColorStop(0, '#429ab629'); glow.addColorStop(1, '#64cee063');
+  ctx.fillStyle = glow; ctx.fillRect(sx, sy, sw, sh);
+  // Tiny original pixel games in the lit screens: invaders, a maze, or paddles.
+  ctx.save(); ctx.beginPath(); ctx.rect(sx + 2, sy + 2, sw - 4, sh - 4); ctx.clip();
+  if (variant % 3 === 0) {
+    const px = Math.max(2, Math.min(4, sw / 16));
+    for (let row = 0; row < 2; row++) for (let col = 0; col < 3; col++) {
+      const xx = sx + 7 + col * (sw - 14) / 3, yy = sy + 7 + row * Math.max(12, sh * .29);
+      ctx.fillStyle = row ? '#ebcf6c' : '#9ce49b'; ctx.fillRect(xx, yy + px, px * 3, px); ctx.fillRect(xx + px, yy, px, px * 3);
+    }
+    box(ctx, sx + sw * .5 - 5, sy + sh - 10, 11, 3, 0, '#f398c3');
+  } else if (variant % 3 === 1) {
+    ctx.strokeStyle = '#7699df'; ctx.lineWidth = 2;
+    ctx.strokeRect(sx + 5, sy + 5, sw - 10, sh - 10);
+    line(ctx, sx + 9, sy + sh * .5, sx + sw * .62, sy + sh * .5, '#79bbe1', 3);
+    line(ctx, sx + sw * .62, sy + sh * .5, sx + sw * .62, sy + 9, '#79bbe1', 3);
+    circle(ctx, sx + sw * .3, sy + sh * .28, 3, '#f9db73');
+  } else {
+    line(ctx, sx + 7, sy + sh * .25, sx + 7, sy + sh * .63, '#9ae2c8', 3);
+    line(ctx, sx + sw - 7, sy + sh * .4, sx + sw - 7, sy + sh * .78, '#eaa6ce', 3);
+    circle(ctx, sx + sw * .64, sy + sh * .37, 2.5, '#fff0bf');
+  }
+  ctx.restore();
+  box(ctx, x + 5, y + h * .73, w - 10, h * .16, 3, '#25243b');
+  circle(ctx, x + w * .3, y + h * .81, 5, '#151e2a'); circle(ctx, x + w * .3, y + h * .79, 3.4, neon);
+  circle(ctx, x + w * .65, y + h * .79, 2.8, '#f4d177'); circle(ctx, x + w * .78, y + h * .81, 2.6, '#d97faf');
+  box(ctx, x + w * .44, y + h * .94, w * .18, 2, 0, '#b7a780');
+  line(ctx, x + 2, y + 7, x + 2, y + h - 7, neon, 2); line(ctx, x + w - 3, y + 7, x + w - 3, y + h - 7, neon + '99', 2);
+}
+function pottingBench(ctx, x, y, w, h) {
+  box(ctx, x, y + 4, w, h - 4, 5, '#4e624d'); box(ctx, x, y, w, h - 5, 5, '#b89567');
+  for (let yy = y + 12; yy < y + h - 8; yy += 13) line(ctx, x + 4, yy, x + w - 4, yy, '#795f425e');
+  const tw = w * .59, th = h - 17;
+  box(ctx, x + 7, y + 6, tw, th, 3, '#425342');
+  const cols = Math.max(2, Math.floor(tw / 23)), rows = Math.max(2, Math.floor(th / 23));
+  for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
+    const px = x + 7 + (col + .5) * tw / cols, py = y + 6 + (row + .5) * th / rows;
+    box(ctx, px - 7, py - 7, 14, 14, 2, '#2d3c2f'); leaves(ctx, px, py, 7, (row + col) % 2);
+  }
+  const cx = x + w * .82, cy = y + h * .48;
+  circle(ctx, cx, cy, Math.min(14, w * .13), '#508d83');
+  ctx.strokeStyle = '#346a62'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy - 8, 7, Math.PI, Math.PI * 2); ctx.stroke();
+  line(ctx, cx + 8, cy + 2, cx + 17, cy - 9, '#58958a', 5); ellipse(ctx, cx + 18, cy - 10, 4, 2, '#b5d8ba', -.7);
+  box(ctx, x + w * .72, y + h - 17, w * .2, 7, 1, '#e8cf96');
 }
 function furniture(ctx, o, loc) {
   const { x, y, w, h } = o, kind = String(o.kind || 'crate').toLowerCase();
@@ -109,11 +253,20 @@ function furniture(ctx, o, loc) {
     box(ctx, rx, ry + 5, rw, rh, 7, '#254b4c'); box(ctx, rx, ry, rw, rh - 2, 7, '#56817a');
     box(ctx, rx + 3, ry + 3, rw - 6, rh - 10, 4, kind === 'workbench' ? '#bc9e72' : '#77978c');
     if (kind === 'workbench') {
-      box(ctx, rx + 8, ry + 8, Math.min(rw * .45, 48), Math.min(rh - 23, 34), 3, '#47766b');
-      line(ctx, rx + 14, ry + 17, rx + 32, ry + 29, '#d7e5ce', 4);
-      circle(ctx, rx + 33, ry + 30, 5, '#658d8b');
-      line(ctx, rx + rw - 19, ry + 13, rx + rw - 19, ry + rh - 17, '#bd7656', 5);
-      box(ctx, rx + rw - 24, ry + 10, 10, 7, 2, '#d1d8be');
+      for (let yy = ry + 14; yy < ry + rh - 10; yy += 17) line(ctx, rx + 5, yy, rx + rw - 5, yy, '#6a482f32');
+      box(ctx, rx + 10, ry + 9, rw * .51, rh * .57, 2, '#d8b27a');
+      // Carpenter's square, saw, hammer, and a yellow measuring rule.
+      line(ctx, rx + 16, ry + 15, rx + 16, ry + rh * .43, '#59666a', 5);
+      line(ctx, rx + 16, ry + rh * .43, rx + rw * .38, ry + rh * .43, '#59666a', 5);
+      const sy = ry + rh * .67;
+      ctx.fillStyle = '#c5cfca'; ctx.beginPath(); ctx.moveTo(rx + 15, sy); ctx.lineTo(rx + rw * .57, sy - 8); ctx.lineTo(rx + rw * .57, sy + 9); ctx.lineTo(rx + 15, sy + 4); ctx.fill();
+      for (let xx = rx + 17; xx < rx + rw * .55; xx += 5) line(ctx, xx, sy + 5, xx + 3, sy + 9, '#7b887f', 1.3);
+      box(ctx, rx + rw * .57, sy - 7, 16, 16, 3, '#9c5735'); box(ctx, rx + rw * .57 + 4, sy - 3, 8, 8, 2, '#cba16b');
+      line(ctx, rx + rw - 25, ry + 19, rx + rw - 25, ry + rh - 18, '#a45f39', 6);
+      box(ctx, rx + rw - 37, ry + 12, 26, 11, 2, '#737f7c');
+      box(ctx, rx + 7, ry + rh - 13, rw - 14, 6, 1, '#e9c363');
+      for (let xx = rx + 12; xx < rx + rw - 9; xx += 8) line(ctx, xx, ry + rh - 13, xx, ry + rh - 10, '#796632');
+      box(ctx, rx + rw * .48, ry + rh - 8, 28, 9, 2, '#435959');
     } else {
       const vertical = rh > rw;
       for (let i = 1; i <= 2; i++) {
@@ -123,31 +276,32 @@ function furniture(ctx, o, loc) {
     }
     line(ctx, rx + 6, ry + 4, rx + rw - 6, ry + 4, '#d6dbc159', 2);
   } else if (/arcade/.test(kind)) {
-    box(ctx, rx, ry + 4, rw, rh, 7, '#322f52'); box(ctx, rx, ry, rw, rh - 3, 7, '#51416e');
-    box(ctx, rx + 4, ry + 3, rw - 8, Math.max(7, rh * .15), 3, '#df92b5');
-    box(ctx, rx + 6, ry + rh * .22, rw - 12, rh * .43, 4, '#222d43');
-    box(ctx, rx + 10, ry + rh * .26, rw - 20, rh * .34, 3, '#5b949e');
-    const sx = rx + rw / 2, sy = ry + rh * .42;
-    star(ctx, sx, sy, Math.min(rw * .2, rh * .14), '#c3efe0', 4);
-    line(ctx, sx - 6, sy + 7, sx + 8, sy - 6, '#e8feef55', 2);
-    box(ctx, rx + 5, ry + rh * .71, rw - 10, rh * .17, 3, '#a879a6');
-    circle(ctx, rx + rw * .35, ry + rh * .79, 4.5, '#333953');
-    circle(ctx, rx + rw * .35 - 1, ry + rh * .79 - 2, 3, '#8addd2');
-    circle(ctx, rx + rw * .68, ry + rh * .79, 3, '#ffdb81');
-    line(ctx, rx + 2, ry + 8, rx + 2, ry + rh - 5, '#b1f5e199', 2);
+    const columns = Math.max(1, Math.round(w / 85)), rows = Math.max(1, Math.round(h / 170));
+    for (let row = 0; row < rows; row++) for (let col = 0; col < columns; col++) {
+      arcadeMachine(ctx, rx + col * rw / columns, ry + row * rh / rows, rw / columns - 3, rh / rows - 3, col + row + Math.floor(x / 80));
+    }
   } else if (/planter|pot/.test(kind)) {
+    if (kind === 'pot') {
+      const radius = Math.min(rw, rh) * .46, cx = rx + rw / 2, cy = ry + rh / 2;
+      ellipse(ctx, cx, cy + 4, radius, radius * .94, '#75503b'); circle(ctx, cx, cy, radius, '#c88b5c');
+      circle(ctx, cx, cy, radius * .81, '#685440'); leaves(ctx, cx, cy, radius * .93);
+      for (let i = 0; i < 3; i++) { const a = i * 2.1; circle(ctx, cx + Math.cos(a) * radius * .5, cy + Math.sin(a) * radius * .5, 4, '#e5b77b'); }
+      return;
+    }
     box(ctx, rx, ry + 4, rw, rh, Math.min(rw, rh) * .2, '#996c54');
     box(ctx, rx, ry, rw, rh - 3, Math.min(rw, rh) * .2, '#c89069');
     box(ctx, rx + 4, ry + 4, rw - 8, rh - 11, Math.min(rw, rh) * .16, '#6b6651');
     const horizontal = rw > rh, length = horizontal ? rw : rh, breadth = Math.min(rw, rh);
-    const count = Math.max(1, Math.floor(length / 34));
+    const count = Math.max(1, Math.floor(length / 36));
     for (let n = 0; n < count; n++) {
       const px = horizontal ? rx + (n + .5) * rw / count : rx + rw / 2;
       const py = horizontal ? ry + rh / 2 - 2 : ry + (n + .5) * (rh - 4) / count;
-      leaves(ctx, px, py, Math.min(22, breadth * .46), n % 2);
+      leaves(ctx, px, py, Math.min(31, breadth * .46), n % 2);
       if ((n + Math.floor(x / 40)) % 3 === 0) { circle(ctx, px + 3, py - 2, 4, '#f4bd95'); circle(ctx, px + 3, py - 2, 1.6, '#ffe8a9'); }
     }
+    box(ctx, rx + rw - 16, ry + rh - 22, 7, 13, 1, '#f5e1b3'); line(ctx, rx + rw - 14, ry + rh - 18, rx + rw - 11, ry + rh - 18, '#5b774d');
   } else if (/sofa|bench/.test(kind)) {
+    if (kind === 'bench' && loc === 2) { pottingBench(ctx, rx, ry, rw, rh); return; }
     const wood = kind === 'bench', color = wood ? '#b99364' : loc === 1 ? '#d986a7' : '#83b6a3';
     box(ctx, rx, ry + 4, rw, rh, 9, wood ? '#6d6850' : '#50616a');
     box(ctx, rx, ry, rw, rh - 3, 9, color);
@@ -172,15 +326,32 @@ function furniture(ctx, o, loc) {
     [ry + rh * .28, ry + rh * .69].forEach(py => { circle(ctx, rx + rw / 2, py, s, '#272f3c'); circle(ctx, rx + rw / 2, py, s * .68, '#686372'); circle(ctx, rx + rw / 2, py, s * .32, '#a8a0a0'); });
     circle(ctx, rx + rw - 7, ry + 7, 2, '#c8e2a4');
   } else {
+    if (loc === 1) {
+      // Even the sparse fan room has recognizable two-player cocktail cabinets.
+      box(ctx, rx, ry, rw, rh, 7, '#534260');
+      const columns = Math.max(1, Math.floor(rw / 85));
+      for (let col = 0; col < columns; col++) arcadeMachine(ctx, rx + 4 + col * (rw - 6) / columns, ry + 3, (rw - 9) / columns, rh - 5, col + 1, true);
+      return;
+    }
     // A table is also the visual fallback for future rectangular prop kinds.
     box(ctx, rx, ry + 5, rw, rh, 9, loc === 1 ? '#5e557a' : '#997662');
     box(ctx, rx, ry, rw, rh - 3, 9, loc === 1 ? '#b597c9' : loc === 3 ? '#f0d4a8' : '#d4b37f');
     line(ctx, rx + 8, ry + 5, rx + rw - 8, ry + 5, '#fff4d955', 2);
+    if (loc === 3) {
+      // Coral table runners, plates and place settings mark the party tables.
+      box(ctx, rx + rw * .43, ry + 2, rw * .22, rh - 7, 1, '#b5675c');
+      for (let yy = ry + 6; yy < ry + rh - 8; yy += 9) line(ctx, rx + rw * .46, yy, rx + rw * .62, yy, '#f4c89c55');
+    }
     cup(ctx, rx + rw * .32, ry + rh * .44, loc === 1 ? '#d9e5f1' : '#f8eee0');
     if (rw > 60 || rh > 60) {
       circle(ctx, rx + rw * .71, ry + rh * .6, 9, '#fff6dc');
       circle(ctx, rx + rw * .71, ry + rh * .6, 6, '#d3926e');
       circle(ctx, rx + rw * .71 + 1, ry + rh * .6 - 1, 2, '#e7b07a');
+    }
+    if (loc === 3) {
+      const cx = rx + rw * .67, cy = ry + rh * .3;
+      circle(ctx, cx, cy, 9, '#faf0da'); circle(ctx, cx, cy, 6, '#dcbca0');
+      line(ctx, cx - 13, cy - 5, cx - 13, cy + 6, '#e9e7d1', 2); line(ctx, cx + 13, cy - 5, cx + 13, cy + 6, '#e9e7d1', 2);
     }
   }
 }
@@ -189,9 +360,18 @@ function makeBackground(room) {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   floor(ctx, room, PALETTES[room.location || 0]);
-  for (const obstacle of room.obstacles || []) furniture(ctx, obstacle, room.location || 0);
   const floorPath = new Path2D();
   room.grid.forEach((row, gy) => row.forEach((walkable, gx) => { if (walkable) floorPath.rect(gx * CELL, gy * CELL, CELL, CELL); }));
+  if (room.location === 2) {
+    // Broad, quiet roof-glass light bands do not resemble loose dirt or walls.
+    ctx.save(); ctx.clip(floorPath);
+    for (let x = -320; x < W; x += 260) {
+      ctx.fillStyle = '#fff8be17'; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 150, 0); ctx.lineTo(x + 550, H); ctx.lineTo(x + 400, H); ctx.fill();
+      line(ctx, x + 150, 0, x + 550, H, '#365e4022', 5);
+    }
+    ctx.restore();
+  }
+  for (const obstacle of room.obstacles || []) furniture(ctx, obstacle, room.location || 0);
   return { image: canvas, floorPath };
 }
 function drawFans(ctx, fans, time, still) {
@@ -242,7 +422,7 @@ function debris(ctx, d, loc, time, still) {
   ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(angle);
   if (d.type === 'dust') {
     ctx.globalAlpha = clamp(d.amount ?? 1, 0, 1) * .77;
-    const color = loc === 1 ? '#504c72' : loc === 2 ? '#859278' : '#957a5d';
+    const color = loc === 1 ? '#cab6da' : loc === 2 ? '#6e7050' : '#766046';
     const r = 10 + variation * 6;
     const grad = ctx.createRadialGradient(0, 0, r * .25, 0, 0, r);
     grad.addColorStop(0, color + 'aa'); grad.addColorStop(.6, color + '70'); grad.addColorStop(1, color + '00');

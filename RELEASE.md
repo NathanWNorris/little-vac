@@ -1,20 +1,31 @@
-# Sweep Shift 1.2.2 local release candidate
+# Sweep Shift 1.3.0 local release candidate
 
-The current **1.2.2** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.3.0** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **45,633 bytes**.
-- SHA-256: **71e06836f749d333d31bebfb4cca6ceee48bf03c5a6b7a84be09d5977b9c10ec**.
+- Size: **51,636 bytes**.
+- SHA-256: **e74a2aafaab8a60a15528f506b68c0df666ff3d53674ac0e34f10ebc8bafdb10**.
 - All source, archive, and extracted hashes match.
-- Syntax and standard verification passed: 16 progression, 17 input, 10 store, and 28 app groups; 1,000 generated layouts; 24 earned-upgrade campaign completions; 3 Endless completions; replay. Targeted app checks passed again after the final focus fix.
-- Isolated browser checks confirmed a stopped timer before Start, primary-click activation, Space-button activation, restart readiness, live movement after starting, and canvas focus after clicking. Instructions fit 320×640 and 960×500 viewports without internal scrolling or horizontal overflow. No browser errors or warnings were reported.
-- The previous 1.2.1 audit also covered a deeper campaign matrix, full room-13 and room-1 browser runs, earned purchases/reload, and postgame menus. These unchanged mechanics were not manually replayed end-to-end for this start-screen update.
+- Syntax and standard verification passed: 16 progression, 17 input, 10 store, and 28 app groups; 1,000 generated layouts; 24 earned-upgrade campaign completions; 3 Endless completions; replay.
+- The real Canvas renderer drew all 24 campaign rooms plus one Endless room per district in an isolated browser gallery: 28/28 rendered, zero errors. Visual review covered all four settings, furniture silhouettes, cutouts, debris contrast, and readable docks.
+- Live browser checks covered starting and cleaning in Arcade and Greenhouse, starting Rooftop, between-room navigation, and the new room list. Mouse/WASD instructions fit a 320×640 viewport with the Start button visible and no internal or horizontal scrolling. No browser errors or warnings were reported.
+- The previous 1.2.2 checks covered click/Space activation and restart readiness; all 28 app regression groups passed again. The 1.2.1 audit covered a deeper campaign matrix and full room-13/room-1 browser runs. The entire campaign was not manually replayed for this art update.
 - Existing v1 saves migrate consistently without losing progress. Player save data was not used for testing or reset.
 
 See [the previous deep audit](docs/AUDIT-1.2.1.md) for earlier evidence and limits. Phone layout checks used browser viewports, not physical devices. Touch start-and-drag behavior is covered by the input/app tests; a physical touchscreen was not tested.
+
+## What changed in 1.3.0
+
+- Workshop has wooden flooring, a pegboard/tool perimeter, sawdust, and detailed workbenches.
+- After-Hours Arcade has dark patterned carpet, neon wall displays, closed/high-score signs, varied game screens, cocktail arcade tables, and brighter dust for contrast.
+- Greenhouse has glass framing, planted beds, circular pots, seedling benches, a watering can, paved walkways, and roof-light patterns.
+- Rooftop Party has a city backdrop, deck boards, parapet railings, string lights, and party-table settings.
+- Room thumbnails reflect actual floor cutouts and themed props; location descriptions explain the setting. Locked previews remain visible.
+- The start screen presents Mouse OR WASD as equal steering choices. A permanent play-screen reminder and clearer How to play text reinforce both controls.
+- Static scenery is cached. Existing paths, collision boundaries, save progress, click-to-start rules, and upgrade rules are preserved.
 
 ## What changed in 1.2.2
 

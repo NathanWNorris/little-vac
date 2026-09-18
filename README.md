@@ -2,11 +2,18 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.2.2** adds a clear click-to-start screen to every room. Movement, suction, and the medal timer wait until you start; the instructions explain steering, emptying the bag, and the 95% finish goal. See the [previous deep audit](docs/AUDIT-1.2.1.md), [1.2.0 redesign](docs/REDESIGN-1.2.0.md), and historical [playtest results](PLAYTEST.md).
+Version **1.3.0** gives all four locations distinct floors, scenery, furniture, and cleanup materials. The room list previews reflect each setting and its actual layout. **Mouse or WASD to steer** is prominent on the start screen and stays visible during play. The click-to-start rule is preserved. See the [previous deep audit](docs/AUDIT-1.2.1.md), [1.2.0 redesign](docs/REDESIGN-1.2.0.md), and historical [playtest results](PLAYTEST.md).
 
 Sweep Shift is a browser game about a vacuum robot cleaning messy rooms. Collect debris, dock to empty the bag, and spend earned coins on upgrades.
 
 The campaign has 24 authored rooms across a workshop, an after-hours arcade, a greenhouse, and a rooftop party. Finish the campaign to unlock Endless Shift: reproducible generated rooms that can be revisited using a seed.
+
+- **Workshop:** wood floors, tools, workbenches, and sawdust.
+- **After-Hours Arcade:** dark patterned carpet, neon cabinets, game screens, and leftover tickets.
+- **Greenhouse:** glass framing, plant beds, potting benches, soil, and fallen leaves.
+- **Rooftop Party:** a deck above the city, railings, string lights, lounge furniture, and confetti.
+
+Endless rooms use the same location artwork. Decorative scenery is kept outside the walkable floor or within existing furniture footprints; room paths and collision geometry are unchanged.
 
 ## Play
 

@@ -1,10 +1,10 @@
 // Authored campaign layouts and reproducible, bounded room generation.
 // A furniture module is 80 px wide, so even the smallest aisle is 80 px.
 export const LOCATIONS = [
-  { name: 'Workshop', subtitle: 'A fresh start among the sawdust.', palette: { floor: '#e7c99f', floor2: '#ddbb8c', wall: '#244a4d', accent: '#e8a460', dark: '#213c3e' }, trinkets: ['Tiny wrench', 'Brass button', 'Wooden duck', 'Lucky bolt', 'Blue marble', 'Pocket robot'] },
-  { name: 'After-Hours Arcade', subtitle: 'One last clean after the high scores.', palette: { floor: '#8a72b1', floor2: '#8067a6', wall: '#292640', accent: '#77dce3', dark: '#27243e' }, trinkets: ['Arcade token', 'Pixel heart', 'Prize ticket', 'Glow star', 'Mini spaceship', 'Golden joystick'] },
-  { name: 'Greenhouse', subtitle: 'Give the leaves a little room to breathe.', palette: { floor: '#e5e7c6', floor2: '#daddb6', wall: '#33544b', accent: '#83bc83', dark: '#2d4d43' }, trinkets: ['Seed locket', 'Ceramic snail', 'Ladybird pin', 'Painted pebble', 'Tiny watering can', 'Sunflower badge'] },
-  { name: 'Rooftop Party', subtitle: 'The party is over. The view is yours.', palette: { floor: '#dfab95', floor2: '#d39c89', wall: '#464458', accent: '#efbc63', dark: '#343546' }, trinkets: ['Paper crown', 'Disco charm', 'Little lantern', 'Confetti coin', 'Moon pendant', 'Sweep Shift trophy'] },
+  { name: 'Workshop', subtitle: 'Wooden workbenches, tools, and sawdust.', palette: { floor: '#c99b65', floor2: '#d4aa76', wall: '#715239', accent: '#ecb668', dark: '#382c25' }, trinkets: ['Tiny wrench', 'Brass button', 'Wooden duck', 'Lucky bolt', 'Blue marble', 'Pocket robot'] },
+  { name: 'After-Hours Arcade', subtitle: 'Neon cabinets, patterned carpet, and leftover tickets.', palette: { floor: '#28243e', floor2: '#302a48', wall: '#57436f', accent: '#79e4f2', dark: '#131b30' }, trinkets: ['Arcade token', 'Pixel heart', 'Prize ticket', 'Glow star', 'Mini spaceship', 'Golden joystick'] },
+  { name: 'Greenhouse', subtitle: 'Glass walls, growing beds, and fallen leaves.', palette: { floor: '#beaa8b', floor2: '#ccb99a', wall: '#457b6a', accent: '#7cbf79', dark: '#213f35' }, trinkets: ['Seed locket', 'Ceramic snail', 'Ladybird pin', 'Painted pebble', 'Tiny watering can', 'Sunflower badge'] },
+  { name: 'Rooftop Party', subtitle: 'A wooden deck above the city, after the party.', palette: { floor: '#967163', floor2: '#aa8070', wall: '#526071', accent: '#f5c77b', dark: '#203246' }, trinkets: ['Paper crown', 'Disco charm', 'Little lantern', 'Confetti coin', 'Moon pendant', 'Sweep Shift trophy'] },
 ];
 
 const plans = [

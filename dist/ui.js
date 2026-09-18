@@ -19,12 +19,88 @@ export function pausedRoomBanner(run) {
 }
 
 const previews = new Map();
+function previewFurniture(o, location, palette, index) {
+  const {x, y, w, h, kind} = o, cx = x + w / 2, cy = y + h / 2;
+  const rect = (inset, fill, radius = 7, stroke = palette.dark, width = 5) => `<rect x="${x + inset}" y="${y + inset}" width="${w - inset * 2}" height="${h - inset * 2}" rx="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="${width}"/>`;
+  let detail = rect(3, palette.dark);
+  if (kind === 'arcade') {
+    const glow = index % 2 ? '#f17dc8' : palette.accent;
+    detail += rect(7, '#252437', 6, glow, 6);
+    detail += `<rect x="${x + w * .18}" y="${y + h * .15}" width="${w * .64}" height="${h * .43}" rx="4" fill="${glow}"/><path d="M${cx - w * .15} ${y + h * .45}L${cx} ${y + h * .25}L${cx + w * .15} ${y + h * .45}Z" fill="#343049"/><circle cx="${x + w * .35}" cy="${y + h * .78}" r="8" fill="${glow}"/><circle cx="${x + w * .68}" cy="${y + h * .78}" r="6" fill="#f9d075"/>`;
+  } else if (kind === 'planter' || kind === 'pot') {
+    detail = kind === 'pot' ? `<circle cx="${cx}" cy="${cy}" r="${Math.min(w, h) * .45}" fill="#ae714c" stroke="${palette.dark}" stroke-width="7"/>` : rect(3, '#a77d55', 5) + rect(13, '#4e6741', 3, '#6f4e35', 4);
+    const count = kind === 'pot' ? 1 : Math.max(2, Math.floor(Math.max(w, h) / 55));
+    for (let i = 0; i < count; i++) {
+      const px = kind === 'pot' || h > w ? cx : x + (i + .5) * w / count;
+      const py = kind === 'pot' || w >= h ? cy : y + (i + .5) * h / count;
+      const radius = kind === 'pot' ? Math.min(w, h) * .25 : Math.min(w, h) * .27;
+      detail += `<circle cx="${px - radius * .5}" cy="${py - radius * .35}" r="${radius}" fill="#71a957"/><circle cx="${px + radius * .5}" cy="${py + radius * .3}" r="${radius}" fill="#3f803f"/><circle cx="${px}" cy="${py}" r="${radius * .4}" fill="${index % 2 ? '#efc76d' : '#b1d681'}"/>`;
+    }
+  } else if (kind === 'sofa') {
+    const fabric = location === 1 ? '#8563a7' : '#c87e68';
+    detail += rect(7, fabric, 10) + rect(18, location === 1 ? '#b492cc' : '#efb18a', 6, fabric, 5);
+    for (let i = 1; i < 3; i++) detail += w >= h ? `<path d="M${x + w * i / 3} ${y + 18}V${y + h - 18}" stroke="${fabric}" stroke-width="7"/>` : `<path d="M${x + 18} ${y + h * i / 3}H${x + w - 18}" stroke="${fabric}" stroke-width="7"/>`;
+  } else if (kind === 'speaker') {
+    detail += rect(8, '#4c4858', 5);
+    const r = Math.min(w, h) * .22;
+    detail += `<circle cx="${cx}" cy="${y + h * .3}" r="${r * .7}" fill="#181d28" stroke="#92929a" stroke-width="4"/><circle cx="${cx}" cy="${y + h * .68}" r="${r}" fill="#181d28" stroke="#92929a" stroke-width="4"/>`;
+  } else if (kind === 'table' && location === 1) {
+    detail += rect(7, '#534260', 7, palette.accent, 5);
+    const count = Math.max(1, Math.floor((w - 8) / 85)), unit = (w - 20) / count;
+    for (let i = 0; i < count; i++) {
+      const left = x + 10 + i * unit, glow = i % 2 ? palette.accent : '#ee85bf';
+      detail += `<rect x="${left + 5}" y="${y + h * .19}" width="${unit - 10}" height="${h * .47}" rx="3" fill="#153649" stroke="${glow}" stroke-width="4"/><path d="M${left + unit * .22} ${y + h * .3}V${y + h * .54}M${left + unit * .77} ${y + h * .34}V${y + h * .59}" stroke="#a4e8d3" stroke-width="6"/><circle cx="${left + unit * .54}" cy="${y + h * .4}" r="5" fill="#ffe3a0"/><rect x="${left + 3}" y="${y + h * .75}" width="${unit - 6}" height="${h * .15}" rx="3" fill="#25243b"/><circle cx="${left + unit * .3}" cy="${y + h * .81}" r="6" fill="${glow}"/><circle cx="${left + unit * .68}" cy="${y + h * .81}" r="5" fill="#f4d177"/>`;
+    }
+  } else if (kind === 'table') {
+    detail += rect(7, '#cf9970', 13, palette.accent, 5);
+    detail += `<circle cx="${cx}" cy="${cy}" r="${Math.min(w, h) * .24}" fill="#f2cd83"/><circle cx="${cx}" cy="${cy}" r="7" fill="${palette.dark}"/>`;
+  } else if (kind === 'bench' && location === 2) {
+    detail += rect(6, '#b89567', 4);
+    const trayWidth = w * .56, columns = Math.max(2, Math.floor(trayWidth / 33));
+    detail += `<rect x="${x + 12}" y="${y + 12}" width="${trayWidth}" height="${h - 24}" rx="3" fill="#354d39"/>`;
+    for (let row = 0; row < 2; row++) for (let column = 0; column < columns; column++) {
+      const px = x + 12 + (column + .5) * trayWidth / columns, py = y + 12 + (row + .5) * (h - 24) / 2;
+      detail += `<ellipse cx="${px - 4}" cy="${py - 3}" rx="9" ry="5" fill="#82b96b"/><ellipse cx="${px + 4}" cy="${py + 3}" rx="9" ry="5" fill="#afd38a"/>`;
+    }
+    const canX = x + w * .81, canY = y + h * .44, radius = Math.min(16, w * .12);
+    detail += `<circle cx="${canX}" cy="${canY}" r="${radius}" fill="#508d83"/><path d="M${canX + radius * .7} ${canY}l${radius * .65} ${-radius * .8}M${canX - radius * .5} ${canY - radius * .7}v${-radius * .5}h${radius}v${radius * .5}" fill="none" stroke="#92c5b0" stroke-width="5"/><rect x="${x + w * .73}" y="${y + h - 22}" width="${w * .16}" height="11" fill="#ead49c"/>`;
+  } else {
+    detail += rect(6, kind === 'cabinet' ? '#7f998d' : '#b98851', 4);
+    if (kind === 'crate') {
+      detail += `<path d="M${x + 14} ${y + 14}L${x + w - 14} ${y + h - 14}M${x + w - 14} ${y + 14}L${x + 14} ${y + h - 14}" stroke="#edc58a" stroke-width="10"/>`;
+    } else {
+      const lineColor = kind === 'cabinet' ? '#415951' : '#e1b77d';
+      for (let i = 1; i < 3; i++) detail += `<path d="M${x + 12} ${y + h * i / 3}H${x + w - 12}" stroke="${lineColor}" stroke-width="7"/>`;
+      if (kind === 'workbench') detail += `<rect x="${x + w - 43}" y="${y + 18}" width="23" height="${h - 36}" rx="3" fill="#526573"/>`;
+    }
+  }
+  return `<g data-prop="${kind}">${detail}</g>`;
+}
+
 export function roomPreview(id) {
   if (previews.has(id)) return previews.get(id);
   const room = makeRoom(id);
-  let shapes = `<rect width="960" height="640" fill="#202329"/><path d="M40 40H920V600H40Z" fill="${LOCATIONS[room.location].palette.floor}"/>`;
-  room.obstacles.forEach(o => { shapes += `<rect x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" rx="4" fill="#45484f" stroke="#202329" stroke-width="7"/>`; });
-  room.debris.filter((_, i) => i % 9 === 0).forEach(d => { shapes += `<circle cx="${Math.round(d.x)}" cy="${Math.round(d.y)}" r="6" fill="#936b41" opacity=".65"/>`; });
+  const p = LOCATIONS[room.location].palette, floor = ['', ''];
+  // Use the same occupied cells as collision so corners and alcoves preview honestly.
+  room.grid.forEach((row, y) => row.forEach((walkable, x) => {
+    if (!walkable) return;
+    const alternate = room.location === 1 || room.location === 2 ? (x + y) % 2 : y % 2;
+    floor[alternate] += `M${x * 40} ${y * 40}h40v40h-40Z`;
+  }));
+  let shapes = `<rect width="960" height="640" fill="${p.wall}"/><path data-floor="0" d="${floor[0]}" fill="${p.floor}"/><path data-floor="1" d="${floor[1]}" fill="${p.floor2}"/>`;
+  if (room.location === 1) shapes += `<path d="M70 20H390M570 20H890" stroke="${p.accent}" stroke-width="8"/><path d="M70 620H390M570 620H890" stroke="#eb79c7" stroke-width="8"/>`;
+  if (room.location === 2) {
+    for (let x = 80; x < 900; x += 100) shapes += `<rect x="${x}" y="8" width="68" height="24" fill="#b8d7bf"/><rect x="${x}" y="608" width="68" height="24" fill="#b8d7bf"/>`;
+  }
+  if (room.location === 3) {
+    shapes += `<path d="M55 20H905" stroke="#8995a5" stroke-width="5"/>`;
+    for (let x = 70; x < 900; x += 90) shapes += `<circle cx="${x}" cy="20" r="8" fill="#ffe4a2"/>`;
+  }
+  room.obstacles.forEach((o, i) => { shapes += previewFurniture(o, room.location, p, i); });
+  room.debris.filter((_, i) => i % 9 === 0).forEach((d, i) => {
+    const x = Math.round(d.x), y = Math.round(d.y);
+    shapes += d.type === 'confetti' ? `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" fill="${['#f3cf73', '#70d4d9', '#ef81b8'][i % 3]}"/>` : d.type === 'stuck' ? `<ellipse cx="${x}" cy="${y}" rx="9" ry="5" fill="#729846"/>` : `<circle cx="${x}" cy="${y}" r="5" fill="${room.location === 1 ? '#edc5a0' : '#936b41'}" opacity=".75"/>`;
+  });
   room.stations.forEach(s => { shapes += `<rect x="${s.x - 21}" y="${s.y - 18}" width="42" height="36" rx="10" fill="#88d8ad" stroke="#225346" stroke-width="5"/>`; });
   shapes += `<circle cx="${room.spawn.x}" cy="${room.spawn.y}" r="18" fill="#f1b94a" stroke="#202329" stroke-width="8"/>`;
   const svg = `<svg class="room-preview" viewBox="0 0 960 640" aria-hidden="true" focusable="false">${shapes}</svg>`;
@@ -36,11 +112,11 @@ export function roomsMarkup(career, district, active = false) {
   const location = LOCATIONS[district];
   const roomCard = r => {
     const unlocked = isRoomUnlocked(career, r.id), completed = career.completed.includes(r.id), medal = ['', 'Bronze', 'Silver', 'Gold'][career.medals[r.id]], found = career.trinkets.includes(r.id);
-    return `<button class="room-tile ${completed ? 'cleaned' : unlocked ? 'next-room' : 'locked'}" data-action="room:${r.id}" ${unlocked ? '' : 'disabled'}>${roomPreview(r.id)}<span class="room-tile-body"><span class="room-tile-top"><span class="room-number">${String(r.id).padStart(2, '0')}</span><strong>${esc(r.name)}</strong></span><span class="room-meta">${completed ? `${medal ? `${medal} medal` : 'Completed'} · Best ${timeText(career.bestTimes[r.id])} · ${found ? 'Treasure found' : 'Treasure missing'}` : unlocked ? 'Next room · Clean 95% to finish' : `Finish room ${r.id - 1} to unlock`}</span></span><span class="room-state">${completed ? 'Replay' : unlocked ? 'Play' : 'Locked'}</span></button>`;
+    return `<button class="room-tile ${completed ? 'cleaned' : unlocked ? 'next-room' : 'locked'}" data-location="${r.location}" data-action="room:${r.id}" ${unlocked ? '' : 'disabled'}>${roomPreview(r.id)}<span class="room-tile-body"><span class="room-tile-top"><span class="room-number">${String(r.id).padStart(2, '0')}</span><strong>${esc(r.name)}</strong></span><span class="room-meta">${completed ? `${medal ? `${medal} medal` : 'Completed'} · Best ${timeText(career.bestTimes[r.id])} · ${found ? 'Treasure found' : 'Treasure missing'}` : unlocked ? 'Next room · Clean 95% to finish' : `Finish room ${r.id - 1} to unlock`}</span></span><span class="room-state">${completed ? 'Replay' : unlocked ? 'Play' : 'Locked'}</span></button>`;
   };
   return `<div class="page-head"><div><h1>Choose a room</h1><p>${done ? 'All rooms unlocked. Replay a room or try Endless.' : 'Finish a room to unlock the next.'}</p></div><span class="page-counter">${career.completed.length}<small>/ 24 complete</small></span></div>
-    <nav class="districts" aria-label="Locations">${LOCATIONS.map((l, i) => `<button data-action="district:${i}" class="district ${i === district ? 'selected' : ''}" aria-pressed="${i === district}"><span class="district-number">0${i + 1}</span><strong>${esc(l.name)}</strong><small>${career.unlocked > i * 6 ? `Rooms ${i * 6 + 1}–${(i + 1) * 6}` : `Finish room ${i * 6} to unlock`}</small></button>`).join('')}</nav>
-    <div class="location-heading"><h2>${esc(location.name)}</h2></div><div class="room-tiles">${CAMPAIGN.filter(r => r.location === district).map(roomCard).join('')}</div>
+    <nav class="districts" aria-label="Locations">${LOCATIONS.map((l, i) => `<button data-action="district:${i}" data-location="${i}" class="district ${i === district ? 'selected' : ''}" aria-pressed="${i === district}"><span class="district-number">0${i + 1}</span><strong>${esc(l.name)}</strong><small>${career.unlocked > i * 6 ? `Rooms ${i * 6 + 1}–${(i + 1) * 6}` : `Finish room ${i * 6} to unlock`}</small></button>`).join('')}</nav>
+    <div class="location-heading" data-location="${district}"><h2>${esc(location.name)}</h2><p>${esc(location.subtitle)}</p></div><div class="room-tiles" data-location="${district}">${CAMPAIGN.filter(r => r.location === district).map(roomCard).join('')}</div>
     <section class="endless-card"><div><h2>Endless</h2><p>${done ? 'Generated rooms. All your upgrades.' : 'Finish all 24 rooms to unlock.'}</p></div>${action('endless', done ? 'Play endless' : 'Locked', 'secondary', done ? '' : 'disabled')}</section>`;
 }
 
