@@ -1,6 +1,14 @@
 # Sweep Shift validation
 
-Current local candidate: **1.5.2**. Earlier sections below are historical evidence.
+Current local candidate: **1.5.3**. Earlier sections below are historical evidence.
+
+## Version 1.5.3 — one theme throughout
+
+Shared theme tokens replace per-screen colors and frame metrics. All non-title screens and dialogs use the same 9px red top edge, cream surface, square corners, and 8×9px ink shadow. Rooms, upgrades, treasures, rewards, ending, and Endless now inherit the paper palette. Locked/disabled states, selected location tabs, icons, diagrams, notifications, and Canvas dock/door labels no longer retain the old gray/yellow interface styling. Location art, semantic green dock/gold exit guidance, simulation, and saves remain unchanged.
+
+Syntax and all **39 app-orchestration groups** passed. Browser checks covered desktop and 320px Rooms, Upgrades, Treasures, and Endless, including selected/locked rooms, unavailable purchases, and found/missing treasures. Computed-style comparison confirmed gameplay and Pause have identical backgrounds, border widths/colors, corner radii, and shadows. Narrow layouts had no horizontal overflow.
+
+A disposable gallery using actual app markup and styles visually verified rewards/bonus notes, campaign ending, affordable/maxed upgrades, and the real Canvas dock/exit labels. Gallery states were artificial and accessed no real saves. Actual ending-to-Endless navigation was also checked on the isolated completed-career fixture. Warning/error logs were empty. These targeted checks are not a campaign replay or physical-phone test.
 
 ## Version 1.5.2 — gameplay theme
 

@@ -38,13 +38,13 @@ export function guideArt(kind) {
   const arrow = (path, head, color = '#f5b83d') => `<g fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/><path d="${head}"/></g>`;
   let picture;
   if (kind === 'move') {
-    picture = `<circle cx="182" cy="61" r="37" fill="#f5b83d" fill-opacity=".1" stroke="#f5b83d" stroke-width="3"/>
-      ${arrow('M98 80Q119 59 142 59', 'M132 49l11 10-11 10')}
-      <path d="M169 33v49l13-11 13 22 10-6-13-21h23Z" fill="#fff9e8" stroke="#22262d" stroke-width="4" stroke-linejoin="round"/>
+    picture = `<circle cx="182" cy="61" r="37" fill="#ee7951" fill-opacity=".1" stroke="#ee7951" stroke-width="3"/>
+      ${arrow('M98 80Q119 59 142 59', 'M132 49l11 10-11 10', '#ee7951')}
+      <path d="M169 33v49l13-11 13 22 10-6-13-21h23Z" fill="#fff9e8" stroke="#263d3b" stroke-width="4" stroke-linejoin="round"/>
       ${guideRobot(56, 77)}`;
   } else if (kind === 'touch') {
-    picture = `<circle cx="179" cy="57" r="36" fill="#f5b83d" fill-opacity=".1" stroke="#f5b83d" stroke-width="3"/>
-      ${arrow('M98 80Q119 59 142 59', 'M132 49l11 10-11 10')}
+    picture = `<circle cx="179" cy="57" r="36" fill="#ee7951" fill-opacity=".1" stroke="#ee7951" stroke-width="3"/>
+      ${arrow('M98 80Q119 59 142 59', 'M132 49l11 10-11 10', '#ee7951')}
       <path d="M164 104l-15-20c-7-10 4-18 10-9l7 9V42c0-12 15-12 15 0v25c5-8 15-4 15 3 6-6 15-1 14 6 9-3 15 5 11 15l-7 18h-42Z" fill="#fff0bd" stroke="#22262d" stroke-width="4" stroke-linejoin="round"/>
       ${guideRobot(56, 77)}`;
   } else if (kind === 'clean') {

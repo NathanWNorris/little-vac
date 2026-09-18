@@ -1,17 +1,25 @@
-# Sweep Shift 1.5.2 local release candidate
+# Sweep Shift 1.5.3 local release candidate
 
-The current **1.5.2** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.5.3** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **62,946 bytes**.
-- SHA-256: **7bd60dea942e7c3b7b917c692850a0df74a08026ae647664d72f95e084d24ad8**.
+- Size: **62,963 bytes**.
+- SHA-256: **bcb04f8e53aaf538a2454bfc7a29bcb0b4469719fd0a907c09eb87ae6529ca83**.
 - All source, archive, and extracted hashes match.
 - This menu patch passed syntax and 39 app-orchestration groups, plus responsive browser checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-## What changed in 1.5.2
+## What changed in 1.5.3
+
+- Applied the cream/red/dark-green theme across all screens, including Rooms, Upgrades, Treasures, rewards, ending, and Endless.
+- Replaced separate frame styles with shared border, shadow, color, and typography tokens. Gameplay and popups now use identical paper frames.
+- Updated selected/locked/disabled states, square buttons/cards, header icon, instructions, and notifications.
+- Dock and next-area labels now use matching square paper signs; semantic guidance colors and distinct location artwork remain.
+- All 39 app groups and targeted responsive browser checks passed. No simulation or save-format changes.
+
+## Previous 1.5.2 changes
 
 - Gameplay now matches the title and Pause screens with dark-green surroundings, a cream paper frame, red controls, and condensed headings.
 - The HUD, area banners, start instructions, touch controls, and Room details use the matching palette with readable state colors.

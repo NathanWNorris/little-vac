@@ -1,14 +1,23 @@
 :root {
   color-scheme:dark;
-  --bg:#181b20;
-  --panel:#22262d;
-  --raised:#2b3038;
-  --line:#3b414a;
-  --text:#f3f0e5;
-  --muted:#abb0b7;
-  --accent:#f5b83d;
-  --ink:#181b20;
+  --bg:#17292d;
+  --panel:#203337;
+  --raised:#2b4447;
+  --line:#435b58;
+  --text:#f2e6c9;
+  --muted:#c3cec6;
+  --accent:#ee7951;
+  --ink:#17292d;
   --good:#99d2ae;
+  --paper:#ede2c7;
+  --paper-ink:#263d3b;
+  --paper-line:#b3a485;
+  --red:#ac412d;
+  --red-hover:#963725;
+  --frame-edge:9px solid #ce5b3e;
+  --frame-shadow:8px 9px 0 #0e191cb3;
+  --button-shadow:3px 3px 0 #7d3829;
+  --heading-font:Impact,'Arial Black',Arial,sans-serif;
   font-family:Arial,Helvetica,sans-serif;
   font-synthesis:none
 }
@@ -32,7 +41,7 @@ button {
   min-height:44px;
   padding:10px 18px;
   border:1px solid var(--line);
-  border-radius:4px;
+  border-radius:0;
   background:var(--panel);
   color:var(--text);
   font-weight:700;
@@ -47,23 +56,26 @@ button:active:not(:disabled) {
 }
 button:disabled {
   cursor:default;
-  color:#9fa5ae;
-  background:#24282e;
-  border-color:#353a42
+  color:#746b59;
+  background:#dfd6c1;
+  border-color:#c3b79c
 }
 button.primary {
   background:var(--accent);
   border-color:var(--accent);
-  color:var(--ink)
+  color:var(--ink);
+  box-shadow:var(--button-shadow)
 }
 button.primary:hover:not(:disabled) {
-  background:#ffd071;
-  border-color:#ffd071
+  background:var(--red-hover);
+  border-color:var(--red-hover);
+  color:#fff5df
 }
 button.primary:disabled {
-  background:#34332e;
-  color:#a9a397;
-  border-color:#454238
+  background:#dfd6c1;
+  color:#746b59;
+  border-color:#c3b79c;
+  box-shadow:none
 }
 button.ghost {
   background:transparent
@@ -82,10 +94,12 @@ h1,h2,h3,p {
   margin:0
 }
 h1 {
-  font-size:32px;
+  font-family:var(--heading-font);
+  font-size:38px;
   line-height:1.15;
-  letter-spacing:-1px;
-  font-weight:800
+  letter-spacing:.3px;
+  font-weight:900;
+  text-transform:uppercase
 }
 h2 {
   font-size:19px;
@@ -119,8 +133,10 @@ small {
   gap:9px;
   text-decoration:none;
   font-weight:900;
-  font-size:18px;
-  letter-spacing:-.5px
+  font-family:var(--heading-font);
+  font-size:26px;
+  letter-spacing:.4px;
+  white-space:nowrap
 }
 .wordmark img {
   width:29px;
@@ -135,6 +151,7 @@ small {
   height:40px;
   padding:0;
   background:transparent;
+  border:0;
   font-size:22px
 }
 #gameNav {
@@ -169,7 +186,7 @@ small {
   background:var(--accent);
   color:var(--ink);
   font-size:11px;
-  border-radius:3px
+  border-radius:0
 }
 .nav-lock {
   font-size:10px;
@@ -200,12 +217,28 @@ main {
   min-width:0;
   padding-bottom:32px
 }
+/* Every screen and popup uses the same paper edge and offset ink shadow. */
+body:not([data-screen="title"]) main,dialog {
+  background:var(--panel);
+  color:var(--text);
+  border:0;
+  border-top:var(--frame-edge);
+  border-radius:0;
+  box-shadow:var(--frame-shadow)
+}
+body:not([data-screen="title"]) main {
+  width:100%;
+  flex:0 0 auto;
+  padding:24px;
+  margin:0 auto 28px
+}
 .footer {
   display:flex;
   align-items:center;
   gap:20px;
   border-top:1px solid var(--line);
   min-height:62px;
+  margin-top:auto;
   font-size:11px;
   color:var(--muted)
 }
@@ -272,8 +305,8 @@ main {
 .save-warning {
   padding:12px 16px;
   margin:0 0 16px;
-  background:#45381d;
-  color:#ffe1a3;
+  background:var(--paper);
+  color:var(--paper-ink);
   border-left:3px solid var(--accent);
   font-size:13px
 }
@@ -350,7 +383,7 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
 }
 .district.selected {
   border-color:var(--accent);
-  background:#302b20
+  background:var(--raised)
 }
 .district-number {
   color:var(--muted);
@@ -383,16 +416,12 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
   font-size:12px;
   margin-top:4px
 }
-[data-location="0"] {--district-accent:#ecb668}
-[data-location="1"] {--district-accent:#79e4f2}
-[data-location="2"] {--district-accent:#92ce8a}
-[data-location="3"] {--district-accent:#f5c77b}
 .district.selected[data-location],.district.selected[data-location]:hover:not(:disabled) {
-  border-color:var(--district-accent);
-  background:#252b32
+  border-color:var(--accent);
+  background:var(--accent)
 }
-.district.selected[data-location] strong,.district.selected[data-location] .district-number {
-  color:var(--district-accent)
+.district.selected[data-location] :is(strong,small,.district-number) {
+  color:var(--ink)
 }
 .room-tiles {
   display:grid;
@@ -418,7 +447,7 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
   width:96px;
   flex-shrink:0;
   aspect-ratio:3/2;
-  border-radius:2px
+  border-radius:0
 }
 .room-tile-body {
   min-width:0;
@@ -453,7 +482,7 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
   text-align:center;
   margin-right:6px;
   background:var(--raised);
-  border-radius:3px;
+  border-radius:0;
   flex-shrink:0
 }
 .next-room .room-state {
@@ -461,14 +490,14 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
   color:var(--ink)
 }
 .room-tile:disabled {
-  background:#1e2228
+  background:#e3dac6
 }
 .room-tile:disabled .room-preview {
   opacity:.85
 }
 .room-tile:disabled .room-state {
   background:transparent;
-  color:#9299a3
+  color:#746b59
 }
 .endless-card {
   margin-top:18px;
@@ -511,9 +540,9 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
   display:flex;
   flex-direction:column;
   padding:20px 16px;
-  background:var(--panel);
+  background:#f3ead5;
   border:1px solid var(--line);
-  border-radius:4px;
+  border-radius:0;
   min-width:0
 }
 .upgrade-card.affordable {
@@ -603,29 +632,11 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
   width:36px;
   height:36px;
   border-radius:50%;
-  border:4px solid #121519;
+  border:4px solid var(--paper-ink);
   outline:1px solid var(--line)
 }
 /* Keep the whole room, including bottom docks, in view. */
-body[data-screen="play"] {
-  --bg:#17292d;
-  --panel:#203337;
-  --raised:#2b4447;
-  --line:#435b58;
-  --text:#f2e6c9;
-  --muted:#c3cec6;
-  --accent:#ee7951;
-  --ink:#17292d
-}
-body[data-screen="play"] .wordmark {
-  font-family:Impact,'Arial Black',Arial,sans-serif;
-  font-size:26px;
-  font-weight:900;
-  letter-spacing:.4px;
-  white-space:nowrap
-}
 body[data-screen="play"] .masthead {height:56px}
-body[data-screen="play"] .icon-button {border:0;border-radius:0}
 body[data-screen="play"] #gameNav {
   margin-bottom:12px;
   min-height:48px
@@ -635,11 +646,7 @@ body[data-screen="play"] main {
   width:min(100%,max(300px,calc((100svh - 365px)*1.5)));
   flex:0 0 auto;
   margin:0 auto 20px;
-  padding:14px 16px 12px;
-  background:var(--panel);
-  color:var(--text);
-  border-top:6px solid #ce5b3e;
-  box-shadow:7px 8px 0 #102023
+  padding:14px 16px 12px
 }
 body[data-screen="play"] .footer {
   display:none
@@ -652,7 +659,7 @@ body[data-screen="play"] .footer {
   margin-bottom:10px
 }
 .play-head h1 {
-  font-family:Impact,'Arial Black',Arial,sans-serif;
+  font-family:var(--heading-font);
   font-size:30px;
   font-weight:900;
   letter-spacing:.3px;
@@ -681,9 +688,9 @@ body[data-screen="play"] .footer {
   background:var(--accent);
   border-color:var(--accent);
   color:var(--ink);
-  box-shadow:3px 3px 0 #7d3829
+  box-shadow:var(--button-shadow)
 }
-.play-tools button:hover:not(:disabled),.start-card button.primary:hover:not(:disabled) {background:#963725;border-color:#963725;color:#fff5df}
+.play-tools button:hover:not(:disabled),.start-card button.primary:hover:not(:disabled) {background:var(--red-hover);border-color:var(--red-hover);color:#fff5df}
 .game-hud {
   display:grid;
   grid-template-columns:165px minmax(0,1fr) 100px;
@@ -737,7 +744,7 @@ body[data-screen="play"] .footer {
 .progress-track {
   height:8px;
   background:var(--line);
-  border-radius:2px;
+  border-radius:0;
   overflow:hidden
 }
 .progress-fill {
@@ -779,7 +786,7 @@ body[data-screen="play"] .footer {
 .arena {
   position:relative;
   background:var(--panel);
-  border:1px solid var(--line);
+  border:2px solid var(--paper-ink);
   border-radius:0;
   overflow:hidden;
   touch-action:none;
@@ -829,7 +836,7 @@ body[data-screen="play"] main:has(.room-start:not([hidden])) {
   text-align:center
 }
 .start-card h2 {
-  font-family:Impact,'Arial Black',Arial,sans-serif;
+  font-family:var(--heading-font);
   font-size:34px;
   text-transform:uppercase;
   letter-spacing:.3px;
@@ -853,8 +860,8 @@ body[data-screen="play"] main:has(.room-start:not([hidden])) {
   position:relative;
   padding:14px;
   border:1px solid var(--line);
-  border-radius:4px;
-  background:#1c2026
+  border-radius:0;
+  background:var(--panel)
 }
 .guide-number {
   position:absolute;
@@ -885,7 +892,7 @@ body[data-screen="play"] main:has(.room-start:not([hidden])) {
   line-height:1.2
 }
 .guide-copy p {
-  color:#c9cdd2;
+  color:var(--muted);
   margin:0;
   font-size:15px;
   line-height:1.5
@@ -909,10 +916,10 @@ body[data-screen="play"] main:has(.room-start:not([hidden])) {
   text-align:center;
   font:700 13px/1.5 Arial,Helvetica,sans-serif;
   color:var(--text);
-  background:#333a44;
-  border:1px solid #6d7580;
+  background:var(--raised);
+  border:1px solid var(--line);
   border-bottom-width:3px;
-  border-radius:3px
+  border-radius:0
 }
 .guide-goal {
   display:flex;
@@ -981,7 +988,7 @@ dialog:has(.how-to-play) {
   min-height:50px;
   font-size:17px;
   border-radius:0;
-  box-shadow:3px 3px 0 #7d3829
+  box-shadow:var(--button-shadow)
 }
 .start-keys {
   margin-top:12px;
@@ -1061,7 +1068,7 @@ dialog:has(.how-to-play) {
   min-height:118px;
   background:var(--panel);
   border:1px solid var(--line);
-  border-radius:4px;
+  border-radius:0;
   text-align:center;
   padding:18px 10px
 }
@@ -1137,7 +1144,7 @@ dialog:has(.how-to-play) {
 }
 .bonus-note {
   padding:12px 16px;
-  background:#302b20;
+  background:var(--raised);
   border-left:3px solid var(--accent);
   margin:14px 0;
   font-size:13px;
@@ -1159,7 +1166,7 @@ input[type="text"],input:not([type]) {
   min-width:0;
   background:var(--panel);
   border:1px solid var(--line);
-  border-radius:4px;
+  border-radius:0;
   padding:10px 14px;
   color:var(--text)
 }
@@ -1167,13 +1174,13 @@ input[type="text"],input:not([type]) {
   flex:1
 }
 /* Paper job slips share the title screen's cream, ink, and red palette. */
-body[data-screen="play"] main,dialog {
-  --text:#263d3b;
+body:not([data-screen="title"]) main,dialog {
+  --text:var(--paper-ink);
   --muted:#625b4c;
-  --line:#b3a485;
-  --panel:#ede2c7;
+  --line:var(--paper-line);
+  --panel:var(--paper);
   --raised:#ded3b7;
-  --accent:#ac412d;
+  --accent:var(--red);
   --ink:#fff5df;
   --good:#276349;
   color-scheme:light
@@ -1183,19 +1190,13 @@ dialog {
   max-height:calc(100svh - 28px);
   margin:auto;
   padding:28px;
-  background:var(--panel);
-  color:var(--text);
-  border:0;
-  border-top:9px solid #ce5b3e;
-  border-radius:0;
-  overflow:auto;
-  box-shadow:8px 9px 0 #0e191cb3
+  overflow:auto
 }
 dialog::backdrop {
   background:rgba(8,10,13,.8)
 }
 dialog h2 {
-  font-family:Impact,'Arial Black',Arial,sans-serif;
+  font-family:var(--heading-font);
   font-size:39px;
   font-weight:900;
   line-height:1.08;
@@ -1218,8 +1219,8 @@ dialog .button-row button {
   font-size:15px
 }
 dialog button {border-radius:0;min-height:46px}
-dialog button.primary {box-shadow:3px 3px 0 #7d3829}
-dialog button.primary:hover:not(:disabled) {background:#963725;border-color:#963725;color:#fff5df}
+dialog button.primary {box-shadow:var(--button-shadow)}
+dialog button.primary:hover:not(:disabled) {background:var(--red-hover);border-color:var(--red-hover);color:#fff5df}
 dialog :focus-visible {outline-color:#a33e29}
 :is(dialog,.room-start) .guide-copy p {color:var(--muted)}
 :is(dialog,.room-start) .guide-keys kbd {background:#dfd3b7;color:var(--text);border-color:#9b8b6c}
@@ -1230,15 +1231,15 @@ dialog :focus-visible {outline-color:#a33e29}
   :is(dialog,.room-start) .picture-guide>li {border-right:0;border-bottom:1px dashed var(--line)}
   :is(dialog,.room-start) .picture-guide>li:last-child {border-bottom:0}
 }
-dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22px;background:#ede2c7;color:#253332;border:0;border-top:9px solid #ce5b3e;border-radius:0;box-shadow:8px 9px 0 #0e191cb3}
+dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22px}
 .pause-menu .pause-caption {font:700 10px/1.4 'Courier New',monospace;letter-spacing:2px;color:#675b48;margin:0 0 8px}
-.pause-menu h2 {font-family:Impact,'Arial Black',Arial,sans-serif;font-size:61px;letter-spacing:1px;line-height:1;margin:0 0 12px;color:#263d3b}
+.pause-menu h2 {font-family:var(--heading-font);font-size:61px;letter-spacing:1px;line-height:1;margin:0 0 12px;color:var(--text)}
 .pause-menu .pause-room {font:12px/1.6 'Courier New',monospace;color:#625b4c;margin-bottom:21px}
 .pause-options {display:grid;gap:2px}
 .pause-options button {min-height:45px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border:0;border-radius:0;background:transparent;color:#2d3b36;font-size:18px;text-align:left;font-weight:800}
 .pause-options button:hover:not(:disabled) {background:#dacfaf;text-decoration:underline;text-underline-offset:4px}
-.pause-options .pause-resume {min-height:52px;margin-bottom:7px;background:#ac412d;color:#fff5df;font-size:22px;box-shadow:3px 3px 0 #7d3829}
-.pause-options .pause-resume:hover:not(:disabled) {background:#963725;color:#fff5df;text-decoration:none}
+.pause-options .pause-resume {min-height:52px;margin-bottom:7px;background:var(--red);color:var(--ink);font-size:22px;box-shadow:var(--button-shadow)}
+.pause-options .pause-resume:hover:not(:disabled) {background:var(--red-hover);color:var(--ink);text-decoration:none}
 .pause-menu button:focus-visible {outline:3px solid #a33e29;outline-offset:3px}
 .pause-menu .pause-safe-note {margin:12px 0 0;font:11px/1.5 'Courier New',monospace;color:#675e4b}
 .pause-leave {border-top:1px dashed #aa9a7b;margin-top:20px;padding-top:14px}
@@ -1286,8 +1287,8 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
   max-width:calc(100% - 32px);
   padding:12px 18px;
   border:1px solid var(--accent);
-  border-radius:4px;
-  background:#22262d;
+  border-radius:0;
+  background:var(--panel);
   color:var(--text);
   font-size:13px;
   z-index:10;
@@ -1297,7 +1298,6 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
 #toast.visible {
   opacity:1
 }
-body[data-screen="play"] #toast {background:#203337;border-radius:0}
 .sr-only {
   position:absolute;
   width:1px;
@@ -1347,8 +1347,9 @@ body[data-screen="play"] #toast {background:#203337;border-radius:0}
     height:62px
   }
   .wordmark {
-    font-size:15px
+    font-size:20px
   }
+  body:not([data-screen="title"]) main {padding:18px 12px}
   #gameNav {
     gap:0;
     margin-bottom:23px;

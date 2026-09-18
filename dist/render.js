@@ -411,8 +411,10 @@ function station(ctx, s, hint, active, time, still) {
   ctx.strokeStyle = '#315d56'; ctx.lineWidth = 2; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(s.x - 8, s.y - 16); ctx.lineTo(s.x - 8, s.y - 10); ctx.moveTo(s.x - 12, s.y - 13); ctx.lineTo(s.x - 8, s.y - 9); ctx.lineTo(s.x - 4, s.y - 13); ctx.stroke();
   if (hint) {
-    box(ctx, s.x - 44, s.y + 33, 88, 20, 10, '#23474c');
-    ctx.font = 'bold 10px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#c8ffe4';
+    box(ctx, s.x - 44, s.y + 33, 88, 20, 0, '#263d3b');
+    box(ctx, s.x - 43, s.y + 34, 86, 18, 0, '#ede2c7');
+    box(ctx, s.x - 43, s.y + 50, 86, 2, 0, '#a4f5cf');
+    ctx.font = 'bold 10px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#263d3b';
     ctx.fillText(typeof hint === 'string' ? hint : 'DROP-OFF', s.x, s.y + 43);
   }
 }
@@ -725,13 +727,16 @@ function areaDoor(ctx, run, time, still) {
   }
   if (open) {
     const labelWidth = 132, labelX = clamp(door.x + 30 - labelWidth, 44, W - labelWidth - 44), labelY = clamp(door.y - 66, 44, H - 92);
-    box(ctx, labelX, labelY, labelWidth, 25, 5, '#302b20');
-    ctx.font = 'bold 12px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = color;
+    box(ctx, labelX, labelY, labelWidth, 25, 0, '#263d3b');
+    box(ctx, labelX + 1, labelY + 1, labelWidth - 2, 23, 0, '#ede2c7');
+    box(ctx, labelX + 1, labelY + 22, labelWidth - 2, 2, 0, color);
+    ctx.font = 'bold 12px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#263d3b';
     ctx.fillText('NEXT AREA  →', labelX + labelWidth / 2, labelY + 13);
     if (door.nextName) {
       const caption = String(door.nextName);
-      box(ctx, labelX, labelY - 20, labelWidth, 19, 4, '#302b20e6');
-      ctx.font = '10px system-ui, sans-serif'; ctx.fillStyle = '#f8edcb';
+      box(ctx, labelX, labelY - 20, labelWidth, 19, 0, '#263d3b');
+      box(ctx, labelX + 1, labelY - 19, labelWidth - 2, 17, 0, '#ede2c7');
+      ctx.font = '10px Arial, Helvetica, sans-serif'; ctx.fillStyle = '#263d3b';
       ctx.fillText(caption, labelX + labelWidth / 2, labelY - 10, labelWidth - 10);
     }
   }
