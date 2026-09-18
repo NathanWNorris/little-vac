@@ -1,6 +1,7 @@
 import {LOCATIONS,CAMPAIGN,makeRoom,makeEndless} from './rooms.js';
 import {SAVE_KEY,resetCareer,statsFor,SHELLS,buyUpgrade,settleRun,selectShell,isRoomUnlocked} from './progression.js';
 import {createRun,step,runResult} from './simulation.js';
+import {AREA_STRIDE} from './world.js';
 import {render,drawTitle} from './render.js';
 import {createCareerStore} from './career-store.js';
 import {createInputController} from './input.js';
@@ -66,7 +67,7 @@ async function startRoom(id,seed){
   if(starting)return;starting=true;clearInput();
   try{const unlocked=await save(c=>{if(!isRoomUnlocked(c,id))return false;c.lastRoom=id;return true;});if(!unlocked){notify('Finish the previous room first.');return;}
     const room=id===0?makeEndless(seed??newSeed()):makeRoom(id,seed);lastSeed=room.seed;
-    run=createRun(room,statsFor(career.upgrades),`${Date.now()}-${crypto.randomUUID?.()||Math.random()}`);run.careerAtStart=career;run.started=false;settlement=null;roomDistrict=room.location;
+    run=createRun(room,statsFor(career.upgrades),`${Date.now()}-${crypto.randomUUID?.()||Math.random()}`);run.careerAtStart=career;run.started=false;run.cameraX=0;settlement=null;roomDistrict=room.location;
     clearTimeout(toastTimeout);$('#toast').classList.remove('visible');$('#toast').textContent='';
     $('#announcement').textContent='Parked at the drop-off dock. Left-click the room or press WASD to start.';
     playRoom();
@@ -83,7 +84,7 @@ function beginRoom(){
   if(!readyToStart()||paused||modal.open||starting||settling||resetting)return false;
   clearInput();run.started=true;lastStamp=performance.now();accumulator=0;
   $('#roomStart').hidden=true;focusRoom();gameHUD();
-  $('#announcement').textContent=run.room.exit?'Area started. Clean 100%, then follow the arrow through the next-area door.':'Room started. Guide the vacuum, dock when the bag is full, and clean 100% to finish.';
+  $('#announcement').textContent=run.room.exit?'Area started. Clean 100% to unlock the hallway. Open hallways let you walk both ways.':'Room started. Guide the vacuum, dock when the bag is full, and clean 100% to finish.';
   return true;
 }
 function playRoom(){
@@ -94,7 +95,7 @@ function playRoom(){
       <div id="bagMeter" class="bag-meter"><div class="bag-label"><strong id="bagText">Bag 0 / ${run.stats.capacity}</strong><span id="bagStatus" hidden></span></div><div class="progress-track"><div class="progress-fill" id="bagFill" style="width:0%"></div></div></div>
       ${action('pause','Ⅱ Pause','play-pause')}
     </section>
-    <div class="arena"><canvas id="gameCanvas" width="960" height="640" tabindex="0" aria-label="Cleaning room. Parked at the drop-off dock. Left-click inside the room, or press WASD or an arrow key to start and steer. After clicking, move your mouse without holding. Touch: tap Start, then drag to steer. Suction and emptying at green docks are automatic. Clean 100% in each area. If a next-area door opens, follow its arrow and walk into it. Finish all areas to save your coins. Escape pauses."></canvas><div class="joystick" aria-hidden="true"><div class="knob"></div></div><div class="touch-hint">Drag to glide</div>${startInstructions()}</div>
+    <div class="arena"><canvas id="gameCanvas" width="960" height="640" tabindex="0" aria-label="Cleaning room. Parked at the drop-off dock. Left-click inside the room, or press WASD or an arrow key to start and steer. After clicking, move your mouse without holding. Touch: tap Start, then drag to steer. Suction and emptying at green docks are automatic. Clean 100% in each area. Clean this area to unlock its hallway. Walk through open hallways in either direction. Finish all areas to save your coins. Escape pauses."></canvas><div class="joystick" aria-hidden="true"><div class="knob"></div></div><div class="touch-hint">Drag to glide</div>${startInstructions()}</div>
     <div class="game-bottom"><p class="steering-guide"><span class="mouse-copy"><strong>Mouse</strong> or <strong>WASD</strong></span><span class="touch-copy">Drag to steer</span></p>${areaGuide()}</div>
     <p id="gameTip" class="game-tip" hidden></p>`;
   setupCanvas();bindActions();if(!modal.open)focusRoom();lastStamp=performance.now();accumulator=0;lastHud=0;gameHUD();
@@ -124,7 +125,16 @@ function pointerDown(e){
 }
 function pointerMove(e){if(screen!=='play'||paused||modal.open||!run?.started||!['playing','exiting'].includes(run.phase))return;if(remoteControl)clearInput();input.pointerMove(e);}
 function pointerUp(e){input.pointerUp(e);}
-function movement(){return remoteControl?{x:remoteControl.x,y:remoteControl.y}:input.movement(run.robot,keys);}
+function movement(){
+  if(remoteControl)return{x:remoteControl.x,y:remoteControl.y};
+  // The mouse lives on the screen; room coordinates change at the hallway seam.
+  return input.movement({x:run.robot.x+run.areaIndex*AREA_STRIDE-(run.cameraX||0),y:run.robot.y},keys);
+}
+function updateCamera(delta){
+  const target=Math.max(0,Math.min((run.areaCount-1)*AREA_STRIDE,run.robot.x+run.areaIndex*AREA_STRIDE-480));
+  const current=run.cameraX||0;
+  run.cameraX=career.settings.reducedMotion?target:current+(target-current)*(1-Math.exp(-8*delta));
+}
 function gameHUD(){
   if(!run||screen!=='play')return;
   const r=run,b=r.robot,pct=Math.min(100,Math.floor(r.percent*100)),fill=b.bag/r.stats.capacity;
@@ -143,9 +153,11 @@ function gameHUD(){
   else if(r.unloading)tip='Emptying… stay beside the dock.';
   else if(r.full)tip='Bag full. Follow the green arrow to empty it.';
   else if(fill>=.8)tip='Nearly full. Follow the green arrow to the dock.';
-  else if(r.phase==='exiting')tip='Area clean! Follow the arrow through the next door. Your bag comes with you.';
+  else if(r.phase==='exiting')tip='Area clean! Walk through the open hallway. You can come back.';
+  else if(r.robot.x<40||r.robot.x>920)tip='Open hallways go both ways. Your bag stays with you.';
   else if(lastFew)tip=`${remaining} ${remaining===1?'piece':'pieces'} left. Look for the bright yellow circles and pointers.`;
   else if(r.percent>=.95)tip=`${remaining} pieces left. Look for the yellow rings.`;
+  else if(r.room.exit&&Math.hypot(r.robot.x-r.room.exit.x,r.robot.y-r.room.exit.y)<95)tip='Door locked. Clean this area to 100% to open it.';
   else if(r.room.toughness>1.4&&r.time<18)tip='Heavy dirt? Stay over it a little longer.';
   if($('#gameTip').textContent!==tip)$('#gameTip').textContent=tip;
   $('#gameTip').hidden=!tip;
@@ -167,7 +179,7 @@ function dismissModal(){const back=dialogScreen==='pause-child';closeModal();if(
 function jobDetails(){const r=run;return `<details class="pause-details"><summary>Job details & coins</summary><div><p>${esc(LOCATIONS[r.room.location].name)} · ${r.room.id?`Room ${r.room.id}`:'Endless'}${areaCount()>1?`<br>Area ${areaNumber()} of ${areaCount()} · ${esc(r.room.areaName)}`:''}</p><p>${money(career.coins)} saved coins<br><span id="bagValue">In bag: ${money(r.robot.bagValue)} ${r.robot.bagValue===1?'coin':'coins'}</span><br><span id="pendingCoins">+${money(r.coins+r.robot.bagValue)} this ${areaCount()>1?'job':'room'}</span></p><p>Job coins save after every area is clean.</p><p>Time ${timeText(r.time)}<br>Gold ${timeText(r.jobRoom.goldTime)} · Silver ${timeText(r.jobRoom.silverTime)}${r.room.id===0?`<br>Seed: ${esc(r.room.seed)}`:''}</p></div></details>`;}
 function pause(){if(screen!=='play'||!hasActiveRun()||modal.open)return;openModal(`<section class="pause-menu"><p class="pause-caption">TAKE A BREATHER</p><h2 id="modalTitle">PAUSED</h2><p class="pause-room">${esc(run.room.name)}<br>${areaCount()>1?`Area ${areaNumber()} of ${areaCount()} · `:''}${Math.floor(run.percent*100)}% clean</p><div class="pause-options">${action('resume','<span>Resume</span><span aria-hidden="true">▶</span>','pause-resume')}<div class="pause-shortcuts">${action('rooms','Rooms')}${action('shop','Upgrades')}</div>${action('controls','How to play')}${action('settings','Settings')}${action('title','Main menu')}</div>${jobDetails()}<div class="pause-leave"><div>${action('restart','Restart','ghost')}${action('quit','Quit & upgrade','pause-quit')}</div><p>Restarting or quitting loses unfinished coins.</p></div></section>`,'pause');}
 function settings(){const backToPause=dialogScreen==='pause';if(modal.open)modal.close();openModal(`<h2 id="modalTitle">Settings</h2><label class="setting-row">Sound effects<input id="muteSetting" type="checkbox" ${!career.settings.muted?'checked':''}></label><label class="setting-row">Effects volume<input id="volumeSetting" aria-label="Effects volume" type="range" min="0" max="1" step=".05" value="${career.settings.effects}"></label><label class="setting-row">Reduced motion<input id="motionSetting" type="checkbox" ${career.settings.reducedMotion?'checked':''}></label><p>Finished rooms, coins, and purchases save automatically. Browsing menus keeps your current room paused. Upgrades open after you finish or quit the room. Restarting, quitting, or closing the game discards unfinished cleaning.</p><div class="button-row">${action(backToPause?'back-pause':'resume',backToPause?'Back to pause':'Done','primary')}${action('new','Reset career','ghost')}</div>`,backToPause?'pause-child':'');$('#muteSetting').onchange=async e=>{const value=!e.target.checked;await save(c=>{c.settings.muted=value;});};$('#volumeSetting').onchange=async e=>{const value=Number(e.target.value);await save(c=>{c.settings.effects=value;});};$('#motionSetting').onchange=async e=>{const value=e.target.checked;await save(c=>{c.settings.reducedMotion=value;});};}
-function controls(){const backToPause=dialogScreen==='pause';if(modal.open)modal.close();openModal(`<section class="how-to-play"><h2 id="modalTitle">How to play</h2>${quickGuide()}<details class="guide-tips"><summary>A few extra tips</summary><ul><li><strong>Pause:</strong> press Esc or the Pause button.</li><li><strong>Stop:</strong> move the mouse outside the room, or release your keys / touch.</li><li><strong>Last bits of dirt:</strong> look for yellow circles.</li><li><strong>Heavy dust:</strong> stay over it a little longer.</li><li><strong>Door open?</strong> Follow the arrow into the next area. Your bag comes with you.</li><li><strong>Upgrades:</strong> finish the job, or pause and quit. Quitting loses this job’s unfinished coins.</li></ul></details><div class="button-row">${action(backToPause?'back-pause':'resume',backToPause?'Back to pause':screen==='play'?'Back to room':'Got it','primary')}</div></section>`,backToPause?'pause-child':'');}
+function controls(){const backToPause=dialogScreen==='pause';if(modal.open)modal.close();openModal(`<section class="how-to-play"><h2 id="modalTitle">How to play</h2>${quickGuide()}<details class="guide-tips"><summary>A few extra tips</summary><ul><li><strong>Pause:</strong> press Esc or the Pause button.</li><li><strong>Stop:</strong> move the mouse outside the room, or release your keys / touch.</li><li><strong>Last bits of dirt:</strong> look for yellow circles.</li><li><strong>Heavy dust:</strong> stay over it a little longer.</li><li><strong>Hallways:</strong> clean 100% to unlock the next door. Once open, walk both ways. Rooms and your bag stay as you left them.</li><li><strong>Upgrades:</strong> finish the job, or pause and quit. Quitting loses this job’s unfinished coins.</li></ul></details><div class="button-row">${action(backToPause?'back-pause':'resume',backToPause?'Back to pause':screen==='play'?'Back to room':'Got it','primary')}</div></section>`,backToPause?'pause-child':'');}
 function credits(){if(modal.open)modal.close();openModal(`<h2 id="modalTitle">Credits</h2><div class="credit-list"><p><strong>Sweep Shift</strong><br>A tiny cleaning game by Nathan Norris.</p><p>Built with JavaScript, Canvas, and synthesized Web Audio. All game artwork is drawn by original code. No external runtime assets or libraries are required.</p><p>Created with AI assistance for implementation, design iteration, writing, and testing.</p><p>Thanks for playing.</p></div><div class="button-row">${action('resume','Close','primary')}</div>`);}
 function confirmReset(){const backToPause=dialogScreen==='pause-child';if(modal.open)modal.close();openModal(`<h2 id="modalTitle">Reset your progress?</h2><p>This resets your rooms, coins, upgrades, medals, and treasures. Your current career cannot be restored afterward.</p><div class="button-row">${action(backToPause?'back-pause':'resume','Keep my career','primary')}${action('reset-confirm','Reset and start again')}</div>`,backToPause?'pause-child':'');}
 function continueShift(){
@@ -233,7 +245,7 @@ function frame(stamp){
         if(e.type==='trinket')notify(`Found: ${run.trinket.name}!`);
         if(e.type==='unload')notify(`Bag emptied. ${e.value} ${e.value===1?'coin':'coins'} ready to bank when you finish.`);
         if(e.type==='full')$('#announcement').textContent='Bag full. Move to a collection station.';
-        if(e.type==='area-clear'){$('#announcement').textContent=run.full?'Area clear. Your bag is full. Follow the green arrow to the drop-off, or carry your bag into the next area.':'Area clear! Your bag comes with you. Follow the arrow into the next area.';}
+        if(e.type==='area-clear'){$('#announcement').textContent=run.full?'Hallway unlocked. Your bag is full. Follow the green arrow to empty it, or carry it into the next area.':'Area clean! The hallway is unlocked. You can now walk both ways.';}
         if(e.type==='area-enter')entered=true;
       }
       run.events=[];
@@ -244,14 +256,16 @@ function frame(stamp){
         $('#announcement').textContent=`Entered area ${areaNumber()} of ${areaCount()}: ${run.room.areaName}. Your bag still holds ${run.robot.bag} pieces worth ${run.robot.bagValue} coins. ${run.full?'Follow the green arrow to the drop-off dock.':'Keep steering with your mouse or WASD.'}`;
       }
       if(run.phase==='complete'){completed();requestAnimationFrame(frame);return;}
+      updateCamera(delta);
     }
-    render(ctx,run,{time:stamp/1000,reducedMotion:career.settings.reducedMotion,shellColor:shells().color,pointer:input.pointer});
+    const pointer=input.pointer;
+    render(ctx,run,{time:stamp/1000,reducedMotion:career.settings.reducedMotion,shellColor:shells().color,cameraX:run.cameraX||0,pointer:pointer?{...pointer,x:pointer.x+(run.cameraX||0)-run.areaIndex*AREA_STRIDE}:null});
     if(stamp-lastHud>100){gameHUD();lastHud=stamp;}
   }
   requestAnimationFrame(frame);
 }
 // Optional browser-agent input uses the live movement loop; it cannot award progress.
-function publicState(){return{screen,paused:paused||(hasActiveRun()&&screen!=='play'),room:run?{id:run.room.id,name:run.room.name,seed:run.room.seed}:null,area:run?{number:areaNumber(),count:areaCount(),name:run.room.areaName||run.room.name,toughness:run.room.toughness||1,exit:run.room.exit||null}:null,phase:run?.phase,awaitingStart:!!run&&!run.started,robot:run?{x:run.robot.x,y:run.robot.y,bag:run.robot.bag,bagValue:run.robot.bagValue,capacity:run.stats.capacity}:null,percent:run?.percent,roomCoins:run?.coins,pendingCoins:run?run.coins+run.robot.bagValue:0,time:run?.time,career:JSON.parse(JSON.stringify(career))};}
+function publicState(){return{screen,paused:paused||(hasActiveRun()&&screen!=='play'),room:run?{id:run.room.id,name:run.room.name,seed:run.room.seed}:null,area:run?{number:areaNumber(),count:areaCount(),name:run.room.areaName||run.room.name,toughness:run.room.toughness||1,exit:run.room.exit||null,canGoBack:run.areaIndex>0,cleared:run.areaStates[run.areaIndex].cleared}:null,phase:run?.phase,awaitingStart:!!run&&!run.started,robot:run?{x:run.robot.x,y:run.robot.y,worldX:run.robot.x+run.areaIndex*AREA_STRIDE,bag:run.robot.bag,bagValue:run.robot.bagValue,capacity:run.stats.capacity}:null,cameraX:run?.cameraX||0,percent:run?.percent,roomCoins:run?.coins,pendingCoins:run?run.coins+run.robot.bagValue:0,time:run?.time,career:JSON.parse(JSON.stringify(career))};}
 const modelContext=document.modelContext;
 if(modelContext?.registerTool){
   const lifecycle=new AbortController();

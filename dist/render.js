@@ -1,5 +1,6 @@
 /* Original Canvas artwork for Sweep Shift. No downloaded art, fonts, or assets. */
 import { LOCATIONS, isWalkable } from './rooms.js';
+import { areaOffset, hallwayFor } from './world.js';
 const W = 960, H = 640, CELL = 40;
 const PALETTES = LOCATIONS.map(location => location.palette);
 const CONFETTI = ['#ed826e', '#f6d570', '#c4f2df', '#76cbd2', '#fcf0d7'];
@@ -599,6 +600,28 @@ function remainingDebrisHints(ctx, run, time, still) {
   ctx.restore();
 }
 
+function offscreenDebrisHints(ctx, run, activeOffset) {
+  if (run.started === false || run.phase !== 'playing') return;
+  const remaining = run.debris.filter(d => !d.collected && (d.amount ?? 1) > 0);
+  if (!remaining.length || remaining.length > 5) return;
+  // Keep the final pieces discoverable when their room extends beyond the
+  // camera. One quiet pointer per edge groups nearby targets without a banner.
+  ctx.save();
+  for (const side of [-1, 1]) {
+    const hidden = remaining.filter(d => side < 0 ? d.x + activeOffset < 0 : d.x + activeOffset > W);
+    if (!hidden.length) continue;
+    const x = side < 0 ? 24 : W - 24;
+    const y = clamp(hidden.reduce((sum, d) => sum + d.y, 0) / hidden.length, 36, H - 36);
+    circle(ctx, x, y, 18, '#292318');
+    ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.strokeStyle = '#ffdf59'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + side * 7, y - 7); ctx.lineTo(x + side * 14, y); ctx.lineTo(x + side * 7, y + 7);
+    ctx.strokeStyle = '#ffdf59'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.stroke();
+    ctx.font = 'bold 14px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff3b3';
+    ctx.fillText(String(hidden.length), x - side * 4, y + .5);
+  }
+  ctx.restore();
+}
+
 function clearRouteSegment(room, from, to) {
   const steps = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) / 6));
   for (let i = 0; i <= steps; i++) {
@@ -609,6 +632,10 @@ function clearRouteSegment(room, from, to) {
 }
 function routeTo(room, robot, destination, kind) {
   if (!destination) return [];
+  // The vacuum can be between rooms while the dock still belongs to its active
+  // area. Start the room route at the doorway and join it along the hallway.
+  const outside = robot.x < 40 ? room.entry : robot.x > 920 ? room.exit : null;
+  const origin = outside || robot;
   const cols = room.grid[0].length, rows = room.grid.length;
   let targets = guidancePaths.get(room);
   if (!targets) { targets = new Map(); guidancePaths.set(room, targets); }
@@ -630,7 +657,7 @@ function routeTo(room, robot, destination, kind) {
     }
     data = { next, end, start: -1, points: [] }; targets.set(key, data);
   }
-  const start = Math.floor(robot.y / CELL) * cols + Math.floor(robot.x / CELL);
+  const start = Math.floor(origin.y / CELL) * cols + Math.floor(origin.x / CELL);
   if (start !== data.start) {
     data.start = start; data.points = [];
     if (data.next[start] >= 0) {
@@ -643,7 +670,7 @@ function routeTo(room, robot, destination, kind) {
       data.points.push({ x: destination.x, y: destination.y });
     }
   }
-  return data.points;
+  return outside ? [{ x: outside.x, y: outside.y }, ...data.points] : data.points;
 }
 function guidanceTarget(run) {
   if (run.started === false || !['playing', 'exiting'].includes(run.phase) || run.unloading > 0) return null;
@@ -652,10 +679,15 @@ function guidanceTarget(run) {
     const point = run.room.stations[run.nearestStation || 0];
     if (point) return { point, kind: 'dock', shadow: '#21493b', line: '#a4f5cf', arrow: '#ceffe7' };
   }
-  return run.phase === 'exiting' && run.room.exit ? { point: run.room.exit, kind: 'exit', shadow: '#493a21', line: '#ffdd7d', arrow: '#ffe499' } : null;
+  if (run.phase === 'exiting' && run.room.exit) {
+    const door = run.room.exit;
+    const inDoorway = run.robot.x > door.x - 20 && Math.abs(run.robot.y - door.y) < 50;
+    return { point: inDoorway ? { x: W + 160, y: door.y } : door, kind: inDoorway ? 'hallway' : 'exit', shadow: '#493a21', line: '#ffdd7d', arrow: '#ffe499' };
+  }
+  return null;
 }
 function routeGuidance(ctx, run, target, time, still) {
-  const route = routeTo(run.room, run.robot, target.point, target.kind);
+  const route = target.kind === 'hallway' ? [target.point] : routeTo(run.room, run.robot, target.point, target.kind);
   if (!route.length) return;
   // Smooth only the first few steps, and only when the vacuum itself fits on
   // that line. This stops a diagonal arrow clipping the corner of a cabinet.
@@ -686,91 +718,123 @@ function routeGuidance(ctx, run, target, time, still) {
   }
   ctx.restore();
 }
-function areaEntry(ctx, room) {
-  const door = room.entry;
-  if (!door) return;
-  // The matching left-hand doorway marks where this area was entered. It stays
-  // quiet and beneath the dirt; only the outgoing doorway gets a glowing cue.
-  ctx.save();
-  box(ctx, door.x - 36, door.y - 33, 25, 66, 4, '#243139');
-  box(ctx, door.x - 31, door.y - 29, 15, 58, 2, '#384542');
-  line(ctx, door.x - 13, door.y - 32, door.x - 13, door.y + 32, '#a2aba3', 3);
-  line(ctx, door.x - 8, door.y, door.x + 10, door.y, '#d0d6bf70', 2);
-  line(ctx, door.x + 4, door.y - 5, door.x + 10, door.y, '#d0d6bf70', 2);
-  line(ctx, door.x + 4, door.y + 5, door.x + 10, door.y, '#d0d6bf70', 2);
-  ctx.restore();
+function backgroundFor(room) {
+  let background = cache.get(room);
+  if (!background) { background = makeBackground(room); cache.set(room, background); }
+  return background;
 }
-function areaDoor(ctx, run, time, still) {
-  const door = run.room.exit;
-  if (!door) return;
-  const open = run.phase === 'exiting', color = open ? '#ffdb83' : '#bac0ad';
+
+function hallway(ctx, room, index, open) {
+  const hall = hallwayFor(room, index);
+  if (!hall) return;
+  const { left, right, top, bottom, y, gateX } = hall;
+  const loc = room.location || 0, palette = PALETTES[loc];
   ctx.save();
-  if (open) {
-    const pulse = still ? .6 : .5 + Math.sin(time * 3) * .5;
-    circle(ctx, door.x, door.y, 31, `rgba(255,216,116,${.13 + pulse * .1})`);
-    ctx.strokeStyle = '#ffdf90'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(door.x, door.y, 28, 0, Math.PI * 2); ctx.stroke();
-  }
-  // A narrow frame on the far side leaves the arrival circle visible and
-  // clearly walkable; its amber floor arrow is the actual destination.
-  box(ctx, door.x + 11, door.y - 33, 25, 66, 4, '#243139');
-  box(ctx, door.x + 16, door.y - 29, 15, 58, 2, open ? '#493b26' : '#69716b');
-  line(ctx, door.x + 13, door.y - 32, door.x + 13, door.y + 32, color, 3);
-  if (open) {
-    line(ctx, door.x - 13, door.y, door.x + 13, door.y, color, 4);
-    line(ctx, door.x + 5, door.y - 8, door.x + 13, door.y, color, 4);
-    line(ctx, door.x + 5, door.y + 8, door.x + 13, door.y, color, 4);
-  } else {
-    box(ctx, door.x + 18, door.y - 1, 10, 9, 2, '#d0d0b7');
-    ctx.strokeStyle = '#d0d0b7'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(door.x + 23, door.y - 2, 3.5, Math.PI, 0); ctx.stroke();
-  }
-  if (open) {
-    const labelWidth = 132, labelX = clamp(door.x + 30 - labelWidth, 44, W - labelWidth - 44), labelY = clamp(door.y - 66, 44, H - 92);
-    box(ctx, labelX, labelY, labelWidth, 25, 0, '#263d3b');
-    box(ctx, labelX + 1, labelY + 1, labelWidth - 2, 23, 0, '#ede2c7');
-    box(ctx, labelX + 1, labelY + 22, labelWidth - 2, 2, 0, color);
-    ctx.font = 'bold 12px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#263d3b';
-    ctx.fillText('NEXT AREA  →', labelX + labelWidth / 2, labelY + 13);
-    if (door.nextName) {
-      const caption = String(door.nextName);
-      box(ctx, labelX, labelY - 20, labelWidth, 19, 0, '#263d3b');
-      box(ctx, labelX + 1, labelY - 19, labelWidth - 2, 17, 0, '#ede2c7');
-      ctx.font = '10px Arial, Helvetica, sans-serif'; ctx.fillStyle = '#263d3b';
-      ctx.fillText(caption, labelX + labelWidth / 2, labelY - 10, labelWidth - 10);
+  // Paint across both wall bands, so these are genuine openings into one
+  // connected floor rather than doors placed on top of a solid room wall.
+  ctx.fillStyle = palette.floor; ctx.fillRect(left, top, right - left, bottom - top);
+  ctx.save(); ctx.beginPath(); ctx.rect(left, top, right - left, bottom - top); ctx.clip();
+  for (let x = left; x < right; x += CELL) for (let yy = top; yy < bottom; yy += CELL) {
+    const tile = Math.round((x - left + yy - top) / CELL);
+    ctx.fillStyle = tile % 2 ? palette.floor : palette.floor2; ctx.fillRect(x, yy, CELL, CELL);
+    if (loc === 1) {
+      ctx.strokeStyle = tile % 2 ? '#be57852c' : '#62bbc42c'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x + 4, yy + 20); ctx.lineTo(x + 20, yy + 4); ctx.lineTo(x + 36, yy + 20); ctx.lineTo(x + 20, yy + 36); ctx.closePath(); ctx.stroke();
+    } else if (loc === 2) {
+      ctx.strokeStyle = '#706d5750'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, yy + 1, 38, 38);
+      line(ctx, x + 4, yy + 4, x + 35, yy + 4, '#fff7d13d');
+    } else {
+      for (const dy of [0, 20]) {
+        line(ctx, x, yy + dy + .5, x + CELL, yy + dy + .5, '#62463165');
+        line(ctx, x + 5, yy + dy + 5, x + 31, yy + dy + 5, '#fff1c529');
+      }
     }
   }
   ctx.restore();
+  for (const edge of [top, bottom]) {
+    box(ctx, left, edge - (edge === top ? 10 : 0), right - left, 10, 0, palette.dark);
+    line(ctx, left, edge, right, edge, palette.wall, 4);
+    line(ctx, left + 2, edge + (edge === top ? 3 : -3), right - 2, edge + (edge === top ? 3 : -3), '#e8d8b947', 2);
+  }
+  // A full-width sliding gate occupies the hallway, not collectible floor.
+  box(ctx, gateX - 13, top - 10, 26, 10, 1, '#263d3b');
+  box(ctx, gateX - 13, bottom, 26, 10, 1, '#263d3b');
+  if (!open) {
+    box(ctx, gateX - 11, top, 22, bottom - top, 1, '#243936');
+    box(ctx, gateX - 7, top + 3, 14, bottom - top - 6, 1, '#bdb596');
+    for (let yy = top + 10; yy < bottom - 6; yy += 14) line(ctx, gateX - 6, yy, gateX + 6, yy, '#797f6c', 2);
+    box(ctx, gateX - 15, y - 12, 30, 27, 2, '#ae422c');
+    box(ctx, gateX - 7, y - 4, 14, 12, 2, '#f4e7c6');
+    ctx.strokeStyle = '#f4e7c6'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(gateX, y - 5, 5, Math.PI, 0); ctx.stroke();
+    circle(ctx, gateX, y + 1, 1.6, '#ae422c');
+  } else {
+    // The folded gate remains visible above the opening after it unlocks.
+    box(ctx, gateX - 11, top - 35, 22, 23, 1, '#bdb596');
+    for (let yy = top - 30; yy < top - 12; yy += 6) line(ctx, gateX - 8, yy, gateX + 8, yy, '#6b7968', 2);
+    for (const direction of [-1, 1]) {
+      const x = (left + right) / 2 + direction * 28;
+      line(ctx, x - direction * 8, y, x + direction * 8, y, '#263d3b65', 3);
+      line(ctx, x + direction * 2, y - 6, x + direction * 8, y, '#263d3b65', 3);
+      line(ctx, x + direction * 2, y + 6, x + direction * 8, y, '#263d3b65', 3);
+    }
+  }
+  const labelX = gateX + 21, labelY = top - 63, labelWidth = 214;
+  box(ctx, labelX + 3, labelY + 4, labelWidth, 49, 0, '#102225');
+  box(ctx, labelX, labelY, labelWidth, 49, 0, '#ede2c7');
+  box(ctx, labelX, labelY, labelWidth, 4, 0, open ? '#6b8d72' : '#c94f34');
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = open ? '#263d3b' : '#a53e29';
+  ctx.font = 'bold 15px Arial, Helvetica, sans-serif';
+  ctx.fillText(open ? `AREA ${index + 2}  →` : 'LOCKED', labelX + 12, labelY + 19);
+  ctx.font = '12px Arial, Helvetica, sans-serif'; ctx.fillStyle = '#263d3b';
+  ctx.fillText(open ? 'Walk through. You can come back.' : 'Clean this area to 100% to open.', labelX + 12, labelY + 37, labelWidth - 24);
+  ctx.restore();
 }
 
-/** Draw an entire world in 960 × 640 coordinates. State remains owned by simulation. */
+function areaContents(ctx, room, state, active, time, still) {
+  const background = backgroundFor(room);
+  ctx.save(); ctx.clip(background.floorPath); drawFans(ctx, room.fans, time, still); ctx.restore();
+  const fill = active ? active.robot.bag / Math.max(1, active.stats.capacity) : 0;
+  const nearestStation = active?.nearestStation || 0;
+  const needsDock = active && ['playing', 'exiting'].includes(active.phase) && (active.full || fill >= .8);
+  room.stations.forEach((s, i) => station(ctx, s, needsDock && i === nearestStation ? (active.full ? 'EMPTY BAG' : 'DROP-OFF') : false, active && active.unloading > 0 && i === nearestStation, time, still));
+  if (active) remainingDebrisHints(ctx, active, time, still);
+  for (const d of state.debris || room.debris) if (d.type === 'dust') debris(ctx, d, room.location, time, still);
+  if (active) suction(ctx, active, time, still);
+  for (const d of state.debris || room.debris) if (d.type !== 'dust') debris(ctx, d, room.location, time, still);
+  trinket(ctx, state.trinket || room.trinket, time, still);
+}
+
+/** Draw a moving 960 × 640 viewport over persistent, connected rooms. */
 export function render(ctx, run, options = {}) {
   if (!run?.room) return;
   const still = !!options.reducedMotion, time = options.time ?? run.time ?? 0;
+  const areas = run.areas || [run.room], activeIndex = run.areas ? run.areaIndex : 0;
+  const cameraX = Number.isFinite(options.cameraX) ? options.cameraX : areaOffset(activeIndex);
+  const activeOffset = areaOffset(activeIndex) - cameraX;
   ctx.save(); ctx.globalAlpha = 1; ctx.lineCap = 'round';
-  let background = cache.get(run.room);
-  if (!background) { background = makeBackground(run.room); cache.set(run.room, background); }
-  ctx.drawImage(background.image, 0, 0);
-  ctx.save(); ctx.clip(background.floorPath);
-  drawFans(ctx, run.room.fans, time, still);
+  ctx.fillStyle = '#17292d'; ctx.fillRect(0, 0, W, H);
+  const visible = [];
+  for (let i = 0; i < areas.length; i++) {
+    const x = areaOffset(i) - cameraX;
+    if (x + W < 0 || x > W) continue;
+    visible.push(i); ctx.drawImage(backgroundFor(areas[i]).image, x, 0);
+  }
+  ctx.save(); ctx.translate(-cameraX, 0);
+  for (let i = 0; i < areas.length - 1; i++) {
+    const hall = hallwayFor(areas[i], i);
+    if (!hall || hall.right < cameraX || hall.left > cameraX + W) continue;
+    hallway(ctx, areas[i], i, !!run.areaStates?.[i]?.cleared);
+  }
   ctx.restore();
+  for (const i of visible) {
+    ctx.save(); ctx.translate(areaOffset(i) - cameraX, 0);
+    areaContents(ctx, areas[i], i === activeIndex ? run : run.areaStates?.[i] || areas[i], i === activeIndex ? run : null, time, still);
+    ctx.restore();
+  }
+  ctx.save(); ctx.translate(activeOffset, 0);
   const target = guidanceTarget(run);
-  if (target) {
-    ctx.save(); ctx.clip(background.floorPath); routeGuidance(ctx, run, target, time, still); ctx.restore();
-  }
-  const fill = run.robot.bag / Math.max(1, run.stats.capacity);
-  const nearestStation = run.nearestStation || 0, needsDock = ['playing', 'exiting'].includes(run.phase) && (run.full || fill >= .8);
-  run.room.stations.forEach((s, i) => station(ctx, s, needsDock && i === nearestStation ? (run.full ? 'EMPTY BAG' : 'DROP-OFF') : false, run.unloading > 0 && i === nearestStation, time, still));
-  areaEntry(ctx, run.room);
-  if (run.phase !== 'exiting') areaDoor(ctx, run, time, still);
-  remainingDebrisHints(ctx, run, time, still);
-  for (const d of run.debris) if (d.type === 'dust') debris(ctx, d, run.room.location, time, still);
-  suction(ctx, run, time, still);
-  for (const d of run.debris) if (d.type !== 'dust') debris(ctx, d, run.room.location, time, still);
-  trinket(ctx, run.trinket, time, still);
-  if (run.phase === 'exiting') {
-    areaDoor(ctx, run, time, still);
-  }
+  if (target) routeGuidance(ctx, run, target, time, still);
   if (options.pointer && ['playing', 'exiting'].includes(run.phase)) {
     const p = options.pointer;
     ctx.strokeStyle = '#fffcdf9a'; ctx.lineWidth = 1.5;
@@ -784,7 +848,9 @@ export function render(ctx, run, options = {}) {
     ctx.globalAlpha = clamp(p.life / (p.maxLife || 1), 0, 1);
     circle(ctx, p.x, p.y, Math.max(.3, p.size || 2), p.color || '#ffefaf');
   }
+  ctx.restore();
   ctx.globalAlpha = 1;
+  offscreenDebrisHints(ctx, run, activeOffset);
   if (run.phase === 'finishing') {
     const progress = clamp(run.finishProgress || 0, 0, 1);
     if (still) {
@@ -792,7 +858,7 @@ export function render(ctx, run, options = {}) {
     } else {
       const radius = progress * 1100;
       ctx.strokeStyle = `rgba(255,248,192,${.65 * (1 - progress)})`; ctx.lineWidth = 9 + progress * 22;
-      ctx.beginPath(); ctx.arc(run.robot.x, run.robot.y, radius, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(run.robot.x + activeOffset, run.robot.y, radius, 0, Math.PI * 2); ctx.stroke();
       ctx.fillStyle = `rgba(255,250,216,${.09 * Math.sin(progress * Math.PI)})`; ctx.fillRect(0, 0, W, H);
     }
   }

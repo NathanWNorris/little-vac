@@ -1,17 +1,25 @@
-# Sweep Shift 1.5.4 local release candidate
+# Sweep Shift 1.6.0 local release candidate
 
-The current **1.5.4** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.6.0** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
-- Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **61,496 bytes**.
-- SHA-256: **0fde4a199fd07c35d1bfe006671eeebd22afbd6142553355c665e3372b78e035**.
+- Contents: **12 files**, index.html at root, no external runtime dependencies or QA fixtures.
+- Size: **64,661 bytes**.
+- SHA-256: **e714878ef6db96a56868a030de623dae49e23e1bad967fa6e5508d2fca1330a2**.
 - All source, archive, and extracted hashes match.
-- This menu patch passed syntax and 39 app-orchestration groups, plus responsive browser checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
+- Passed the standard 24-job/50-area earned campaign, 3 Endless runs, 39 app groups, and supporting input/progression/store/generation checks. Targeted browser checks cover blocked gates, camera travel, backtracking, and narrow layout. Older deep-physics evidence below belongs to 1.4.1; see [PLAYTEST.md](PLAYTEST.md) for current validation scope.
 
-## What changed in 1.5.4
+## What changed in 1.6.0
+
+- Real hallways join later areas in one world; the camera follows smoothly through them.
+- A physical locked gate explains the 100% cleaning requirement. Unlocked passages stay open for travel in both directions.
+- Previous rooms retain dirt, partial cleaning, and treasures. Shared bag/value and pending earnings survive every return trip, including visits to earlier docks.
+- Mouse steering accounts for camera movement, Pause freezes it, and small yellow edge arrows locate offscreen final dirt.
+- The standard campaign and supporting tests passed. Save format, job count, and upgrade rules are unchanged.
+
+## Previous 1.5.4 changes
 
 - The play screen has one compact row: clean percentage, bag space, and Pause. The full site header/navigation and large title/area banner are hidden while playing.
 - Rooms, Upgrades, saved and pending coins, carried dirt value, and medal times are accessible from Pause.

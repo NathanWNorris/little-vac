@@ -1,6 +1,14 @@
 # Sweep Shift validation
 
-Current local candidate: **1.5.4**. Earlier sections below are historical evidence.
+Current local candidate: **1.6.0**. Earlier sections below are historical evidence.
+
+## Version 1.6.0 — walkable hallways and backtracking
+
+Areas now occupy one horizontal world connected by 120px-high hallways. Locked gates block movement until the preceding area is completely clean; opened gates stay open in both directions. Switching the active simulation area preserves world position rather than relocating the vacuum. Each area retains its debris, partial dust progress, treasure, and cleaned state. Bag/value, pending coins, job time, and the camera survive return trips and paused navigation. The camera follows horizontal movement smoothly, freezes with Pause, and keeps mouse coordinates aligned while crossing a seam. Reduced motion uses direct tracking. Offscreen final dirt has small yellow edge pointers.
+
+Syntax and the full standard suite passed: **24 campaign jobs / 50 areas and 3 Endless runs**, 39 app groups, 17 input groups, 16 progression groups, 9 store groups, and generation checks over 240 campaign seeds / 1,000 Endless seeds. The earned campaign used 2,121.34 simulated seconds; these are automated route times, not human playtime. Additional four-area checks passed at starter stats / 120Hz and maximum stats / 50ms steps. Focused regressions cover blocked gates, continuous movement both ways, preserved partial dust and treasure, full and partial bags, returning to an earlier dock with no duplicate payment, stationary mouse targets during camera movement, and held keyboard/touch input across the seam.
+
+Browser checks used clearly marked, temporary fixtures with artificial starting positions and room completion. All movement and suction afterward used the real app: the locked gate blocked crossing; the open hallway was crossed forward, backward, and forward again; the second area's progress and carried dirt survived. Screenshots showed both areas and the connecting floor during travel, the lock/open signs, a yellow edge pointer for three offscreen pieces, and a 320px layout without horizontal page overflow. A fresh ordinary QA run also started at the dock, cleaned through normal movement, and approached the locked gate. Warning/error logs were empty. These targeted browser checks are not a manual campaign replay or physical-phone test. The ordinary QA preview and real saves remain separate from these disposable fixtures.
 
 ## Version 1.5.4 — compact play screen
 

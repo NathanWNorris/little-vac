@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { CAMPAIGN, LOCATIONS, makeRoom, makeEndless, isWalkable } from '../dist/rooms.js';
+import {createRun,isRunWalkable} from '../dist/simulation.js';
+import {statsFor} from '../dist/progression.js';
+import {HALLWAY_MIDPOINT,HALL_HALF_HEIGHT} from '../dist/world.js';
 
 function validate(room) {
   assert.equal(room.width,960); assert.equal(room.height,640);
@@ -66,6 +69,7 @@ const originalBudgets = [230,275,280,290,300,320,285,300,315,330,345,365,300,315
 const layouts=new Set();let campaignAreas=0,previousToughness=1;
 for(let id=1;id<=24;id++) {
   const room=makeRoom(id), areas=[room,...room.nextAreas];
+  const hallwayRun=createRun(room,statsFor(),`geometry-${id}`);
   assert.equal(areas.length,id<9?1:id<18?2:id<22?3:4);
   assert.equal(room.areaCount,areas.length);
   assert(room.toughness>=previousToughness&&room.toughness>=1&&room.toughness<=2.6);
@@ -84,6 +88,15 @@ for(let id=1;id<=24;id++) {
       assert(isWalkable(area,area.exit.x,area.exit.y,24),'Door needs room for the robot to enter');
       assert(Math.hypot(area.exit.x-area.spawn.x,area.exit.y-area.spawn.y)>500,'Door cannot overlap the entry');
       assert.equal(area.exit.nextName,areas[index+1].areaName);
+      hallwayRun.areaIndex=index;
+      assert.equal(isRunWalkable(hallwayRun,HALLWAY_MIDPOINT,area.exit.y,17),false,'A dirty area keeps its hall physically closed');
+      hallwayRun.areaStates[index].cleared=true;
+      for(let x=900;x<=1260;x+=5)for(const dy of [-42,0,42]){
+        assert(isRunWalkable(hallwayRun,x,area.exit.y+dy,17),`Room ${id} area ${index+1}: blocked hallway at ${x},${dy}`);
+      }
+      for(const dy of [-HALL_HALF_HEIGHT,HALL_HALF_HEIGHT])assert.equal(isRunWalkable(hallwayRun,HALLWAY_MIDPOINT,area.exit.y+dy,17),false,'Hallway walls cannot be walked through');
+      hallwayRun.areaIndex=index+1;
+      for(let x=-300;x<=60;x+=10)assert(isRunWalkable(hallwayRun,x,area.exit.y,17),'The same open corridor is reachable while backtracking from an unfinished later area');
     } else assert.equal(area.exit,null,'The final area completes the job instead of opening another door');
     if(index>0) {
       assert.equal(area.nextAreas,undefined,'Area chain must not contain cycles');

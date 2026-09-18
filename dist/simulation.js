@@ -1,16 +1,57 @@
 import {isWalkable} from './rooms.js';
+import {AREA_STRIDE,HALLWAY_MIDPOINT,areaOffset,hallwayFor} from './world.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function createRun(room,stats,runId='run-'+Date.now()) {
   const areas=[room,...(room.nextAreas||[])];
-  const run={jobRoom:room,stats:{...stats},runId,areaIndex:0,areaCount:areas.length,jobTotal:areas.reduce((sum,area)=>sum+area.debris.length,0),coins:0,time:0,events:[],collectedCount:0};
-  enterArea(run,room);
+  const run={jobRoom:room,areas,areaStates:areas.map(createAreaState),stats:{...stats},runId,areaIndex:0,areaCount:areas.length,jobTotal:areas.reduce((sum,area)=>sum+area.debris.length,0),coins:0,time:0,events:[],collectedCount:0,robot:{...room.spawn,angle:0,move:0,bag:0,bagValue:0,squash:0},unloading:0,nearestStation:0,full:false,finishProgress:0,pickupCooldown:0,fullNotified:false};
+  // These aliases keep the active simulation API small without losing any area
+  // state when the robot walks back through a previously opened hallway.
+  for(const key of ['room','phase','debris','trinket','cleaned','total','percent','particles'])Object.defineProperty(run,key,{enumerable:true,get(){return this.areaStates[this.areaIndex][key];},set(value){this.areaStates[this.areaIndex][key]=value;}});
   return run;
 }
-function enterArea(r,room) {
-  const position=r.areaIndex>0&&room.entry?room.entry:room.spawn;
-  const bag=r.robot?.bag??0,bagValue=r.robot?.bagValue??0;
-  Object.assign(r,{room,phase:'playing',robot:{...position,angle:0,move:0,bag,bagValue,squash:0},debris:room.debris.map((d,i)=>({...d,resistance:Number.isFinite(d.resistance)?Math.max(1,d.resistance):1,vx:0,vy:0,angle:i*2.39996,amount:1,collected:false,progress:0,loose:d.type!=='stuck'})),trinket:{...room.trinket,collected:false},cleaned:0,total:room.debris.length,percent:0,unloading:0,nearestStation:0,full:bag>=r.stats.capacity,finishProgress:0,particles:[],pickupCooldown:0,fullNotified:false});
-  // Connected areas continue through the opposite doorway without a new start gate.
+function createAreaState(room) {
+  return {room,phase:'playing',cleared:false,debris:room.debris.map((d,i)=>({...d,resistance:Number.isFinite(d.resistance)?Math.max(1,d.resistance):1,vx:0,vy:0,angle:i*2.39996,amount:1,collected:false,progress:0,loose:d.type!=='stuck'})),trinket:{...room.trinket,collected:false},cleaned:0,total:room.debris.length,percent:0,particles:[]};
+}
+function activateArea(r,index) {
+  const previousAreaIndex=r.areaIndex;
+  r.robot.x+=areaOffset(previousAreaIndex)-areaOffset(index);
+  r.areaIndex=index;r.unloading=0;r.nearestStation=0;
+  r.events.push({type:'area-enter',areaIndex:index,previousAreaIndex,direction:index>previousAreaIndex?1:-1,areaName:r.room.areaName});
+}
+function circleHitsRect(x,y,radius,rect) {
+  if(rect.right<=rect.left||rect.bottom<=rect.top)return false;
+  const dx=x-clamp(x,rect.left,rect.right),dy=y-clamp(y,rect.top,rect.bottom);
+  return dx*dx+dy*dy<=radius*radius;
+}
+function subtractRect(rect,opening) {
+  const left=Math.max(rect.left,opening.left),right=Math.min(rect.right,opening.right),top=Math.max(rect.top,opening.top),bottom=Math.min(rect.bottom,opening.bottom);
+  if(left>=right||top>=bottom)return [rect];
+  return [{left:rect.left,right:rect.right,top:rect.top,bottom:top},{left:rect.left,right:rect.right,top:bottom,bottom:rect.bottom},{left:rect.left,right:left,top,bottom},{left:right,right:rect.right,top,bottom}].filter(r=>r.left<r.right&&r.top<r.bottom);
+}
+// Exact circle clearance against the union of authored floor and opened halls.
+// Hallways carve only outer wall cells and the gap between rooms; furniture and
+// cut-out corners retain their original collision even beside an entrance.
+export function isRunWalkable(r,x,y,radius=17) {
+  if(r.areaCount===1)return isWalkable(r.room,x,y,radius);
+  if(![x,y,radius].every(Number.isFinite)||radius<0)return false;
+  const worldX=x+areaOffset(r.areaIndex),worldWidth=areaOffset(r.areaCount-1)+r.areas.at(-1).width;
+  if(worldX-radius<0||worldX+radius>=worldWidth||y-radius<0||y+radius>=r.room.height)return false;
+  const openings=r.areaStates.flatMap((state,i)=>state.cleared&&state.room.exit?[hallwayFor(state.room,i)]:[]);
+  const blocked=rect=>{
+    if(!circleHitsRect(worldX,y,radius,rect))return false;
+    let solids=[rect];
+    for(const opening of openings)solids=solids.flatMap(solid=>subtractRect(solid,opening));
+    return solids.some(solid=>circleHitsRect(worldX,y,radius,solid));
+  };
+  const first=Math.max(0,Math.floor((worldX-radius)/AREA_STRIDE)),last=Math.min(r.areaCount-1,Math.floor((worldX+radius)/AREA_STRIDE));
+  for(let i=first;i<=last;i++){
+    const room=r.areas[i],offset=areaOffset(i),minX=Math.max(0,Math.floor((worldX-radius-offset)/40)),maxX=Math.min(23,Math.floor((worldX+radius-offset)/40));
+    for(let cy=Math.max(0,Math.floor((y-radius)/40));cy<=Math.min(15,Math.floor((y+radius)/40));cy++)for(let cx=minX;cx<=maxX;cx++){
+      if(!room.grid[cy]?.[cx]&&blocked({left:offset+cx*40,right:offset+(cx+1)*40,top:cy*40,bottom:(cy+1)*40}))return false;
+    }
+    if(i<r.areaCount-1&&blocked({left:offset+room.width,right:offset+AREA_STRIDE,top:0,bottom:room.height}))return false;
+  }
+  return true;
 }
 export function clearLine(room,ax,ay,bx,by) {
   if(![ax,ay,bx,by].every(Number.isFinite)||!isWalkable(room,ax,ay,2)||!isWalkable(room,bx,by,2))return false;
@@ -33,8 +74,10 @@ function burst(r,x,y,color,count=4) {
   for(let i=0;i<count&&r.particles.length<110;i++){let a=(i*2.4+r.time)*3,s=20+(i%4)*12;r.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.45,maxLife:.45,color,size:2+i%3});}
 }
 function finishArea(r) {
+  if(r.areaStates[r.areaIndex].cleared)return;
+  r.areaStates[r.areaIndex].cleared=true;
   r.cleaned=r.total;r.percent=1;
-  if(r.areaIndex<r.areaCount-1){r.phase='exiting';r.events.push({type:'area-clear',areaIndex:r.areaIndex,value:r.coins});}
+  if(!r.areaStates.every(state=>state.cleared)){r.phase='exiting';r.events.push({type:'area-clear',areaIndex:r.areaIndex,value:r.coins});}
   else {
     r.coins+=r.robot.bagValue;r.robot.bag=0;r.robot.bagValue=0;r.unloading=0;r.full=false;
     r.phase='finishing';r.events.push({type:'finish',value:r.coins});
@@ -49,10 +92,12 @@ export function step(r,dt,input={x:0,y:0}) {
   r.time+=dt;r.pickupCooldown=Math.max(0,r.pickupCooldown-dt);
   let ix=Number.isFinite(input.x)?input.x:0,iy=Number.isFinite(input.y)?input.y:0,m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m;}
   const b=r.robot,oldX=b.x,oldY=b.y,dx=ix*r.stats.speed*dt,dy=iy*r.stats.speed*dt;
-  if(isWalkable(r.room,b.x+dx,b.y,17))b.x+=dx;
-  if(isWalkable(r.room,b.x,b.y+dy,17))b.y+=dy;
+  if(isRunWalkable(r,b.x+dx,b.y,17))b.x+=dx;
+  if(isRunWalkable(r,b.x,b.y+dy,17))b.y+=dy;
   b.move=Math.hypot(b.x-oldX,b.y-oldY)/dt;
   if(b.move>3){const target=Math.atan2(b.y-oldY,b.x-oldX);let diff=Math.atan2(Math.sin(target-b.angle),Math.cos(target-b.angle));b.angle+=diff*Math.min(1,dt*14);}
+  if(r.areaIndex<r.areaCount-1&&r.areaStates[r.areaIndex].cleared&&b.x>HALLWAY_MIDPOINT)activateArea(r,r.areaIndex+1);
+  else if(r.areaIndex>0&&r.areaStates[r.areaIndex-1].cleared&&b.x<HALLWAY_MIDPOINT-AREA_STRIDE)activateArea(r,r.areaIndex-1);
   let nearest=Infinity;r.room.stations.forEach((s,i)=>{let d=Math.hypot(s.x-b.x,s.y-b.y);if(d<nearest){nearest=d;r.nearestStation=i;}});
   if(nearest<48&&b.bag>0){
     r.unloading=Math.min(1,r.unloading+dt/0.85);
@@ -60,15 +105,7 @@ export function step(r,dt,input={x:0,y:0}) {
   }else r.unloading=0;
   r.full=b.bag>=r.stats.capacity;
   if(r.full&&!r.fullNotified){r.events.push({type:'full'});r.fullNotified=true;}
-  if(r.phase==='exiting'){
-    const exit=r.room.exit;
-    if(exit&&b.move>0&&Math.hypot(exit.x-b.x,exit.y-b.y)<28){
-      r.areaIndex++;
-      enterArea(r,r.jobRoom.nextAreas[r.areaIndex-1]);
-      r.events.push({type:'area-enter',areaIndex:r.areaIndex,areaName:r.room.areaName});
-    }
-    return;
-  }
+  if(r.phase==='exiting')return;
   if(!r.full&&r.unloading===0) {
     for(const d of r.debris) {
       if(d.collected)continue;
@@ -115,6 +152,6 @@ export function step(r,dt,input={x:0,y:0}) {
   if(r.debris.every(d=>d.collected))finishArea(r);
 }
 export function runResult(r) {
-  if(r.phase!=='complete'||r.areaIndex!==r.areaCount-1)return null;
-  return {runId:r.runId,roomId:r.jobRoom.id,coins:r.coins,time:Math.round(r.time*100)/100,medal:r.time<=r.jobRoom.goldTime?3:r.time<=r.jobRoom.silverTime?2:1,trinket:r.trinket.collected};
+  if(r.phase!=='complete'||!r.areaStates.every(state=>state.cleared))return null;
+  return {runId:r.runId,roomId:r.jobRoom.id,coins:r.coins,time:Math.round(r.time*100)/100,medal:r.time<=r.jobRoom.goldTime?3:r.time<=r.jobRoom.silverTime?2:1,trinket:r.areaStates.some(state=>!state.trinket.hidden&&state.trinket.collected)};
 }

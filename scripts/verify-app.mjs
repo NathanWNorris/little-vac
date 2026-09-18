@@ -6,11 +6,12 @@ import * as simulation from '../dist/simulation.js';
 import * as storeModule from '../dist/career-store.js';
 import * as inputModule from '../dist/input.js';
 import * as ui from '../dist/ui.js';
+import * as world from '../dist/world.js';
 
 // Exercise the real app orchestration against a small DOM surface. Drawing is
 // deliberately omitted: browser playtests cover pixels, pointer geometry, and layout.
 const source = (await readFile(new URL('../dist/app.js', import.meta.url), 'utf8')).replace(/^import .*;\r?\n/gm, '');
-const dependencies = { ...rooms, ...progression, ...simulation, ...storeModule, ...inputModule, ...ui, render() {}, drawTitle() {} };
+const dependencies = { ...rooms, ...progression, ...simulation, ...storeModule, ...inputModule, ...ui, ...world, render() {}, drawTitle() {} };
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 const makeApp = new AsyncFunction('deps', 'window', 'document', 'navigator', 'performance', 'requestAnimationFrame', 'setTimeout', 'clearTimeout', 'crypto', 'console',
   `const {${Object.keys(dependencies).join(',')}}=deps;\n${source}\nreturn {act,startRoom,requestStart,completed,frame,rooms,shop,continueShift,publicState,pointerDown,pointerMove,pointerUp,pointer:()=>input.pointer,run:()=>run};`);
@@ -52,7 +53,7 @@ async function boot(initial = fixtureCareer()) {
   return { ...app, storage, locks, nodes, errors, webTools, focused:()=>document.activeElement,
     keyEvent(type,key,options={}){for(const callback of documentEvents.get(type)||[])callback({key,target:{tagName:'CANVAS',closest:()=>null},preventDefault(){},...options});},
     async externalCareer(career) { storage.setItem(progression.SAVE_KEY, JSON.stringify(career)); for (const callback of events.get('storage') || []) await callback({ key: progression.SAVE_KEY }); },
-    async settle() { const run = app.run(); run.phase = 'complete'; run.time = 100; run.percent = 1; run.coins = run.room.debris.reduce((sum, piece) => sum + piece.value, 0); await app.completed(); },
+    async settle() { const run = app.run(); run.phase = 'complete'; run.areaStates.forEach(state=>state.cleared=true); run.time = 100; run.percent = 1; run.coins = run.room.debris.reduce((sum, piece) => sum + piece.value, 0); await app.completed(); },
   };
 }
 
@@ -320,7 +321,7 @@ await test('a queued purchase or shell change cannot slip through while a room i
 
 await test('a room waiting for reward settlement cannot accept a purchase', async () => {
   const app = await boot(fixtureCareer(1)); await app.startRoom(2);
-  app.run().phase = 'complete'; app.run().percent = 1; app.run().time = 100;
+  app.run().phase = 'complete'; app.run().areaStates.forEach(state=>state.cleared=true); app.run().percent = 1; app.run().time = 100;
   const before = app.publicState().career;
   app.locks.hold();
   const completing = app.completed();
@@ -561,29 +562,36 @@ await test('an open area exit is still an unfinished job and cannot settle or bu
 });
 
 async function enterSecondArea(app,{bag=0,bagValue=0,coins=200}={}){
-  const run=app.run();run.phase='exiting';run.percent=1;run.coins=coins;run.full=bag>=run.stats.capacity;
-  Object.assign(run.robot,{x:run.room.exit.x,y:run.room.exit.y+29,bag,bagValue});
-  app.keyEvent('keydown','w');app.frame(100);
-  assert.equal(run.areaIndex,1,'Normal movement across the open doorway changes area');
+  const run=app.run();run.phase='exiting';run.percent=1;run.coins=coins;run.full=bag>=run.stats.capacity;run.areaStates[0].cleared=true;
+  Object.assign(run.robot,{x:world.HALLWAY_MIDPOINT-1,y:run.room.exit.y,bag,bagValue});
+  app.keyEvent('keydown','d');app.frame(100);
+  assert.equal(run.areaIndex,1,'Normal movement across the open hallway changes area');
   return run;
 }
-await test('walking through a door enters from the left and keeps control without a new start screen', async () => {
+await test('walking through a hallway keeps continuous position, camera, and control without a new start screen', async () => {
   const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
   const id=app.run().runId,before=app.publicState().career,run=await enterSecondArea(app);
   assert.equal(run.runId,id);assert.equal(run.coins,200);assert(run.time>0);
   assert.equal(run.percent,0);assert.equal(run.robot.bag,0);
-  assert.deepEqual({x:run.robot.x,y:run.robot.y},run.room.entry);
+  assert(Math.abs(run.robot.x-(world.HALLWAY_MIDPOINT-world.AREA_STRIDE))<run.stats.speed/120);
+  assert.equal(run.robot.y,run.room.entry.y);
   assert.notDeepEqual(run.room.entry,run.room.stations[0],'An annex is entered through its left doorway, not its dock');
   assert.equal(app.publicState().awaitingStart,false);assert.equal(app.publicState().area.number,2);
   assert.match(app.nodes.get('#areaGuide').outerHTML,/Room 9 · Area 2 of 2/);
   assert.equal(app.nodes.get('#roomStart').hidden,true);
   assert.equal(app.focused(),app.nodes.get('#gameCanvas'));
   const entered={x:run.robot.x,y:run.robot.y},time=run.time;
-  app.frame(200);assert(run.time>time);assert(run.robot.y<entered.y,'A held keyboard direction continues across the doorway');
-  app.keyEvent('keyup','w');
-  app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:650,clientY:300});
+  const firstCamera=run.cameraX;
+  app.frame(200);assert(run.time>time);assert(run.robot.x>entered.x,'A held keyboard direction continues across the hallway');
+  assert(run.cameraX>firstCamera&&run.cameraX<run.robot.x+world.AREA_STRIDE-480,'The camera pans toward the robot without jumping to the next room');
+  app.keyEvent('keyup','d');
+  const cursorX=run.robot.x+world.AREA_STRIDE-run.cameraX+70;
+  app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:cursorX,clientY:run.robot.y});
   assert(app.pointer(),'Mouse steering resumes on movement without any click');
-  app.frame(300);assert(run.robot.x>entered.x);
+  const beforeMouseX=run.robot.x;app.frame(300);assert(run.robot.x>beforeMouseX,'Mouse direction accounts for both the camera and the active-room offset');
+  const afterCamera=run.cameraX,afterMouseX=run.robot.x;
+  app.frame(400);assert(run.cameraX>afterCamera);assert(run.robot.x>afterMouseX,'A stationary screen cursor continues steering correctly while the camera moves');
+  await app.act('pause');const pausedCamera=run.cameraX;app.frame(500);assert.equal(run.cameraX,pausedCamera,'Pause freezes the camera together with the robot');
   assert.deepEqual(app.publicState().career,before,'Area transitions never bank career coins');
 });
 
@@ -601,14 +609,14 @@ await test('restart returns a multi-area job to its original first area and quit
 
 await test('a held touch drag continues across an internal doorway on the same canvas', async () => {
   const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
-  const run=app.run(),surface=app.nodes.get('#gameCanvas');run.phase='exiting';run.percent=1;
-  Object.assign(run.robot,{x:run.room.exit.x,y:run.room.exit.y+29});
+  const run=app.run(),surface=app.nodes.get('#gameCanvas');run.phase='exiting';run.percent=1;run.areaStates[0].cleared=true;
+  Object.assign(run.robot,{x:world.HALLWAY_MIDPOINT-1,y:run.room.exit.y});
   const touch={pointerId:2,pointerType:'touch',isPrimary:true,button:0,clientX:300,clientY:400};
-  app.pointerDown(touch);app.pointerMove({...touch,clientY:360});app.frame(100);
+  app.pointerDown(touch);app.pointerMove({...touch,clientX:340});app.frame(100);
   assert.equal(run.areaIndex,1);assert.equal(run.started,true);
   assert.equal(app.nodes.get('#gameCanvas'),surface);
-  const enteredY=run.robot.y;app.frame(200);
-  assert(run.robot.y<enteredY,'Crossing the doorway must not drop an active touch gesture');
+  const enteredX=run.robot.x;app.frame(200);
+  assert(run.robot.x>enteredX,'Crossing the hallway must not drop an active touch gesture');
   app.pointerUp(touch);const stopped={x:run.robot.x,y:run.robot.y};app.frame(300);
   assert.deepEqual({x:run.robot.x,y:run.robot.y},stopped);
 });
@@ -617,7 +625,7 @@ await test('partial and full bags retain dirt, coin value, and visible totals ac
   for(const full of [false,true]){
     const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
     const saved=app.publicState().career,bag=full?app.run().stats.capacity:7,bagValue=full?173:17;
-    const run=await enterSecondArea(app,{bag,bagValue});app.keyEvent('keyup','w');
+    const run=await enterSecondArea(app,{bag,bagValue});app.keyEvent('keyup','d');
     assert.equal(run.robot.bag,bag);assert.equal(run.robot.bagValue,bagValue);assert.equal(run.coins,200);
     assert.equal(run.full,full);assert.equal(app.publicState().pendingCoins,200+bagValue);
     assert.equal(app.publicState().robot.bagValue,bagValue);

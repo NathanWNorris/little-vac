@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import {makeRoom,makeEndless,isWalkable} from '../dist/rooms.js';
-import {createRun,step,runResult,clearLine} from '../dist/simulation.js';
+import {createRun,step,runResult,clearLine,isRunWalkable} from '../dist/simulation.js';
+import {AREA_STRIDE,HALLWAY_MIDPOINT,hallwayFor} from '../dist/world.js';
 import {defaultCareer,statsFor,UPGRADES,upgradePrice,buyUpgrade,settleRun,saveCareer,loadCareer,isRoomUnlocked} from '../dist/progression.js';
 
 const DT=1/60;
@@ -12,7 +13,8 @@ const cellOf=p=>[Math.floor(p.x/40),Math.floor(p.y/40)];
 const cellKey=([x,y])=>`${x},${y}`;
 const center=([x,y])=>({x:x*40+20,y:y*40+20});
 function search(room,point){
-  const start=cellOf(point),queue=[start],distance=new Map([[cellKey(start),0]]),parent=new Map();
+  const approach=point.x<60?{x:60,y:room.entry.y}:point.x>900?{x:900,y:room.exit.y}:null;
+  const start=cellOf(approach||point),queue=[start],distance=new Map([[cellKey(start),0]]),parent=new Map();
   for(let i=0;i<queue.length;i++){
     const [x,y]=queue[i],key=cellKey(queue[i]);
     for(const next of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]){
@@ -25,7 +27,7 @@ function search(room,point){
   return {distance,pathTo(point){
     let cell=cellOf(point),key=cellKey(cell);assert(distance.has(key),`No path to ${key}`);
     const path=[cell];while(parent.has(key)){cell=parent.get(key);key=cellKey(cell);path.unshift(cell);}
-    return path.map(center);
+    return [...(approach?[approach]:[]),...path.map(center)];
   }};
 }
 
@@ -35,32 +37,36 @@ const jobValue=room=>jobAreas(room).reduce((sum,area)=>sum+materialValue(area),0
 function auditRun(run,totalValue,previous,timeStep=DT){
   const b=run.robot;
   assert([b.x,b.y,b.bag,b.bagValue,run.coins,run.time,run.percent,run.cleaned].every(Number.isFinite),'Non-finite run state');
-  assert(isWalkable(run.room,b.x,b.y,17),'Robot crossed a wall');
+  assert(isRunWalkable(run,b.x,b.y,17),'Robot crossed a wall or locked hallway');
+  const worldX=b.x+run.areaIndex*AREA_STRIDE,previousWorldX=previous.x+(previous.areaIndex??0)*AREA_STRIDE;
+  assert(Math.hypot(worldX-previousWorldX,b.y-previous.y)<=run.stats.speed*timeStep+1e-6,'Movement must remain continuous through hallways');
   if(run.areaIndex!==(previous.areaIndex??0)){
-    assert.equal(run.areaIndex,(previous.areaIndex??0)+1,'Areas must open in order');
-    assert.equal(previous.phase,'exiting','Only a cleared area permits a doorway transition');
-    assert.equal(previous.cleaned,previous.room.debris.length);
-    assert(Math.hypot(previous.x-previous.room.exit.x,previous.y-previous.room.exit.y)<28+run.stats.speed*timeStep+1e-6,'The robot must physically reach the doorway');
-    assert.equal(run.room,run.jobRoom.nextAreas[run.areaIndex-1]);
-    const entry=run.room.entry||run.room.spawn;
-    assert.equal(b.x,entry.x);assert.equal(b.y,entry.y);
-    previous.collected.clear();
+    const direction=run.areaIndex-(previous.areaIndex??0);
+    assert.equal(Math.abs(direction),1,'A hallway joins adjacent areas only');
+    assert(run.areaStates[Math.min(run.areaIndex,previous.areaIndex??0)].cleared,'A locked hallway cannot be crossed');
+    if(direction>0){
+      assert.equal(previous.cleaned,previous.room.debris.length);
+      assert(Math.abs(previous.x-HALLWAY_MIDPOINT)<=run.stats.speed*timeStep+1e-6,'The robot must physically cross the hallway midpoint');
+      assert(b.x<0,'Entering a new area begins inside the connecting hallway, without teleporting to a dock');
+    }
+    assert.equal(run.room,run.areas[run.areaIndex]);
+    previous.collected=new Set();
   }else {
     assert(Math.hypot(b.x-previous.x,b.y-previous.y)<=run.stats.speed*timeStep+1e-6,'Movement exceeded the allowed speed');
     assert(run.cleaned+1e-7>=previous.cleaned,'Cleaning progress regressed within an area');
   }
   assert(run.percent>=0&&run.percent<=1&&b.bag>=0&&b.bag<=run.stats.capacity);
   assert(Number.isInteger(run.coins)&&run.coins>=0&&Number.isInteger(b.bagValue)&&b.bagValue>=0);
-  let looseValue=0,cleaned=0;
+  let cleaned=0;
   for(const d of run.debris){
     assert([d.x,d.y,d.vx,d.vy,d.amount].every(Number.isFinite),'Non-finite debris state');
     assert(d.amount>=0&&d.amount<=1);assert(!previous.collected.has(d.id)||d.collected,'A pickup reappeared');
     if(d.collected){previous.collected.add(d.id);cleaned++;}
-    else {looseValue+=d.value;if(d.type==='dust')cleaned+=1-d.amount;assert(isWalkable(run.room,d.x,d.y,3),'Loose material crossed a wall');}
+    else {if(d.type==='dust')cleaned+=1-d.amount;assert(isWalkable(run.room,d.x,d.y,3),'Loose material crossed a wall');}
   }
   assert(Math.abs(run.cleaned-cleaned)<1e-7,'Cleaning progress must match the visible remaining material');
-  const futureValue=(run.jobRoom.nextAreas||[]).slice(run.areaIndex).reduce((sum,area)=>sum+materialValue(area),0);
-  assert.equal(run.coins+b.bagValue+looseValue+futureValue,totalValue,'Material value was lost or paid twice');
+  const remainingValue=run.areaStates.reduce((sum,area)=>sum+area.debris.filter(d=>!d.collected).reduce((value,d)=>value+d.value,0),0);
+  assert.equal(run.coins+b.bagValue+remainingValue,totalValue,'Material value was lost or paid twice');
   previous.x=b.x;previous.y=b.y;previous.cleaned=run.cleaned;previous.areaIndex=run.areaIndex;previous.room=run.room;previous.phase=run.phase;
 }
 
@@ -93,7 +99,7 @@ export function solveRoom(room,stats,{runId=`verify-${room.id}-${room.seed}`,tim
     }else if(run.phase==='exiting'&&target?.kind!=='exit'){
       assert.equal(runResult(run),null,'A cleared intermediate area cannot settle the job');
       target={kind:'exit',item:run.room.exit};assert(target.item,'An intermediate area must have an exit');
-      route=search(run.room,run.robot).pathTo(target.item);route.push({x:target.item.x,y:target.item.y});routeAge=0;
+      route=search(run.room,run.robot).pathTo(target.item);route.push({x:target.item.x,y:target.item.y},{x:HALLWAY_MIDPOINT+10,y:target.item.y});routeAge=0;
     }
     let input={x:0,y:0};
     while(route.length&&Math.hypot(route[0].x-run.robot.x,route[0].y-run.robot.y)<.1)route.shift();
@@ -199,16 +205,32 @@ function walkTo(run,point){
   assert(!route.length||['finishing','complete'].includes(run.phase),'Focused check could not physically reach its destination');
 }
 
+function crossHallway(run,direction=1){
+  const from=run.areaIndex,door=direction>0?run.room.exit:run.room.entry;
+  walkTo(run,door);
+  for(let i=0;i<600&&run.areaIndex===from;i++){
+    const before={x:run.robot.x+run.areaIndex*AREA_STRIDE,y:run.robot.y};
+    step(run,DT,{x:direction,y:0});
+    const worldX=run.robot.x+run.areaIndex*AREA_STRIDE;
+    assert(Math.hypot(worldX-before.x,run.robot.y-before.y)<=run.stats.speed*DT+1e-6,'Hallway movement cannot teleport');
+    assert(isRunWalkable(run,run.robot.x,run.robot.y,17),'Hallway movement stays inside open floor');
+  }
+  assert.equal(run.areaIndex,from+direction,'Ordinary movement must cross the entire hallway in either direction');
+}
+
 function connectedAreaChecks(){
   const stats=statsFor();
   const debrisAt=x=>Array.from({length:20},(_,id)=>({id,x,y:300,type:'crumb',value:1}));
-  const root=testRoom({debris:debrisAt(300)}),second=testRoom({spawn:{x:100,y:540},debris:debrisAt(140)});
-  Object.assign(root,{areaIndex:0,areaCount:2,areaName:'Front room',exit:{x:420,y:300,nextName:'Back room'},nextAreas:[second]});
+  const root=testRoom({debris:debrisAt(300)}),second=testRoom({spawn:{x:100,y:540},debris:[...debrisAt(140),{id:20,x:180,y:300,type:'dust',value:2,resistance:2.6},{id:21,x:820,y:500,type:'crumb',value:1}]});
+  Object.assign(root,{areaIndex:0,areaCount:2,areaName:'Front room',exit:{x:900,y:300,nextName:'Back room'},nextAreas:[second]});
   Object.assign(second,{areaIndex:1,areaCount:2,areaName:'Back room',entry:{x:60,y:300}});
   root.trinket={x:300,y:300,name:'Hidden until final area',hidden:true};second.trinket={x:140,y:300,name:'Final keepsake'};
-  const lockedRoom={...root,debris:debrisAt(800),spawn:{...root.exit}},locked=createRun(lockedRoom,stats,'locked-door');
-  for(let i=0;i<10;i++)step(locked,DT,{x:1,y:0});
+  const lockedRoom={...root,debris:debrisAt(300),spawn:{...root.exit}},locked=createRun(lockedRoom,stats,'locked-door');
+  for(let i=0;i<300;i++)step(locked,DT,{x:1,y:0});
   assert.equal(locked.areaIndex,0,'Walking through a doorway before 100% cannot skip cleaning');assert.equal(locked.phase,'playing');
+  assert(locked.robot.x<=hallwayFor(root,0).gateX-17,'The locked door physically blocks the robot');
+  assert.equal(locked.collectedCount,0,'Approaching a locked hallway cannot silently clear the room');
+  assert.equal(isRunWalkable(locked,HALLWAY_MIDPOINT,300,17),false,'The locked corridor cannot be entered from beyond its gate');
   const nearlyCleanRoom={...root,debris:debrisAt(300).map((d,i)=>i===19?{...d,type:'dust'}:d)},nearlyClean=createRun(nearlyCleanRoom,stats,'nearly-clean-door');
   for(let i=0;i<10;i++)step(nearlyClean,.05,{});
   assert.equal(nearlyClean.collectedCount,19);assert(nearlyClean.percent>.99&&nearlyClean.percent<1);assert.equal(nearlyClean.phase,'playing');
@@ -225,39 +247,57 @@ function connectedAreaChecks(){
   assert.equal(run.areaIndex,0,'A clean area must wait for the player to drive to its doorway');assert.equal(runResult(run),null);
   assert.equal(settleRun(career,runResult(run)).ok,false);assert.equal(JSON.stringify(career),careerBefore,'Intermediate earnings stay unbanked');
   const timeBeforeDoor=run.time;
-  for(let i=0;i<100&&run.areaIndex===0;i++)step(run,DT,{x:1,y:0});
+  crossHallway(run);
   assert.equal(run.areaIndex,1);assert.equal(run.areaCount,2);assert.equal(run.room,second);assert.equal(run.jobRoom,root);
   assert.equal(run.runId,'connected-job');assert.equal(run.careerAtStart,careerAtStart);assert.equal(run.coins,0);assert.equal(run.robot.bag,20);assert.equal(run.robot.bagValue,20);assert(run.time>timeBeforeDoor);
   assert.equal(run.cleaned,0);assert.equal(run.percent,0);assert.equal(run.collectedCount,20);assert.equal(run.started,true);
-  assert.equal(run.robot.x,second.entry.x);assert.equal(run.robot.y,second.entry.y);
+  assert(Math.abs(run.robot.x-(HALLWAY_MIDPOINT-AREA_STRIDE))<=stats.speed*DT);assert.equal(run.robot.y,second.entry.y);
   assert.notEqual(run.robot.y,second.spawn.y,'Connected rooms enter through the opposite door, not the dock');
-  const entryTime=run.time;step(run,DT,{x:1,y:0});assert(run.time>entryTime);assert(run.robot.x>second.entry.x,'The next area continues without another start click');
+  const entryTime=run.time,entryX=run.robot.x;step(run,DT,{x:1,y:0});assert(run.time>entryTime);assert(run.robot.x>entryX,'The next area continues without another start click');
   assert.equal(runResult(run),null,'Entering the final area still cannot settle an unfinished job');
-  walkTo(run,{x:140,y:300});for(let i=0;i<180;i++)step(run,DT,{});
-  assert.equal(run.phase,'complete');assert.equal(run.coins,40);assert.equal(run.collectedCount,40);assert.equal(run.trinket.collected,true);
-  assert.equal(run.events.filter(e=>e.type==='finish').length,1);assert.equal(run.events.filter(e=>e.type==='area-enter').length,1);
-  const result=runResult(run);assert.equal(result.roomId,root.id);assert.equal(result.coins,40);assert.equal(result.trinket,true);
+  walkTo(run,{x:140,y:300});
+  assert.equal(run.phase,'playing');assert.equal(run.trinket.collected,true);
+  const bagBeforeBack=run.robot.bag,valueBeforeBack=run.robot.bagValue;
+  crossHallway(run,-1);
+  assert.equal(run.phase,'exiting');assert.equal(run.percent,1);assert(run.debris.every(d=>d.collected),'Returning to a cleaned area cannot respawn its dirt');
+  assert.equal(run.robot.bag,bagBeforeBack);assert.equal(run.robot.bagValue,valueBeforeBack);
+  const secondState=run.areaStates[1],savedDust=secondState.debris[20].amount,savedPickups=run.collectedCount;
+  assert(savedDust>0&&savedDust<1,'The later room retains partially vacuumed dust while visiting an earlier room');
+  const secondSnapshot=JSON.stringify({debris:secondState.debris,trinket:secondState.trinket,cleaned:secondState.cleaned,percent:secondState.percent});
+  crossHallway(run);
+  assert.equal(JSON.stringify({debris:run.debris,trinket:run.trinket,cleaned:run.cleaned,percent:run.percent}),secondSnapshot,'Backtracking restores the exact later-room progress and keepsake');
+  assert.equal(run.collectedCount,savedPickups);assert.equal(run.events.filter(e=>e.type==='area-clear').length,1,'Returning through an open hallway cannot award a second clear');
+  walkTo(run,{x:180,y:300});for(let i=0;i<120;i++)step(run,DT,{});
+  walkTo(run,{x:820,y:500});for(let i=0;i<180;i++)step(run,DT,{});
+  const value=jobValue(root);
+  assert.equal(run.phase,'complete');assert.equal(run.coins,value);assert.equal(run.collectedCount,42);assert.equal(run.trinket.collected,true);
+  assert.equal(run.events.filter(e=>e.type==='finish').length,1);assert.equal(run.events.filter(e=>e.type==='area-enter').length,3);
+  const result=runResult(run);assert.equal(result.roomId,root.id);assert.equal(result.coins,value);assert.equal(result.trinket,true);
   assert.equal(settleRun(career,result).ok,true);const awarded=career.coins;assert.equal(settleRun(career,result).ok,false);assert.equal(career.coins,awarded,'The whole job pays exactly once');
   const restart=createRun(root,stats,'connected-restart');assert.equal(restart.areaIndex,0);assert.equal(restart.coins,0);assert.equal(restart.time,0);assert.equal(runResult(restart),null,'Restart cannot carry provisional earnings');
-  const simulated=solveRoom(root,stats,{runId:'connected-route-check'});assert.equal(simulated.areaEntries,1);assert.equal(simulated.result.coins,40);
+  const simulated=solveRoom(root,stats,{runId:'connected-route-check'});assert.equal(simulated.areaEntries,1);assert.equal(simulated.result.coins,value);
 }
 
 function carriedBagChecks(){
   const stats=statsFor(),root=testRoom({debris:Array.from({length:stats.capacity},(_,id)=>({id,x:300,y:300,type:'crumb',value:id%3+1}))});
   const second=testRoom({debris:[{id:0,x:80,y:300,type:'crumb',value:3}],spawn:{x:100,y:540}});
-  Object.assign(root,{exit:{x:420,y:300,nextName:'Second area'},nextAreas:[second]});
+  Object.assign(root,{exit:{x:900,y:300,nextName:'Second area'},nextAreas:[second]});
   root.trinket.hidden=true;second.entry={x:60,y:300};
   const value=materialValue(root),run=createRun(root,stats,'carry-full-bag');
   step(run,DT,{});
   assert.equal(run.phase,'exiting');assert.equal(run.full,true);assert.equal(run.robot.bag,stats.capacity);assert.equal(run.robot.bagValue,value);assert.equal(run.coins,0,'Clearing an intermediate area must not deposit its bag');
-  for(let i=0;i<100&&run.areaIndex===0;i++)step(run,DT,{x:1,y:0});
+  crossHallway(run);
   assert.equal(run.areaIndex,1,'A full bag must not block the doorway');assert.equal(run.robot.bag,stats.capacity);assert.equal(run.robot.bagValue,value);assert.equal(run.full,true);assert.equal(run.unloading,0);
   for(let i=0;i<60;i++)step(run,DT,{});
   assert.equal(run.debris[0].collected,false,'Carried full bags cannot collect in the next area');assert.equal(run.robot.bagValue,value);assert.equal(run.coins,0);
-  walkTo(run,second.stations[0]);for(let i=0;i<90;i++)step(run,DT,{});
+  crossHallway(run,-1);
+  assert.equal(run.robot.bag,stats.capacity);assert.equal(run.robot.bagValue,value);assert.equal(run.coins,0,'A full bag keeps all of its value while backtracking');
+  assert(run.areaStates[1].debris.every(d=>!d.collected),'Returning to an earlier dock does not clear the later room');
+  walkTo(run,root.stations[0]);for(let i=0;i<90;i++)step(run,DT,{});
   assert.equal(run.robot.bag,0);assert.equal(run.robot.bagValue,0);assert.equal(run.full,false);assert.equal(run.coins,value,'A physical dock visit deposits the carried contents');
   assert.equal(run.events.filter(e=>e.type==='unload').length,1);assert.equal(run.events.find(e=>e.type==='unload').value,value);
-  walkTo(run,{x:80,y:300});for(let i=0;i<90;i++)step(run,DT,{});
+  for(let i=0;i<90;i++)step(run,DT,{});assert.equal(run.coins,value,'Staying at the old dock cannot pay twice');
+  crossHallway(run);walkTo(run,{x:80,y:300});for(let i=0;i<90;i++)step(run,DT,{});
   assert.equal(run.phase,'complete');assert.equal(run.coins,value+3);assert.equal(run.collectedCount,stats.capacity+1);assert.equal(run.robot.bag,0);assert.equal(runResult(run).coins,value+3);
   const cleared=createRun(root,stats,'deposit-in-cleared-area');step(cleared,DT,{});
   walkTo(cleared,root.stations[0]);for(let i=0;i<90;i++)step(cleared,DT,{});
@@ -266,7 +306,7 @@ function carriedBagChecks(){
   for(let i=0;i<120;i++)step(cleared,DT,{});assert.equal(cleared.coins,value,'A cleared-area dock cannot pay the bag twice');
   const passingDock=createRun({...root,stations:[{x:390,y:300}]},stats,'leave-partial-unload');step(passingDock,DT,{});
   let maxUnloading=0;
-  for(let i=0;i<100&&passingDock.areaIndex===0;i++){step(passingDock,DT,{x:1,y:0});maxUnloading=Math.max(maxUnloading,passingDock.unloading);}
+  for(let i=0;i<600&&passingDock.areaIndex===0;i++){step(passingDock,DT,{x:1,y:0});maxUnloading=Math.max(maxUnloading,passingDock.unloading);}
   assert(maxUnloading>0&&maxUnloading<1,'The robot physically crossed a dock without waiting for its unload');
   assert.equal(passingDock.areaIndex,1);assert.equal(passingDock.unloading,0,'A partial unload must not continue at the next area entrance');assert.equal(passingDock.robot.bag,stats.capacity);assert.equal(passingDock.robot.bagValue,value);assert.equal(passingDock.coins,0);
 }
@@ -325,7 +365,7 @@ export async function verifyCampaign(){
   assert(replayReward.ok);assert.equal(replayReward.bonus,0,'An equally good replay cannot repeat completion, medal or trinket bonuses');awarded+=replayReward.coins;
   assert.equal(career.coins,awarded-spent);assert.equal(career.completed.length,24);
   writeFileSync(new URL('../tmp/earned-career.json',import.meta.url),JSON.stringify(career,null,2));
-  const output={passed:true,campaignRooms:24,endlessRooms:3,automatedSeconds:report.reduce((sum,r)=>sum+r.seconds,0),timeNote:'Automated route-finding simulation times; not human playtime.',minRoomSeconds:Math.min(...report.map(r=>r.seconds)),maxRoomSeconds:Math.max(...report.map(r=>r.seconds)),awarded,spent,remainingCash:career.coins,purchases,report,endless,checks:['connected rooms','real movement','robot and debris collision bounds','normalized diagonals','exact corner line of sight','physical suction','bag capacity','full-bag keepsakes','automatic unloading','bags and value carried through doorways','dock unloading in cleared areas','conserved material value and dust progress','100% physical cleanup','opposite doorway transitions','resistant dust and stuck scraps','unique bonuses','save/reload','unfinished restart rejection','earned upgrades','ending unlock','endless seeds']};
+  const output={passed:true,campaignRooms:24,endlessRooms:3,automatedSeconds:report.reduce((sum,r)=>sum+r.seconds,0),timeNote:'Automated route-finding simulation times; not human playtime.',minRoomSeconds:Math.min(...report.map(r=>r.seconds)),maxRoomSeconds:Math.max(...report.map(r=>r.seconds)),awarded,spent,remainingCash:career.coins,purchases,report,endless,checks:['connected rooms','real movement','robot and debris collision bounds','normalized diagonals','exact corner line of sight','physical suction','bag capacity','full-bag keepsakes','automatic unloading','bags and value carried both ways through hallways','dock unloading in previously cleared areas','conserved material value and dust progress','100% physical cleanup','continuous hallway movement and locked gates','backtracking preserves dust and keepsakes','resistant dust and stuck scraps','unique bonuses','save/reload','unfinished restart rejection','earned upgrades','ending unlock','endless seeds']};
   writeFileSync(new URL('../tmp/campaign-report.json',import.meta.url),JSON.stringify(output,null,2));
   console.log(JSON.stringify({passed:true,rooms:24,endless:3,automatedSeconds:output.automatedSeconds,minRoomSeconds:output.minRoomSeconds,maxRoomSeconds:output.maxRoomSeconds,upgrades:career.upgrades,awarded,spent,remainingCash:career.coins},null,2));
   return output;
