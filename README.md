@@ -2,7 +2,7 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.4.4** updates Home and Pause with clearer actions and icons. Home shows the next room’s preview, saved coins, and upgrade availability. Pause separates Resume from restarting/quitting and offers a Main menu button that keeps the job paused. Help and Settings opened from Pause return there instead of immediately resuming play. The three-picture **Move, Clean, Empty** guide and final-piece dirt markers remain available.
+Version **1.5.0** gives the main menu a workshop title screen: large cream-and-red lettering, the vacuum leaving a clean trail, and a short unboxed menu. Pause is a paper job slip with a prominent Resume action. The current job, upgrade lock/availability, and saved coins stay visible. Help and Settings opened from Pause return there; Main menu keeps the unfinished job paused. The three-picture **Move, Clean, Empty** guide and final-piece dirt markers remain available.
 
 The campaign has **50 distinct areas across 24 jobs**. Rooms 1–8 stay small; rooms 9–17 have two areas, 18–21 have three, and 22–24 have four. Clear an area to open its marked doorway, then follow the arrow into the next. Later dust and stuck leaves take more suction, with fixed difficulty that stronger upgrades make faster. Each job begins parked at its dock and waits for a left click or WASD; connected areas continue seamlessly through opposite doorways. Every area has one dock and requires 100% cleaning. Dirt and its coin value stay in the bag between areas; a green arrow leads to the dock when it is nearly full.
 

@@ -794,53 +794,88 @@ export function render(ctx, run, options = {}) {
   ctx.restore();
 }
 
-/** Original, text-free title diorama. Keep the upper-left area open for UI copy. */
+/** A text-free workshop floor. The left side belongs to the title and menu. */
 export function drawTitle(ctx, time = 0, reducedMotion = false) {
   ctx.save();
-  const still = !!reducedMotion;
-  ctx.fillStyle = '#f6eedb'; ctx.fillRect(0, 0, W, H);
-  const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0, '#fff9e9'); grad.addColorStop(1, '#e1eadb'); ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-  circle(ctx, 833, 106, 174, '#c1ded2'); circle(ctx, 100, 641, 176, '#f0b79b');
-  ctx.strokeStyle = '#d9e5d5'; ctx.lineWidth = 2;
-  for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(832, 109, 196 + i * 15, .7, 3.5); ctx.stroke(); }
-  // A tray-like room, floating above the background.
-  ctx.save(); ctx.translate(560, 387); ctx.rotate(-.075);
-  box(ctx, -313, -184, 618, 384, 35, '#234c4e15');
-  box(ctx, -320, -207, 620, 384, 32, '#49827c');
-  box(ctx, -320, -225, 620, 384, 32, '#83b9a3');
-  box(ctx, -308, -213, 596, 355, 24, '#e8d2aa');
-  ctx.save(); rounded(ctx, -308, -213, 596, 355, 24); ctx.clip();
-  for (let row = 0; row < 7; row++) {
-    for (let col = 0; col < 12; col++) {
-      box(ctx, -308 + col * 52, -213 + row * 54, 51, 53, .5, (row + col) % 2 ? '#e8d2aa' : '#eddbb7');
-    }
+  ctx.fillStyle = '#17292d'; ctx.fillRect(0, 0, W, H);
+
+  // Uneven concrete slabs, with a hard, quiet edge behind the menu lettering.
+  ctx.fillStyle = '#1c3032';
+  ctx.beginPath(); ctx.moveTo(507, 0); ctx.lineTo(W, 0); ctx.lineTo(W, H);
+  ctx.lineTo(460, H); ctx.lineTo(490, 430); ctx.lineTo(475, 245); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#203436'; ctx.fillRect(712, 0, 248, 215);
+  line(ctx, 714, 0, 698, 640, '#102527', 2);
+  line(ctx, 489, 216, 960, 216, '#112629', 2);
+  line(ctx, 476, 443, 960, 443, '#112629', 2);
+  line(ctx, 718, 1, 704, 213, '#354447', 1);
+  line(ctx, 505, 219, 954, 219, '#344347', 1);
+
+  // A cropped workbench and its worn red safety stripe ground the scene.
+  ctx.fillStyle = '#102225'; ctx.fillRect(837, 0, 123, 157);
+  ctx.fillStyle = '#3d4b47'; ctx.fillRect(850, 0, 110, 126);
+  ctx.fillStyle = '#5f6657'; ctx.fillRect(850, 118, 110, 12);
+  ctx.fillStyle = '#d2593d'; ctx.fillRect(860, 137, 100, 7);
+  for (let i = 0; i < 5; i++) line(ctx, 868 + i * 24, 136, 861 + i * 24, 146, '#182b2b', 7);
+  line(ctx, 872, 23, 923, 23, '#93937b', 3);
+  line(ctx, 906, 52, 951, 52, '#252f2e', 5);
+  circle(ctx, 874, 98, 4, '#252f2e'); circle(ctx, 945, 98, 4, '#252f2e');
+
+  // Fixed grain sits only on the dirty floor. The clean sweep covers it below.
+  for (let i = 0; i < 125; i++) {
+    const x = 513 + noise(i, 81) * 461, y = 29 + noise(i, 62) * 621;
+    ctx.fillStyle = i % 3 === 0 ? '#49514a' : '#334341';
+    ctx.fillRect(x, y, 1 + noise(i, 24) * 3, 1 + noise(i, 95) * 2);
   }
-  // The right half is pristine; the debris field thins toward the robot.
-  for (let i = 0; i < 74; i++) {
-    const x = -280 + noise(i, 14) * 360, y = -174 + noise(i, 27) * 281;
-    if (x > 0 && y > -95 && y < 60) continue;
-    debris(ctx, { id: i + 50, x, y, type: i % 4 === 0 ? 'confetti' : i % 7 === 0 ? 'dust' : 'crumb', amount: 1, angle: noise(i, 3) * 6.28 }, 0, time, still);
+  for (let i = 0; i < 13; i++) {
+    const x = 531 + noise(i, 94) * 415, y = 43 + noise(i, 87) * 572;
+    line(ctx, x, y, x + 7 + noise(i, 92) * 16, y - 2, '#46524a', 1);
   }
+
+  // The broad S-shaped track explains the game before a word is read.
+  const sweep = () => {
+    ctx.beginPath(); ctx.moveTo(994, 670);
+    ctx.bezierCurveTo(855, 623, 575, 652, 595, 529);
+    ctx.bezierCurveTo(604, 470, 681, 442, 730, 388);
+  };
+  ctx.lineCap = 'butt'; ctx.lineJoin = 'round';
+  sweep(); ctx.strokeStyle = '#3f5750'; ctx.lineWidth = 141; ctx.stroke();
+  sweep(); ctx.strokeStyle = '#65766a'; ctx.lineWidth = 122; ctx.stroke();
+  sweep(); ctx.strokeStyle = '#758373'; ctx.lineWidth = 91; ctx.stroke();
+  // A pair of faint roller tracks retain the floor's workaday texture.
+  ctx.save(); ctx.translate(-12, -7);
+  sweep(); ctx.strokeStyle = '#899381'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.translate(14, 6);
+  sweep(); ctx.strokeStyle = '#556b5f'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+
+  // Paper, sawdust and tape ahead of the brush, with no decorative sparkles.
+  const scraps = [
+    [822, 284, .35, '#e7ce95', 17, 10], [863, 338, -.4, '#d86643', 21, 8],
+    [783, 231, -.24, '#b7bd99', 13, 13], [889, 232, .65, '#e8d9b6', 21, 10],
+    [921, 379, .45, '#ba5139', 16, 7], [733, 202, .26, '#d49358', 12, 6],
+    [940, 309, -.56, '#a7b19b', 18, 9], [806, 166, .75, '#d96743', 11, 6],
+  ];
+  for (const [x, y, angle, color, w, h] of scraps) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    ctx.fillStyle = '#102225'; ctx.fillRect(-w / 2 + 2, -h / 2 + 3, w, h);
+    ctx.fillStyle = color; ctx.fillRect(-w / 2, -h / 2, w, h);
+    if (w > 15) line(ctx, -w / 2 + 3, -h / 2 + 2, w / 2 - 4, -h / 2 + 2, '#f2e6bd70', 1);
+    ctx.restore();
+  }
+  for (let i = 0; i < 18; i++) {
+    const x = 766 + noise(i, 36) * 169, y = 248 + noise(i, 41) * 144;
+    circle(ctx, x, y, 1.5 + noise(i, 55) * 2.2, i % 4 ? '#ab9e74' : '#d18c55');
+  }
+
+  // The actual in-game vacuum, enlarged, faces the dirty part of the floor.
+  ctx.save(); ctx.translate(728, 390); ctx.rotate(-.64);
+  ellipse(ctx, 4, 18, 93, 72, '#102326');
+  ctx.scale(3.85, 3.85);
+  robot(ctx, { x: 0, y: 0, angle: 0, move: 0, bag: 36, squash: 0 }, 100, '#b7cfa9', 0, true);
   ctx.restore();
-  furniture(ctx, { x: -299, y: -204, w: 119, h: 74, kind: 'planter' }, 2);
-  furniture(ctx, { x: 173, y: 56, w: 108, h: 74, kind: 'crate' }, 0);
-  station(ctx, { x: 217, y: -147 }, false, false, time, still);
-  const bob = still ? 0 : Math.sin(time * 1.4) * 3;
-  ctx.save(); ctx.translate(80, -6 + bob); ctx.scale(3.45, 3.45);
-  const fake = { robot: { x: 0, y: 0, angle: -.22, move: .13, bag: 58, squash: 0 }, stats: { radius: 54 }, full: false, unloading: 0, phase: 'playing', debris: [] };
-  suction(ctx, fake, time, still);
-  robot(ctx, fake.robot, 100, '#88d5b0', time, still); ctx.restore();
-  // Larger scraps make the collectible materials legible at title-card scale.
-  for (let i = 0; i < 6; i++) {
-    const a = 2.45 + i * .19, r = 126 + i * 14;
-    ctx.save(); ctx.translate(80 + Math.cos(a) * r, -6 + Math.sin(a) * r); ctx.scale(1.7, 1.7);
-    debris(ctx, { id: i + 127, x: 0, y: 0, type: i % 2 ? 'confetti' : 'stuck', amount: 1, angle: -.4 + i * .27 }, 0, time, still); ctx.restore();
-  }
-  star(ctx, 124, -134, 14, '#fff9d1', 4); star(ctx, 268, -40, 8, '#fff5ba', 4);
-  ctx.restore();
-  // Small, graphic corner details feel like a toy package, without title text.
-  for (let i = 0; i < 3; i++) circle(ctx, 65 + i * 19, 69, 5, ['#4d827d', '#efb198', '#e2bd65'][i]);
-  star(ctx, 857, 541, 13, '#edb270', 4); circle(ctx, 888, 509, 5, '#83b8a7');
+
+  // Small chipped floor markings stay away from the menu's reading column.
+  line(ctx, 532, 43, 595, 43, '#697060', 4);
+  line(ctx, 532, 43, 532, 89, '#697060', 4);
+  ctx.fillStyle = '#1c3032'; ctx.fillRect(559, 39, 6, 7); ctx.fillRect(529, 68, 6, 4);
   ctx.restore();
 }

@@ -1,6 +1,12 @@
 # Sweep Shift validation
 
-Current local candidate: **1.4.4**. Earlier sections below are historical evidence.
+Current local candidate: **1.5.0**. Earlier sections below are historical evidence.
+
+## Version 1.5.0 — workshop title screen
+
+The boxed home layout is replaced by a full illustrated floor, oversized cream/red title lettering, a simple menu list, and a compact current-job note. The original Canvas title art reuses the gameplay vacuum and draws a clean trail through a dirty workshop floor. It is static and drawn once when Home renders, with no animation loop or external assets. Pause uses a cream paper-slip treatment and the existing safe navigation actions.
+
+Syntax and all **38 app-orchestration groups** passed. Browser review covered the desktop and 320×740 title composition, readable mobile menu targets without horizontal overflow, the paper Pause screen, and returning to Home. Browser warning/error logs were empty. The gameplay renderer, simulation, progression, and save format were unchanged; no campaign physics replay was repeated for this art/layout patch. The fresh preview uses the isolated earned-12 fixture, separate from the player's running job.
 
 ## Version 1.4.4 — home and pause menus
 

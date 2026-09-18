@@ -1,17 +1,25 @@
-# Sweep Shift 1.4.4 local release candidate
+# Sweep Shift 1.5.0 local release candidate
 
-The current **1.4.4** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.5.0** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **62,055 bytes**.
-- SHA-256: **e38aeb01f3a8bb35239c395d5f6918c49b20fe3d66121f24358f5d2b256a56a2**.
+- Size: **62,770 bytes**.
+- SHA-256: **765d87e76a993a160c53807844f83dceaac1fa0af7c3009b09ab78759a1005df**.
 - All source, archive, and extracted hashes match.
 - This menu patch passed syntax and 38 app-orchestration groups, plus responsive browser checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-## What changed in 1.4.4
+## What changed in 1.5.0
+
+- Replaced the boxed home layout with an illustrated workshop title screen, large condensed cream/red lettering, and a short unboxed menu.
+- New original Canvas artwork shows the game's vacuum leaving a clean trail through scattered debris. The image is static, drawn once per Home render, and has a dedicated phone composition.
+- Pause now resembles a cream job slip with a red Resume action and simple text choices. The existing confirmation and paused-navigation behavior is retained.
+- Current-job details, saved coins, progress, upgrade locks/availability, and endgame destinations remain visible and accurate.
+- Desktop and 320px browser checks plus all 38 app groups passed. No simulation or save-format changes.
+
+## Previous 1.4.4 changes
 
 - Home shows a room-layout preview beside clear Play/Continue, Rooms, Upgrades, and How to play buttons. Icons, readable captions, and saved-coin/progress totals replace the sparse text-only layout.
 - Upgrade availability is visible; an unfinished job explicitly shows the lock. Paused multi-area jobs show their current area and percentage.
