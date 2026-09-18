@@ -67,7 +67,7 @@ await test('an active room stays intact and cannot be upgraded through Rooms or 
   await app.act('rooms'); await app.act('shop');
   assert.equal(app.nodes.get('#modal').open, true);
   assert.notEqual(app.publicState().screen, 'shop', 'The upgrade shop must stay closed until the room is finished or quit');
-  assert.match(app.nodes.get('#modalContent').innerHTML, /data-action="quit"/);
+  assert.match(app.nodes.get('#modalContent').innerHTML, /data-action="quit-confirm"/);
   await app.act('buy:bag', { disabled: false });
   assert.deepEqual(app.publicState().career, before, 'An old purchase button must not spend saved coins during a room');
   assert.equal(app.run().stats.capacity, 90);
@@ -116,6 +116,32 @@ await test('quitting requires confirmation, discards only unfinished rewards, an
   await app.startRoom(7);
   assert.equal(app.run().stats.capacity, 120);
   assert.equal(app.run().percent, 0); assert.equal(app.run().robot.bag, 0);
+});
+
+await test('Upgrades asks once, keeps the job on cancellation, and opens the shop on confirmation', async () => {
+  for(const origin of ['play','rooms','title']){
+    const app=await boot(fixtureCareer(12));await app.startRoom(13);await app.act('begin-room');
+    const run=app.run(),career=app.publicState().career;
+    run.time=25;run.coins=42;run.robot.bag=4;run.robot.bagValue=9;run.percent=.3;
+    if(origin!=='play')await app.act(origin);
+    await app.act('shop');
+    const prompt=app.nodes.get('#modalContent').innerHTML;
+    assert.match(prompt,/lose its unfinished cleaning and coins/);
+    assert.match(prompt,/data-action="quit-confirm"/);
+    assert.doesNotMatch(prompt,/data-action="quit"/,'Quit must not open a second confirmation');
+    assert.equal(app.nodes.get('#modal').open,true);
+    app.frame(1000);app.frame(1100);assert.equal(run.time,25);
+    await app.act('resume-room');
+    assert.equal(app.publicState().screen,'play');assert.equal(app.run(),run);
+    assert.equal(run.robot.bagValue,9);assert.equal(run.coins,42);assert.equal(run.percent,.3);
+    await app.act('shop');app.keyEvent('keydown','Escape');
+    assert.equal(app.run(),run);assert.equal(app.nodes.get('#modal').open,false);
+    if(origin!=='play')await app.act(origin);
+    await app.act('shop');await app.act('quit-confirm');
+    assert.equal(app.nodes.get('#modal').open,false,'Confirmation goes straight to the shop');
+    assert.equal(app.run(),null);assert.equal(app.publicState().screen,'shop');
+    assert.deepEqual(app.publicState().career,career,'Unfinished job coins are not paid; saved career is retained');
+  }
 });
 
 await test('Endless seed zero survives restart and replay through the real app', async () => {
@@ -201,8 +227,8 @@ await test('a sound transaction that sees another tab’s reset discards the old
 await test('another tab’s completion and found treasure refresh the title and treasure shelf', async () => {
   const app = await boot();
   await app.externalCareer(fixtureCareer(1));
-  assert.match(app.nodes.get('#main').innerHTML.replace(/<[^>]*>/g,''), /1 \/ 24 rooms complete/);
   assert.match(app.nodes.get('#main').innerHTML, /Room 2 ·/);
+  assert.match(app.nodes.get('#main').innerHTML, /Bench Business/);
   await app.act('collection');
   const latest = fixtureCareer(1); latest.trinkets = [1];
   await app.externalCareer(latest);
@@ -370,7 +396,7 @@ await test('pause submenus return to Pause, and Main menu preserves the unfinish
   assert.equal(app.publicState().screen,'title');assert.equal(app.publicState().paused,true);
   assert.equal(app.nodes.get('#modal').open,false);
   const homeText=app.nodes.get('#main').innerHTML.replace(/<[^>]*>/g,'');
-  assert.match(homeText,/Area 1 of 2 · 42% clean/);assert.match(homeText,/Upgrades Locked/);
+  assert.match(homeText,/Room 13 · Leafy Welcome/);assert.match(homeText,/Upgrades Locked/);
   await app.act('continue');assert.equal(app.run(),run);assert.equal(app.publicState().paused,false);
   assert.equal(run.robot.bag,7);assert.equal(run.robot.bagValue,11);assert.equal(run.percent,.42);
 });

@@ -1,6 +1,14 @@
 # Sweep Shift validation
 
-Current local candidate: **1.5.0**. Earlier sections below are historical evidence.
+Current local candidate: **1.5.1**. Earlier sections below are historical evidence.
+
+## Version 1.5.1 — simpler home and single upgrade confirmation
+
+Home keeps the workshop illustration and short menu, replacing the lower job/stat block with one room caption beneath Continue. Dialogs now use cream paper, dark ink, red accents, and condensed headings. The picture guide keeps its dark illustrated panels for contrast.
+
+Syntax and all **39 app-orchestration groups** passed. The new regression covers opening Upgrades from a live room, Rooms, and Home: Keep playing restores the same run, Escape retains it, time stays frozen behind the prompt, and Quit & upgrade opens the shop directly without another confirmation or unfinished payout. Saved career data remains unchanged.
+
+Browser checks on the isolated earned-12 fixture verified the single confirmation, Keep playing, and direct exit to Upgrades, plus Settings and the three-picture help. Desktop and 320×740 checks found no horizontal overflow in the home/help/confirmation layouts. Browser warning/error logs were empty. No real player run or save was reset. Gameplay physics and save format are unchanged; these targeted checks are not a full campaign replay or physical-phone test.
 
 ## Version 1.5.0 — workshop title screen
 
