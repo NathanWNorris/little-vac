@@ -1,6 +1,12 @@
 # Sweep Shift validation
 
-Current local candidate: **1.5.1**. Earlier sections below are historical evidence.
+Current local candidate: **1.5.2**. Earlier sections below are historical evidence.
+
+## Version 1.5.2 — gameplay theme
+
+Gameplay now uses dark-green surroundings and a cream paper frame, red controls, condensed headings, and matching HUD/start-guide colors. Distinct district Canvas artwork, cleaning mechanics, and saved progress are unchanged. Green dock and ochre exit/last-dirt guidance retain their meanings with dark text on light surfaces.
+
+Syntax and all **39 app-orchestration groups** passed. Browser checks on the isolated earned-12 fixture covered starting and cleaning, the Pause popup, Room details, and the start instructions. Normal desktop, 320×740, and 1000×600 layouts showed no horizontal overflow; short windows retain ordinary vertical scrolling. The phone header stays on one line, and the three-picture guide remains readable. Warning/error logs were empty. This is a visual patch with targeted browser checks, not a repeated campaign simulation or physical-phone test.
 
 ## Version 1.5.1 — simpler home and single upgrade confirmation
 

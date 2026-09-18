@@ -607,13 +607,39 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
   outline:1px solid var(--line)
 }
 /* Keep the whole room, including bottom docks, in view. */
-body[data-screen="play"] #gameNav {
-  margin-bottom:16px
+body[data-screen="play"] {
+  --bg:#17292d;
+  --panel:#203337;
+  --raised:#2b4447;
+  --line:#435b58;
+  --text:#f2e6c9;
+  --muted:#c3cec6;
+  --accent:#ee7951;
+  --ink:#17292d
 }
+body[data-screen="play"] .wordmark {
+  font-family:Impact,'Arial Black',Arial,sans-serif;
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:.4px;
+  white-space:nowrap
+}
+body[data-screen="play"] .masthead {height:56px}
+body[data-screen="play"] .icon-button {border:0;border-radius:0}
+body[data-screen="play"] #gameNav {
+  margin-bottom:12px;
+  min-height:48px
+}
+body[data-screen="play"] .nav-item {min-height:46px;padding-top:7px;padding-bottom:7px}
 body[data-screen="play"] main {
   width:min(100%,max(300px,calc((100svh - 365px)*1.5)));
-  margin:auto;
-  padding-bottom:12px
+  flex:0 0 auto;
+  margin:0 auto 20px;
+  padding:14px 16px 12px;
+  background:var(--panel);
+  color:var(--text);
+  border-top:6px solid #ce5b3e;
+  box-shadow:7px 8px 0 #102023
 }
 body[data-screen="play"] .footer {
   display:none
@@ -623,11 +649,14 @@ body[data-screen="play"] .footer {
   justify-content:space-between;
   gap:15px;
   align-items:center;
-  margin-bottom:15px
+  margin-bottom:10px
 }
 .play-head h1 {
-  font-size:24px;
-  letter-spacing:-.5px
+  font-family:Impact,'Arial Black',Arial,sans-serif;
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:.3px;
+  text-transform:uppercase
 }
 .play-head .eyebrow {
   font-size:10px;
@@ -647,8 +676,14 @@ body[data-screen="play"] .footer {
   color:var(--muted)
 }
 .play-tools button {
-  font-size:12px
+  font-size:12px;
+  border-radius:0;
+  background:var(--accent);
+  border-color:var(--accent);
+  color:var(--ink);
+  box-shadow:3px 3px 0 #7d3829
 }
+.play-tools button:hover:not(:disabled),.start-card button.primary:hover:not(:disabled) {background:#963725;border-color:#963725;color:#fff5df}
 .game-hud {
   display:grid;
   grid-template-columns:165px minmax(0,1fr) 100px;
@@ -681,7 +716,7 @@ body[data-screen="play"] .footer {
 .remaining-mess {
   display:block;
   margin-top:5px;
-  color:#ffe06b;
+  color:#785410;
   font-size:12px;
   font-weight:700;
   white-space:nowrap
@@ -745,7 +780,7 @@ body[data-screen="play"] .footer {
   position:relative;
   background:var(--panel);
   border:1px solid var(--line);
-  border-radius:4px;
+  border-radius:0;
   overflow:hidden;
   touch-action:none;
   user-select:none
@@ -768,7 +803,7 @@ body[data-screen="play"] .footer {
   place-items:safe center;
   overflow:visible;
   padding:18px;
-  background:rgba(18,21,25,.94);
+  background:var(--panel);
   cursor:pointer
 }
 .arena:has(.room-start:not([hidden])) {
@@ -794,7 +829,10 @@ body[data-screen="play"] main:has(.room-start:not([hidden])) {
   text-align:center
 }
 .start-card h2 {
-  font-size:28px;
+  font-family:Impact,'Arial Black',Arial,sans-serif;
+  font-size:34px;
+  text-transform:uppercase;
+  letter-spacing:.3px;
   margin-bottom:12px
 }
 .start-area {
@@ -941,7 +979,9 @@ dialog:has(.how-to-play) {
 .start-card button {
   min-width:240px;
   min-height:50px;
-  font-size:17px
+  font-size:17px;
+  border-radius:0;
+  box-shadow:3px 3px 0 #7d3829
 }
 .start-keys {
   margin-top:12px;
@@ -1127,7 +1167,7 @@ input[type="text"],input:not([type]) {
   flex:1
 }
 /* Paper job slips share the title screen's cream, ink, and red palette. */
-dialog {
+body[data-screen="play"] main,dialog {
   --text:#263d3b;
   --muted:#625b4c;
   --line:#b3a485;
@@ -1136,7 +1176,9 @@ dialog {
   --accent:#ac412d;
   --ink:#fff5df;
   --good:#276349;
-  color-scheme:light;
+  color-scheme:light
+}
+dialog {
   width:min(470px,calc(100% - 28px));
   max-height:calc(100svh - 28px);
   margin:auto;
@@ -1179,14 +1221,14 @@ dialog button {border-radius:0;min-height:46px}
 dialog button.primary {box-shadow:3px 3px 0 #7d3829}
 dialog button.primary:hover:not(:disabled) {background:#963725;border-color:#963725;color:#fff5df}
 dialog :focus-visible {outline-color:#a33e29}
-dialog .guide-copy p {color:var(--muted)}
-dialog .guide-keys kbd {background:#dfd3b7;color:var(--text);border-color:#9b8b6c}
-dialog .picture-guide>li {background:transparent;border:0;border-right:1px dashed var(--line);border-radius:0}
-dialog .picture-guide>li:last-child {border-right:0}
-dialog .guide-picture {background:#203337;padding:5px}
+:is(dialog,.room-start) .guide-copy p {color:var(--muted)}
+:is(dialog,.room-start) .guide-keys kbd {background:#dfd3b7;color:var(--text);border-color:#9b8b6c}
+:is(dialog,.room-start) .picture-guide>li {background:transparent;border:0;border-right:1px dashed var(--line);border-radius:0}
+:is(dialog,.room-start) .picture-guide>li:last-child {border-right:0}
+:is(dialog,.room-start) .guide-picture {background:#203337;padding:5px}
 @media(max-width:700px) {
-  dialog .picture-guide>li {border-right:0;border-bottom:1px dashed var(--line)}
-  dialog .picture-guide>li:last-child {border-bottom:0}
+  :is(dialog,.room-start) .picture-guide>li {border-right:0;border-bottom:1px dashed var(--line)}
+  :is(dialog,.room-start) .picture-guide>li:last-child {border-bottom:0}
 }
 dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22px;background:#ede2c7;color:#253332;border:0;border-top:9px solid #ce5b3e;border-radius:0;box-shadow:8px 9px 0 #0e191cb3}
 .pause-menu .pause-caption {font:700 10px/1.4 'Courier New',monospace;letter-spacing:2px;color:#675b48;margin:0 0 8px}
@@ -1255,6 +1297,7 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
 #toast.visible {
   opacity:1
 }
+body[data-screen="play"] #toast {background:#203337;border-radius:0}
 .sr-only {
   position:absolute;
   width:1px;
@@ -1456,8 +1499,10 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
     padding:14px 6px
   }
   body[data-screen="play"] main {
-    width:100%
+    width:100%;
+    padding:12px 10px 10px
   }
+  body[data-screen="play"] .wordmark {font-size:20px}
   .play-head {
     gap:8px;
     margin-bottom:12px
@@ -1520,9 +1565,9 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
     bottom:14px;
     width:76px;
     height:76px;
-    border:1px solid #737b86;
+    border:1px solid var(--line);
     border-radius:50%;
-    background:#30363f
+    background:var(--raised)
   }
   .knob {
     width:29px;
@@ -1612,9 +1657,9 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
     bottom:14px;
     width:76px;
     height:76px;
-    border:1px solid #737b86;
+    border:1px solid var(--line);
     border-radius:50%;
-    background:#30363f
+    background:var(--raised)
   }
   .knob {
     width:29px;
@@ -1689,18 +1734,18 @@ body[data-screen="play"] .nav-wallet { display:none; }
 .area-guide {
   display:flex; align-items:center; justify-content:space-between; gap:14px;
   margin:0 0 12px; padding:11px 14px; border-left:3px solid var(--accent);
-  background:#242a31;
+  background:#e2d6b9;
 }
 .area-guide strong { display:block; font-size:13px; color:var(--text); }
 .area-guide span { display:block; margin-top:4px; font-size:12px; color:var(--muted); line-height:1.4; }
-.area-guide.exit-open { background:#3a3020; border-color:#f5bf55; }
-.area-guide.exit-open span { color:#ffdb91; font-weight:700; }
-.area-guide.dock-needed { background:#23392f; border-color:var(--good); }
-.area-guide.dock-needed span { color:#b9edcd; font-weight:700; }
+.area-guide.exit-open { background:#f0dba3; border-color:#95630d; }
+.area-guide.exit-open span { color:#684707; font-weight:700; }
+.area-guide.dock-needed { background:#d1dfc7; border-color:var(--good); }
+.area-guide.dock-needed span { color:#24563f; font-weight:700; }
 .area-steps { display:flex; flex-shrink:0; gap:5px; margin:0; padding:0; list-style:none; }
-.area-steps li { display:grid; place-items:center; width:26px; height:26px; border:1px solid #606773; color:#b0b6bf; font-size:12px; border-radius:4px; }
-.area-steps .current { color:#211d15; background:var(--accent); border-color:var(--accent); font-weight:800; }
-.area-steps .done { color:#a8ddbb; border-color:#70a88a; }
+.area-steps li { display:grid; place-items:center; width:26px; height:26px; border:1px solid #9c8e70; color:#625b4c; font-size:12px; border-radius:0; }
+.area-steps .current { color:var(--ink); background:var(--accent); border-color:var(--accent); font-weight:800; }
+.area-steps .done { color:#276349; border-color:#568263; }
 @media(max-width:660px) {
   .area-guide { padding:9px 10px; gap:8px; }
   .area-guide strong { font-size:12px; }

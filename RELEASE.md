@@ -1,17 +1,24 @@
-# Sweep Shift 1.5.1 local release candidate
+# Sweep Shift 1.5.2 local release candidate
 
-The current **1.5.1** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.5.2** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **62,721 bytes**.
-- SHA-256: **c3b67302d237eb015500a3e4bee558d67fb0016b8840fe945fd4331cb1b32024**.
+- Size: **62,946 bytes**.
+- SHA-256: **7bd60dea942e7c3b7b917c692850a0df74a08026ae647664d72f95e084d24ad8**.
 - All source, archive, and extracted hashes match.
 - This menu patch passed syntax and 39 app-orchestration groups, plus responsive browser checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-## What changed in 1.5.1
+## What changed in 1.5.2
+
+- Gameplay now matches the title and Pause screens with dark-green surroundings, a cream paper frame, red controls, and condensed headings.
+- The HUD, area banners, start instructions, touch controls, and Room details use the matching palette with readable state colors.
+- A compact header fits narrow screens. Desktop, short-window, and 320px browser checks passed, alongside all 39 app groups.
+- Location artwork, simulation, save format, and gameplay rules are unchanged.
+
+## Previous 1.5.1 changes
 
 - Removed the lower home job/stat block. A short room caption sits directly beneath Continue; the existing title artwork remains.
 - Upgrades during a job asks once, with Keep playing and Quit & upgrade. The prompt explains the loss of unfinished cleaning and coins. Keeping the job returns to play; confirming opens the shop directly.
