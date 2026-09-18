@@ -718,6 +718,15 @@ body[data-screen="play"] .footer {
   color:var(--accent);
   margin-top:5px
 }
+.remaining-mess {
+  display:block;
+  margin-top:5px;
+  color:#ffe06b;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap
+}
+.remaining-mess[hidden] { display:none; }
 .bag-label {
   display:flex;
   align-items:center;

@@ -1,17 +1,23 @@
-# Sweep Shift 1.4.1 local release candidate
+# Sweep Shift 1.4.2 local release candidate
 
-The current **1.4.1** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.4.2** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **58,489 bytes**.
-- SHA-256: **b17d2dc43d0e6589ad909529706558eb0f90a36903d044f35af12a9572178b10**.
+- Size: **58,864 bytes**.
+- SHA-256: **c6815560c52daa620643ae27c09559d2b11ecf461c808a59e1da9fdac75b9c5e**.
 - All source, archive, and extracted hashes match.
-- Syntax, standard campaign, deep physics, and 36 app-orchestration groups passed. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
+- This visual patch passed syntax and 36 app-orchestration groups, plus browser visual checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-## What changed in 1.4.1
+## What changed in 1.4.2
+
+- The last five uncollected pieces get larger yellow/white locator rings and small pointers, including barely visible dust.
+- A pieces-left counter stays visible even when the bag-full guidance takes priority.
+- Markers gently pulse normally and stay static with Reduced motion. Visual checks covered all four floor themes, one/two/five pieces, faint dust, and a 320px render.
+
+## Previous 1.4.1 changes
 
 - Dirt and its coin value remain in the bag when an area clears and when entering the next area. Partial and full bags both carry correctly.
 - The drop-off dock works after clearing an area as well as during cleaning. Final job completion pays any remaining bag once.

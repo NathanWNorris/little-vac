@@ -1,6 +1,10 @@
 # Sweep Shift validation
 
-Current local candidate: **1.4.1**. Earlier sections below are historical evidence.
+Current local candidate: **1.4.2**. Earlier sections below are historical evidence.
+
+## Version 1.4.2 — last-piece visibility
+
+Syntax and the existing 36 app-orchestration checks passed for this visual/UI patch. An isolated browser gallery using the real renderer verified one, two, and five remaining pieces, including dust with 0.001 amount, on all four floor themes. The stronger markers depend on actual remaining-piece count, remain readable at 320px, support static reduced-motion rendering, and coexist with full-bag drop-off guidance. Browser error/warning logs were empty. Static visual fixtures are not playthroughs; no campaign simulation was repeated for this rendering-only change.
 
 ## Version 1.4.1 — carried dirt and drop-off guidance
 

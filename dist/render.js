@@ -564,13 +564,30 @@ function unloading(ctx, run, time, still) {
     circle(ctx, x, y, 2.3, CONFETTI[i % CONFETTI.length]);
   }
 }
-function remainingDebrisHints(ctx, run) {
-  if ((run.percent || 0) < .8 || run.phase !== 'playing') return;
-  // A quiet finishing cue prevents the last few crumbs turning into a pixel hunt.
-  // These outlines are static and drawn only for real, still-collectible debris.
+function remainingDebrisHints(ctx, run, time, still) {
+  if (run.phase !== 'playing') return;
+  const remaining = run.debris.filter(d => !d.collected && (d.amount ?? 1) > 0);
+  const lastFew = remaining.length > 0 && remaining.length <= 5;
+  if (!lastFew && (run.percent || 0) < .8) return;
+  // Keep late-room rings quiet, then make the final five pieces unmistakable.
+  // Markers follow the actual dirt and disappear only when it is collected.
   ctx.save();
-  for (const d of run.debris) {
-    if (d.collected || (d.amount ?? 1) <= 0) continue;
+  for (const d of remaining) {
+    if (lastFew) {
+      const pulse = still ? 0 : (1 + Math.sin(time * 3)) * 1.5;
+      const radius = (d.type === 'dust' ? 20 : 16) + pulse;
+      circle(ctx, d.x, d.y, radius + 5, '#ffe36b38');
+      ctx.beginPath(); ctx.arc(d.x, d.y, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = '#292318'; ctx.lineWidth = 7; ctx.stroke();
+      ctx.strokeStyle = '#ffdf59'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.strokeStyle = '#fff9dd'; ctx.lineWidth = 1.3; ctx.stroke();
+      // A small downward pointer locates even a nearly transparent dust patch.
+      ctx.beginPath(); ctx.moveTo(d.x - 6, d.y - radius - 12);
+      ctx.lineTo(d.x, d.y - radius - 6); ctx.lineTo(d.x + 6, d.y - radius - 12);
+      ctx.strokeStyle = '#292318'; ctx.lineWidth = 7; ctx.stroke();
+      ctx.strokeStyle = '#ffdf59'; ctx.lineWidth = 3.5; ctx.stroke();
+      continue;
+    }
     const radius = d.type === 'dust' ? 17 : d.type === 'crumb' ? 7.5 : 10;
     circle(ctx, d.x, d.y, radius, '#ffe89a1c');
     ctx.beginPath(); ctx.arc(d.x, d.y, radius, 0, Math.PI * 2);
@@ -741,7 +758,7 @@ export function render(ctx, run, options = {}) {
   run.room.stations.forEach((s, i) => station(ctx, s, needsDock && i === nearestStation ? (run.full ? 'EMPTY BAG' : 'DROP-OFF') : false, run.unloading > 0 && i === nearestStation, time, still));
   areaEntry(ctx, run.room);
   if (run.phase !== 'exiting') areaDoor(ctx, run, time, still);
-  remainingDebrisHints(ctx, run);
+  remainingDebrisHints(ctx, run, time, still);
   for (const d of run.debris) if (d.type === 'dust') debris(ctx, d, run.room.location, time, still);
   suction(ctx, run, time, still);
   for (const d of run.debris) if (d.type !== 'dust') debris(ctx, d, run.room.location, time, still);
