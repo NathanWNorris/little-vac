@@ -1,6 +1,14 @@
 # Sweep Shift validation
 
-Current local candidate: **1.5.3**. Earlier sections below are historical evidence.
+Current local candidate: **1.5.4**. Earlier sections below are historical evidence.
+
+## Version 1.5.4 — compact play screen
+
+Gameplay has one top row containing cleaning percentage, bag capacity, and Pause. The site header, navigation, large room heading, area banner, and coin counters no longer compete with the room. A small footer retains Mouse/WASD and room/area position. Dock, exit, heavy-dirt, and last-piece hints appear only when relevant. Pause has Rooms and Upgrades shortcuts and a collapsed details section for saved/pending coins, bag value, area name, and whole-job medal targets.
+
+Syntax and all **39 app-orchestration groups** passed. Existing checks now exercise the Pause navigation paths and verify area-footer changes, carried bag values, and saved/pending totals in Pause after a doorway transition. The real browser loaded, started, moved, and cleaned an isolated Room 13 fixture. Pause details, Rooms → Resume, and Upgrades → one confirmation → Keep playing worked without losing the job. Browser warning/error logs were empty.
+
+Visual checks at normal desktop, 1000×600, and 320×740 confirmed the single-row HUD and no horizontal overflow. The complete room fits the short desktop viewport, and Pause retains a 44px target at 320px. The start guide remains available before movement. These are targeted interface and navigation checks, not a repeated campaign simulation or physical-phone playtest. No real career was modified; simulation and save format are unchanged.
 
 ## Version 1.5.3 — one theme throughout
 

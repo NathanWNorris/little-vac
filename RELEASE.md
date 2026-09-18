@@ -1,17 +1,24 @@
-# Sweep Shift 1.5.3 local release candidate
+# Sweep Shift 1.5.4 local release candidate
 
-The current **1.5.3** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.5.4** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **62,963 bytes**.
-- SHA-256: **bcb04f8e53aaf538a2454bfc7a29bcb0b4469719fd0a907c09eb87ae6529ca83**.
+- Size: **61,496 bytes**.
+- SHA-256: **0fde4a199fd07c35d1bfe006671eeebd22afbd6142553355c665e3372b78e035**.
 - All source, archive, and extracted hashes match.
 - This menu patch passed syntax and 39 app-orchestration groups, plus responsive browser checks. Campaign/deep physics evidence below belongs to 1.4.1. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-## What changed in 1.5.3
+## What changed in 1.5.4
+
+- The play screen has one compact row: clean percentage, bag space, and Pause. The full site header/navigation and large title/area banner are hidden while playing.
+- Rooms, Upgrades, saved and pending coins, carried dirt value, and medal times are accessible from Pause.
+- A small control reminder and room/area counter sit below the larger room view. Contextual guidance appears only when needed.
+- All 39 app groups and targeted desktop, short-window, and 320px browser checks passed. No simulation or save-format changes.
+
+## Previous 1.5.3 changes
 
 - Applied the cream/red/dark-green theme across all screens, including Rooms, Upgrades, Treasures, rewards, ending, and Endless.
 - Replaced separate frame styles with shared border, shadow, color, and typography tokens. Gameplay and popups now use identical paper frames.

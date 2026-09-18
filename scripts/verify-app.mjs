@@ -382,6 +382,15 @@ await test('reopening controls in a later room freezes the run and preserves it 
 await test('pause submenus return to Pause, and Main menu preserves the unfinished room', async () => {
   const app=await boot(fixtureCareer(12));await app.startRoom(13);await app.act('begin-room');
   const run=app.run();run.time=28;run.robot.bag=7;run.robot.bagValue=11;run.percent=.42;
+  await app.act('pause');
+  const pauseMarkup=app.nodes.get('#modalContent').innerHTML;
+  assert.match(pauseMarkup,/data-action="rooms"/);assert.match(pauseMarkup,/data-action="shop"/);
+  await app.act('rooms');
+  assert.equal(app.publicState().screen,'rooms');assert.equal(app.run(),run);
+  assert.equal(app.nodes.get('#modal').open,false);assert.equal(app.publicState().paused,true);
+  await app.act('resume-room');await app.act('pause');await app.act('shop');
+  assert.match(app.nodes.get('#modalContent').innerHTML,/data-action="quit-confirm"/,'Upgrades from Pause offers one quit confirmation');
+  await app.act('resume-room');assert.equal(app.run(),run);assert.equal(app.publicState().paused,false);
   await app.act('pause');await app.act('settings');
   assert.match(app.nodes.get('#modalContent').innerHTML,/data-action="back-pause"/);
   await app.act('back-pause');
@@ -566,8 +575,7 @@ await test('walking through a door enters from the left and keeps control withou
   assert.deepEqual({x:run.robot.x,y:run.robot.y},run.room.entry);
   assert.notDeepEqual(run.room.entry,run.room.stations[0],'An annex is entered through its left doorway, not its dock');
   assert.equal(app.publicState().awaitingStart,false);assert.equal(app.publicState().area.number,2);
-  assert.match(app.nodes.get('#areaGuide').outerHTML,/Area 2 of 2/);
-  assert.match(app.nodes.get('#areaGuide').outerHTML,/Final area/);
+  assert.match(app.nodes.get('#areaGuide').outerHTML,/Room 9 · Area 2 of 2/);
   assert.equal(app.nodes.get('#roomStart').hidden,true);
   assert.equal(app.focused(),app.nodes.get('#gameCanvas'));
   const entered={x:run.robot.x,y:run.robot.y},time=run.time;
@@ -613,10 +621,14 @@ await test('partial and full bags retain dirt, coin value, and visible totals ac
     assert.equal(run.robot.bag,bag);assert.equal(run.robot.bagValue,bagValue);assert.equal(run.coins,200);
     assert.equal(run.full,full);assert.equal(app.publicState().pendingCoins,200+bagValue);
     assert.equal(app.publicState().robot.bagValue,bagValue);
-    assert.equal(app.nodes.get('#bagValue').textContent,'In bag: '+bagValue+' coins');
-    assert.equal(app.nodes.get('#pendingCoins').textContent,'+'+(200+bagValue)+' this job');
-    if(full){assert.match(app.nodes.get('#gameTip').textContent,/green arrow/);assert.match(app.nodes.get('#areaHint').textContent,/green arrow/);}
-    await app.act('pause');await app.act('resume');await app.act('rooms');await app.act('resume-room');
+    if(full)assert.match(app.nodes.get('#gameTip').textContent,/green arrow/);
+    await app.act('pause');
+    const pauseMarkup=app.nodes.get('#modalContent').innerHTML;
+    assert.match(pauseMarkup,/Area 2 of 2/,'Pause identifies the area entered through the door');
+    assert(pauseMarkup.includes(ui.money(saved.coins)+' saved coins'),'Pause distinguishes the saved balance from unfinished job coins');
+    assert(pauseMarkup.includes('In bag: '+bagValue+' coins'),'Pause retains the value of carried dirt');
+    assert(pauseMarkup.includes('+'+(200+bagValue)+' this job'),'Pause retains deposited and carried coin totals');
+    await app.act('resume');await app.act('rooms');await app.act('resume-room');
     await app.act('pause');await app.act('quit');await app.act('resume');
     assert.equal(run.robot.bag,bag);assert.equal(run.robot.bagValue,bagValue);assert.equal(run.coins,200);
     assert.deepEqual(app.publicState().career,saved);
