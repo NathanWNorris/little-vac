@@ -28,6 +28,7 @@ export const SHELLS = Object.freeze([
 export function defaultCareer() {
   return {
     version: VERSION,
+    generation: 0,
     coins: 0,
     unlocked: 1,
     completed: [],
@@ -69,6 +70,7 @@ export function validateCareer(raw) {
   const clean = defaultCareer();
   if (!record(raw) || raw.version !== VERSION) return clean;
 
+  clean.generation = boundedInteger(raw.generation, 0, Number.MAX_SAFE_INTEGER);
   clean.coins = boundedInteger(raw.coins, 0, MAX_COINS);
   const completed = new Set(Array.isArray(raw.completed) ? raw.completed.filter(roomId) : []);
   for (let id = 1; id <= ROOM_COUNT && completed.has(id); id++) clean.completed.push(id);
@@ -132,7 +134,11 @@ export function loadCareer(storage) {
   try {
     const raw = JSON.parse(saved);
     const career = validateCareer(raw);
-    return { career, status: equivalent(raw, career) ? 'ok' : 'recovered' };
+    // Saves written before reset generations existed all belong to generation 0.
+    // The migration must be identical in every tab and is not damaged progress.
+    const migrated = record(raw) && raw.version === VERSION && !Object.hasOwn(raw, 'generation')
+      ? { ...raw, generation: 0 } : raw;
+    return { career, status: equivalent(migrated, career) ? 'ok' : 'recovered' };
   } catch {
     return { career: defaultCareer(), status: 'recovered' };
   }
@@ -145,6 +151,11 @@ export function saveCareer(storage, career) {
   } catch {
     return false;
   }
+}
+
+export function resetCareer(career) {
+  const previous = validateCareer(career).generation;
+  Object.assign(career, defaultCareer(), { generation: previous === Number.MAX_SAFE_INTEGER ? 1 : previous + 1 });
 }
 
 export function statsFor(upgrades = {}) {

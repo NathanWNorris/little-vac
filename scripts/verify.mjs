@@ -147,6 +147,18 @@ function physicsChecks(){
   const final=createRun(finalRoom,stats,'95-percent');for(let i=0;i<180;i++)step(final,DT,{});
   assert.equal(final.phase,'complete');assert.equal(final.collectedCount,19,'95% cleanup must finish without hunting the distant final piece');
   assert.equal(final.coins,finalRoom.debris.reduce((sum,d)=>sum+d.value,0));assert.equal(final.trinket.collected,false,'The final sweep must not invent a found trinket');
+  const dustFinalRoom=testRoom({debris:Array.from({length:20},(_,id)=>({id,x:id===19?800:300,y:id===19?500:300,type:'dust',value:2}))});
+  const dustFinal=createRun(dustFinalRoom,stats,'95-percent-dust-rounding');
+  for(let i=0;i<63;i++)step(dustFinal,1/120,{});
+  assert.equal(dustFinal.phase,'playing','Dust still below 95% must not finish early');
+  assert.equal(dustFinal.collectedCount,0);assert(dustFinal.debris.slice(0,19).every(d=>d.amount>0));
+  step(dustFinal,1/120,{});
+  assert.equal(dustFinal.collectedCount,19,'The boundary must come from real dust collection');
+  assert.equal(dustFinal.phase,'finishing','Exactly 95% dust collection must finish despite summed fractional rounding');
+  assert.equal(dustFinal.coins,40);assert.equal(dustFinal.percent,1);
+  for(let i=0;i<240;i++)step(dustFinal,1/120,{});
+  assert.equal(dustFinal.phase,'complete');assert.equal(dustFinal.coins,40);
+  assert.equal(dustFinal.events.filter(e=>e.type==='finish').length,1,'The dust boundary must pay the final sweep only once');
   const invalid=createRun(testRoom(),stats,'invalid');step(invalid,NaN,{x:Infinity,y:NaN});step(invalid,-1,{x:Infinity,y:NaN});assert.equal(invalid.time,0);step(invalid,DT,{x:Infinity,y:NaN});assert.equal(invalid.robot.x,300);assert.equal(invalid.robot.y,300);
 }
 

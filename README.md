@@ -2,7 +2,7 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.2.0** replaces the pastel interface with a charcoal-and-amber game menu. The home screen has one Play/Continue action, Rooms, Upgrades, and How to play. Compact room rows show Play, Replay, or Locked; the upgrade store keeps numeric effects and prices clear. See the [redesign checks](docs/REDESIGN-1.2.0.md), [previous gameplay audit](docs/AUDIT-1.1.2.md), and historical [playtest results](PLAYTEST.md).
+Version **1.2.1** fixes exact-95% completion rounding, stale rooms after a progress reset, cross-tab menu totals, delayed ending validation, and postgame navigation. The phone HUD has a larger finish goal and a more compact layout. See the [current deep audit](docs/AUDIT-1.2.1.md), [1.2.0 redesign](docs/REDESIGN-1.2.0.md), and historical [playtest results](PLAYTEST.md).
 
 Sweep Shift is a browser game about a vacuum robot cleaning messy rooms. Collect debris, dock to empty the bag, and spend earned coins on upgrades.
 

@@ -90,7 +90,8 @@ export function step(r,dt,input={x:0,y:0}) {
     const friction=Math.exp(-dt*4.2);d.vx*=friction;d.vy*=friction;d.angle+=dt*(d.vx-d.vy)*.022;
   }
   r.percent=clamp(r.cleaned/r.total,0,1);r.full=b.bag>=r.stats.capacity;
-  if(r.percent>=.95)finish(r);
+  // Summed dust fractions can land a few rounding bits below exactly 95%.
+  if(r.percent>=.95-1e-12)finish(r);
 }
 export function runResult(r) {
   if(r.phase!=='complete')return null;

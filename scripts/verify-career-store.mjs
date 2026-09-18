@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createCareerStore } from '../dist/career-store.js';
-import { SAVE_KEY, defaultCareer, loadCareer, saveCareer, settleRun, buyUpgrade } from '../dist/progression.js';
+import { SAVE_KEY, defaultCareer, resetCareer, loadCareer, saveCareer, settleRun, buyUpgrade } from '../dist/progression.js';
 
 let checks = 0;
 async function test(name, body) {
@@ -53,6 +53,22 @@ await test('cross-tab purchases are serialized against the same earned balance',
   const saved = loadCareer(storage).career;
   assert.equal(saved.coins, 30);
   assert.deepEqual(saved.upgrades, { width: 1, bag: 1, speed: 0, pull: 0 });
+});
+
+await test('resets from stale tabs advance the saved generation and later settings preserve it', async () => {
+  const storage = memoryStorage(), locks = queuedLocks();
+  const legacy = defaultCareer(); delete legacy.generation;
+  storage.setItem(SAVE_KEY, JSON.stringify(legacy));
+  const a = createCareerStore(storage, { locks }), b = createCareerStore(storage, { locks });
+  assert.equal(a.career.generation, b.career.generation);
+  await Promise.all([a.transact(resetCareer), b.transact(resetCareer)]);
+  const latest = loadCareer(storage).career;
+  assert.equal(latest.generation, 2, 'Each serialized reset must advance the latest generation');
+  await a.transact(career => { career.settings.muted = true; });
+  assert.equal(loadCareer(storage).career.generation, latest.generation);
+  await b.sync();
+  assert.equal(b.career.generation, latest.generation);
+  assert.equal(b.career.settings.muted, true);
 });
 
 await test('the same finished run cannot be rewarded through two stores', async () => {

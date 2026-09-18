@@ -162,6 +162,63 @@ await test('a rejected reward leaves the room safely when a reset arrived withou
   assert.equal(app.publicState().career.coins, 0); assert.deepEqual(app.publicState().career.completed, []);
 });
 
+await test('a reset rejects a stale room-one reward before a storage event, even with no earlier progress', async () => {
+  for (const count of [0, 6]) {
+    const initial = fixtureCareer(count);
+    if (count) initial.upgrades.bag = 5;
+    const app = await boot(initial); await app.startRoom(1);
+    const reset = progression.loadCareer(app.storage).career;
+    progression.resetCareer(reset);
+    app.storage.setItem(progression.SAVE_KEY, JSON.stringify(reset));
+    await app.settle();
+    assert.equal(app.run(), null, 'The room from the previous career must be discarded');
+    assert.equal(app.publicState().screen, 'rooms');
+    assert.equal(app.publicState().career.coins, 0);
+    assert.deepEqual(app.publicState().career.completed, []);
+    assert.deepEqual(progression.loadCareer(app.storage).career, reset, 'Old cleaning must not repopulate the reset save');
+  }
+});
+
+await test('a sound transaction that sees another tab’s reset discards the old upgraded room before its storage event', async () => {
+  const initial = fixtureCareer(6); initial.upgrades.bag = 5;
+  const app = await boot(initial); await app.startRoom(1);
+  assert.equal(app.run().stats.capacity, 240);
+  const reset = progression.loadCareer(app.storage).career;
+  progression.resetCareer(reset);
+  app.storage.setItem(progression.SAVE_KEY, JSON.stringify(reset));
+  await app.nodes.get('#soundBtn').onclick();
+  assert.equal(app.run(), null);
+  assert.equal(app.publicState().screen, 'rooms');
+  assert.equal(app.publicState().career.settings.muted, true);
+  await app.externalCareer(progression.loadCareer(app.storage).career);
+  await app.act('continue');
+  assert.equal(app.run().room.id, 1);
+  assert.equal(app.run().stats.capacity, 90);
+  assert.equal(app.publicState().career.coins, 0);
+  assert.deepEqual(app.publicState().career.completed, []);
+});
+
+await test('another tab’s completion and found treasure refresh the title and treasure shelf', async () => {
+  const app = await boot();
+  await app.externalCareer(fixtureCareer(1));
+  assert.match(app.nodes.get('#main').innerHTML, /1 \/ 24 rooms complete/);
+  assert.match(app.nodes.get('#main').innerHTML, /Room 2 ·/);
+  await app.act('collection');
+  const latest = fixtureCareer(1); latest.trinkets = [1];
+  await app.externalCareer(latest);
+  assert.match(app.nodes.get('#main').innerHTML, /1 \/ 24 found/);
+  assert.doesNotMatch(app.nodes.get('#main').innerHTML, /Hidden in room 1<\/small>/);
+});
+
+await test('Choose a room in the completed-career shop opens Rooms after an endless shift', async () => {
+  const initial = fixtureCareer(24); initial.lastRoom = 0; initial.endingSeen = true;
+  const app = await boot(initial); await app.act('shop');
+  assert.match(app.nodes.get('#main').innerHTML, /data-action="rooms"[^>]*>Choose a room<\/button>/);
+  await app.act('rooms');
+  assert.equal(app.publicState().screen, 'rooms');
+  assert.equal(app.run(), null);
+});
+
 await test('choosing another room requires confirmation and cancel keeps current cleaning', async () => {
   const app = await boot(fixtureCareer(2)); await app.startRoom(2);
   const active = app.run(); active.robot.bag = 12; active.percent = 0.4;
@@ -265,6 +322,19 @@ await test('delayed ending save does not replace a later navigation choice', asy
   app.locks.release(); await ending;
   assert.equal(app.publicState().screen, 'rooms');
   assert.equal(app.publicState().career.endingSeen, true);
+});
+
+await test('a reset during a delayed ending save cannot claim that the reset campaign is complete', async () => {
+  const app = await boot(fixtureCareer(24)); app.locks.hold();
+  const ending = app.act('ending');
+  const reset = progression.loadCareer(app.storage).career;
+  progression.resetCareer(reset);
+  app.storage.setItem(progression.SAVE_KEY, JSON.stringify(reset));
+  app.locks.release(); await ending;
+  assert.equal(app.publicState().screen, 'rooms');
+  assert.deepEqual(app.publicState().career.completed, []);
+  assert.equal(app.publicState().career.endingSeen, false);
+  assert.doesNotMatch(app.nodes.get('#main').innerHTML, /All rooms complete/);
 });
 
 await test('reopening controls in a later room freezes the run and preserves it on resume', async () => {

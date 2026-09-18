@@ -1,20 +1,29 @@
-# Sweep Shift 1.2.0 local release candidate
+# Sweep Shift 1.2.1 local release candidate
 
-The current **1.2.0** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this redesign. Public publishing has not been performed.
+The current **1.2.1** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this audit. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **48,351 bytes**.
-- SHA-256: **122a6ede29c779431f70dcc629e78d891fbb9a79ecd5b037efefa0d5da2144a9**.
-- All source, archive, and extracted hashes match. The exact package displayed v1.2.0, started a room, and opened Pause without browser errors or warnings.
-- Syntax, all 19 app checks, and all 17 input checks passed. Desktop and phone viewport checks covered the new menu, Rooms, Upgrades, gameplay, and dialogs; the 960 × 800 packaged play view fits without scrolling.
-- The normal preview retained the player's one completed room and 30 coins. No migration is needed.
+- Size: **44,629 bytes**.
+- SHA-256: **0bdaa62122417944cb8406a2c20e4022dd9e2510c702f5a1cb35dbc3d2b22788**.
+- All source, archive, and extracted hashes match. The exact package displayed v1.2.1, started a room, and opened Pause without browser errors or warnings.
+- Final syntax and deep verification passed: 16 progression, 17 input, 10 store, and 24 app groups; 1,000 generated layouts; 48 campaign completions across earned and starter builds; 43 Endless completions; replay; 86,400 random-movement frames.
+- Real-time browser play completed room 13 and a room-1 replay, checked rewards, bought an earned upgrade, reloaded, opened room 14, and verified the ending/Endless/postgame menus using separate test careers.
+- Existing v1 saves migrate consistently without losing progress. Player save data was not used for testing or reset.
 
-See [redesign checks](docs/REDESIGN-1.2.0.md) for this pass. The larger campaign, physics, economy, save, and real-play audits in [1.1.2](docs/AUDIT-1.1.2.md) and [PLAYTEST.md](PLAYTEST.md) are historical evidence; this redesign did not modify those systems. No physical-phone, Safari, or Firefox test is claimed.
+See [the current deep audit](docs/AUDIT-1.2.1.md) for exact evidence and limits. Phone checks used browser viewports, not physical devices.
 
-## What changed in 1.2.0
+## What changed in 1.2.1
+
+- Fixed 95% completion failing at a floating-point dust boundary.
+- Prevented old rooms from awarding coins after a career reset in another tab; added deterministic legacy-save migration and reset generations.
+- Refreshed home and treasure totals after cross-tab changes; stopped delayed ending saves from claiming a reset campaign is complete.
+- Fixed the completed-career shop's Choose a room destination and clarified endgame room guidance.
+- Increased phone goal/tip text, improved narrow HUD spacing, removed duplicate play-screen balance, and trimmed stylesheet whitespace.
+
+## Previous 1.2.0 changes
 
 - Replaced the pastel interface with a flat charcoal-and-amber theme and a matching SVG robot icon.
 - Replaced the promotional home page with a simple Play/Continue/Resume menu, Rooms, Upgrades, and How to play.
@@ -57,7 +66,7 @@ Five prior 1.1.0 gameplay/menu screenshots are marketing/01-rooms.jpg through 05
 
 ## Draft status: still 1.1.0
 
-The [existing itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**, received the **1.1.0** ZIP and five screenshots in the previous audit. At that time, reload confirmed the browser-playable upload, revised tagline/description, and Draft visibility. The five refreshed screenshots are first in the saved gallery; two earlier screenshots remain afterward. The uploaded iframe loaded version 1.1, retained the existing 365-coin career, started room 2, handled pickup/pause, and kept the room intact through the former Upgrades/Resume flow. Its error/warning log was empty. These are historical checks; **1.1.1, 1.1.2, and 1.2.0 have not been uploaded**, and the final public-publish action has not been taken.
+The [existing itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**, received the **1.1.0** ZIP and five screenshots in the previous audit. At that time, reload confirmed the browser-playable upload, revised tagline/description, and Draft visibility. The five refreshed screenshots are first in the saved gallery; two earlier screenshots remain afterward. The uploaded iframe loaded version 1.1, retained the existing 365-coin career, started room 2, handled pickup/pause, and kept the room intact through the former Upgrades/Resume flow. Its error/warning log was empty. These are historical checks; **1.1.1, 1.1.2, 1.2.0, and 1.2.1 have not been uploaded**, and the final public-publish action has not been taken.
 
 ## Rebuild
 

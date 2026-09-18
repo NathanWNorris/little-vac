@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { makeRoom } from '../dist/rooms.js';
 import {
-  SAVE_KEY, defaultCareer, validateCareer, loadCareer, saveCareer, statsFor,
+  SAVE_KEY, defaultCareer, resetCareer, validateCareer, loadCareer, saveCareer, statsFor,
   UPGRADES, SHELLS, upgradePrice, buyUpgrade, settleRun, selectShell, isRoomUnlocked,
 } from '../dist/progression.js';
 
@@ -33,6 +33,35 @@ test('fresh career and independently allocated defaults', () => {
   assert.equal(isRoomUnlocked(b, 1), true);
   assert.equal(isRoomUnlocked(b, 2), false);
   assert.equal(isRoomUnlocked(b, 0), false);
+});
+
+test('existing v1 saves migrate to the same generation without losing progress or reporting damage', () => {
+  const legacy = defaultCareer();
+  settleRun(legacy, result(1, { trinket: true }));
+  buyUpgrade(legacy, 'bag');
+  delete legacy.generation;
+  const text = JSON.stringify(legacy);
+  const firstTab = loadCareer(memoryStorage(text));
+  const secondTab = loadCareer(memoryStorage(text));
+  assert.equal(firstTab.status, 'ok');
+  assert.equal(secondTab.status, 'ok');
+  assert.deepEqual(firstTab.career, secondTab.career);
+  assert.deepEqual(firstTab.career, { ...legacy, generation: 0 });
+  const storage = memoryStorage();
+  assert.equal(saveCareer(storage, firstTab.career), true);
+  assert.deepEqual(loadCareer(storage).career, firstTab.career);
+});
+
+test('reset replaces the career generation even before any room has been completed', () => {
+  const career = defaultCareer(), first = career.generation;
+  resetCareer(career);
+  assert.notEqual(career.generation, first);
+  const second = career.generation;
+  resetCareer(career);
+  assert.notEqual(career.generation, second);
+  assert.deepEqual(career.completed, []);
+  assert.equal(career.coins, 0);
+  assert.equal(validateCareer(career).generation, career.generation);
 });
 
 test('upgrade effects stay bounded and each rank improves the relevant stat', () => {
