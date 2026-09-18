@@ -1,10 +1,10 @@
 # Sweep Shift
 
-**A little mess. A lovely clean.**
+**Clean rooms. Upgrade your vacuum.**
 
-Version **1.1.2** improves mouse/keyboard switching, fixes menu timing bugs, and adds clearer finish goals, reusable controls help, replay labels, and reward breakdowns. The [latest audit](docs/AUDIT-1.1.2.md) records the research, fixes, and verification; prior results are in [PLAYTEST.md](PLAYTEST.md).
+Version **1.2.0** replaces the pastel interface with a charcoal-and-amber game menu. The home screen has one Play/Continue action, Rooms, Upgrades, and How to play. Compact room rows show Play, Replay, or Locked; the upgrade store keeps numeric effects and prices clear. See the [redesign checks](docs/REDESIGN-1.2.0.md), [previous gameplay audit](docs/AUDIT-1.1.2.md), and historical [playtest results](PLAYTEST.md).
 
-Sweep Shift is a cozy browser game about a small vacuum robot making colorful rooms feel good again. Glide through a mess, watch scraps swirl into your bag, visit a collection station, and spend your cleaning coins on a more capable little robot.
+Sweep Shift is a browser game about a vacuum robot cleaning messy rooms. Collect debris, dock to empty the bag, and spend earned coins on upgrades.
 
 The campaign has 24 authored rooms across a workshop, an after-hours arcade, a greenhouse, and a rooftop party. Finish the campaign to unlock Endless Shift: reproducible generated rooms that can be revisited using a seed.
 

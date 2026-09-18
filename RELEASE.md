@@ -1,21 +1,28 @@
-# Sweep Shift 1.1.2 local release candidate
+# Sweep Shift 1.2.0 local release candidate
 
-The current **1.1.2** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not updated during this change. The owner makes the final choice to publish. A draft is not a public release.
+The current **1.2.0** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this redesign. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
-- Contents: **11 files**; index.html at root; eight JavaScript modules, CSS, and SVG icon; no fixtures, servers, or external runtime dependencies.
-- Size: **48,328 bytes**.
-- SHA-256: **e699ffca00f36127a38d84a0678dbcbab9365860311b534ab73423680cd054f0**.
-- Source, archive, and extracted hashes match. The exact package displayed v1.1.2, started a room, showed the finish target, and kept the room paused throughout How to play. The 390 × 844 phone and 960 × 800 embed layouts fit; browser error/warning logs were empty.
-- Current automated audit: syntax; 14 progression, 17 input, nine career-store, and 19 application groups; 1,000 generated layouts; all 24 campaign rooms with earned upgrades; three Endless rooms and one replay.
-- Current deep audit: all 24 rooms without upgrades, 40 additional Endless rooms, and 86,400 random movement frames. The optional build audit adds 144 campaign completions across six builds plus nine Endless inputs at production's 120 Hz timestep.
-- Real Chrome playthrough: room 7 completion awarded 332 cleaning coins plus 135 bonuses; saved balance 395 → 862. Bigger bag purchase cost 550, leaving 312. Reload retained the upgrade; room 8 opened at 180 capacity. The result breakdown and next actions were visually checked.
+- Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
+- Size: **48,351 bytes**.
+- SHA-256: **122a6ede29c779431f70dcc629e78d891fbb9a79ecd5b037efefa0d5da2144a9**.
+- All source, archive, and extracted hashes match. The exact package displayed v1.2.0, started a room, and opened Pause without browser errors or warnings.
+- Syntax, all 19 app checks, and all 17 input checks passed. Desktop and phone viewport checks covered the new menu, Rooms, Upgrades, gameplay, and dialogs; the 960 × 800 packaged play view fits without scrolling.
+- The normal preview retained the player's one completed room and 30 coins. No migration is needed.
 
-See the [1.1.2 audit](docs/AUDIT-1.1.2.md) for current evidence and [PLAYTEST.md](PLAYTEST.md) for historical results. No physical-phone, Safari, or Firefox test is claimed.
+See [redesign checks](docs/REDESIGN-1.2.0.md) for this pass. The larger campaign, physics, economy, save, and real-play audits in [1.1.2](docs/AUDIT-1.1.2.md) and [PLAYTEST.md](PLAYTEST.md) are historical evidence; this redesign did not modify those systems. No physical-phone, Safari, or Firefox test is claimed.
 
-## What changed in 1.1.2
+## What changed in 1.2.0
+
+- Replaced the pastel interface with a flat charcoal-and-amber theme and a matching SVG robot icon.
+- Replaced the promotional home page with a simple Play/Continue/Resume menu, Rooms, Upgrades, and How to play.
+- Made room selection a compact list with explicit Play, Replay, and Locked labels; removed repeated progress banners and decorative copy.
+- Kept upgrade effects, prices, locked prerequisites, save progress, and existing game rules intact.
+- Simplified titles and instructions throughout menus and results; verified responsive layouts and preserved between-room purchase locks.
+
+## Previous 1.1.2 changes
 
 - Fixed stale mouse steering after keyboard input, including very short taps and opposite keys; ignored mouse clicks outside the rendered room.
 - Fixed room startup running behind an open dialog and delayed ending saves replacing later navigation.
@@ -44,13 +51,13 @@ See the [1.1.2 audit](docs/AUDIT-1.1.2.md) for current evidence and [PLAYTEST.md
 - Tags: cleaning, cozy, relaxing, singleplayer, top-down.
 - Embed: **960 × 800**, mobile friendly, fullscreen control and scrollbars enabled; autostart disabled.
 - Disclosure: AI-assisted Graphics, Text & Dialog, and Code; original procedurally synthesized audio described accurately.
-- Existing cream/teal theme, robot cover, banner, and launch artwork retained.
+- The hosted store still uses the prior cream/teal theme, robot cover, banner, and launch artwork. Refresh these to match 1.2.0 before the next upload.
 
-Five refreshed gameplay/menu screenshots are marketing/01-rooms.jpg through 05-upgrades.jpg. The upgrade screenshot was taken in the same audit before the final supporting-sentence edit, with legitimately earned affordable upgrades visible. Previous PNG screenshots are retained as source backups.
+Five prior 1.1.0 gameplay/menu screenshots are marketing/01-rooms.jpg through 05-upgrades.jpg. The upgrade screenshot was taken in the same audit before the final supporting-sentence edit, with legitimately earned affordable upgrades visible. Previous PNG screenshots are retained as source backups.
 
 ## Draft status: still 1.1.0
 
-The [existing itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**, received the **1.1.0** ZIP and five screenshots in the previous audit. At that time, reload confirmed the browser-playable upload, revised tagline/description, and Draft visibility. The five refreshed screenshots are first in the saved gallery; two earlier screenshots remain afterward. The uploaded iframe loaded version 1.1, retained the existing 365-coin career, started room 2, handled pickup/pause, and kept the room intact through the former Upgrades/Resume flow. Its error/warning log was empty. These are historical checks; **1.1.1 and 1.1.2 have not been uploaded**, and the final public-publish action has not been taken.
+The [existing itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**, received the **1.1.0** ZIP and five screenshots in the previous audit. At that time, reload confirmed the browser-playable upload, revised tagline/description, and Draft visibility. The five refreshed screenshots are first in the saved gallery; two earlier screenshots remain afterward. The uploaded iframe loaded version 1.1, retained the existing 365-coin career, started room 2, handled pickup/pause, and kept the room intact through the former Upgrades/Resume flow. Its error/warning log was empty. These are historical checks; **1.1.1, 1.1.2, and 1.2.0 have not been uploaded**, and the final public-publish action has not been taken.
 
 ## Rebuild
 
