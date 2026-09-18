@@ -481,9 +481,9 @@ await test('an open area exit is still an unfinished job and cannot settle or bu
   await app.act('resume');assert.equal(app.run(),run);
 });
 
-async function enterSecondArea(app){
-  const run=app.run();run.phase='exiting';run.percent=1;run.coins=200;
-  Object.assign(run.robot,{x:run.room.exit.x,y:run.room.exit.y+29,bag:0,bagValue:0});
+async function enterSecondArea(app,{bag=0,bagValue=0,coins=200}={}){
+  const run=app.run();run.phase='exiting';run.percent=1;run.coins=coins;run.full=bag>=run.stats.capacity;
+  Object.assign(run.robot,{x:run.room.exit.x,y:run.room.exit.y+29,bag,bagValue});
   app.keyEvent('keydown','w');app.frame(100);
   assert.equal(run.areaIndex,1,'Normal movement across the open doorway changes area');
   return run;
@@ -533,6 +533,41 @@ await test('a held touch drag continues across an internal doorway on the same c
   assert(run.robot.y<enteredY,'Crossing the doorway must not drop an active touch gesture');
   app.pointerUp(touch);const stopped={x:run.robot.x,y:run.robot.y};app.frame(300);
   assert.deepEqual({x:run.robot.x,y:run.robot.y},stopped);
+});
+
+await test('partial and full bags retain dirt, coin value, and visible totals across doors and menus', async () => {
+  for(const full of [false,true]){
+    const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
+    const saved=app.publicState().career,bag=full?app.run().stats.capacity:7,bagValue=full?173:17;
+    const run=await enterSecondArea(app,{bag,bagValue});app.keyEvent('keyup','w');
+    assert.equal(run.robot.bag,bag);assert.equal(run.robot.bagValue,bagValue);assert.equal(run.coins,200);
+    assert.equal(run.full,full);assert.equal(app.publicState().pendingCoins,200+bagValue);
+    assert.equal(app.publicState().robot.bagValue,bagValue);
+    assert.equal(app.nodes.get('#bagValue').textContent,'In bag: '+bagValue+' coins');
+    assert.equal(app.nodes.get('#pendingCoins').textContent,'+'+(200+bagValue)+' this job');
+    if(full){assert.match(app.nodes.get('#gameTip').textContent,/green arrow/);assert.match(app.nodes.get('#areaHint').textContent,/green arrow/);}
+    await app.act('pause');await app.act('resume');await app.act('rooms');await app.act('resume-room');
+    await app.act('pause');await app.act('quit');await app.act('resume');
+    assert.equal(run.robot.bag,bag);assert.equal(run.robot.bagValue,bagValue);assert.equal(run.coins,200);
+    assert.deepEqual(app.publicState().career,saved);
+    if(full){
+      Object.assign(run.debris[0],{x:run.robot.x,y:run.robot.y,type:'crumb',collected:false,amount:1});
+      app.frame(200);
+      assert.equal(run.debris[0].collected,false,'A carried full bag must block pickups immediately');
+      assert.equal(run.robot.bagValue,bagValue);
+    }
+    await app.act('pause');await app.act('quit');await app.act('quit-confirm');
+    assert.equal(app.run(),null);assert.deepEqual(app.publicState().career,saved);
+  }
+});
+
+await test('restarting a job discards both carried dirt and deposited pending coins', async () => {
+  const app=await boot(fixtureCareer(8));await app.startRoom(9);await app.act('begin-room');
+  const saved=app.publicState().career;
+  await enterSecondArea(app,{bag:7,bagValue:17});await app.act('restart-confirm');
+  assert.equal(app.run().robot.bag,0);assert.equal(app.run().robot.bagValue,0);assert.equal(app.run().coins,0);
+  assert.equal(app.publicState().pendingCoins,0);assert.equal(app.run().areaIndex,0);
+  assert.deepEqual(app.publicState().career,saved);
 });
 
 console.log(`App orchestration verified: ${checks} checks passed.`);

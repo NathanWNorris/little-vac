@@ -746,6 +746,13 @@ body[data-screen="play"] .footer {
 .bag-meter.full .bag-label span {
   color:var(--accent)
 }
+.bag-value {
+  margin-top:4px;
+  color:var(--muted);
+  font-size:10px;
+  font-variant-numeric:tabular-nums
+}
+.bag-meter.full .bag-value { color:var(--good); }
 .coin-hud {
   text-align:right;
   line-height:1.2
@@ -1568,6 +1575,8 @@ body[data-screen="play"] .nav-wallet { display:none; }
 .area-guide span { display:block; margin-top:4px; font-size:12px; color:var(--muted); line-height:1.4; }
 .area-guide.exit-open { background:#3a3020; border-color:#f5bf55; }
 .area-guide.exit-open span { color:#ffdb91; font-weight:700; }
+.area-guide.dock-needed { background:#23392f; border-color:var(--good); }
+.area-guide.dock-needed span { color:#b9edcd; font-weight:700; }
 .area-steps { display:flex; flex-shrink:0; gap:5px; margin:0; padding:0; list-style:none; }
 .area-steps li { display:grid; place-items:center; width:26px; height:26px; border:1px solid #606773; color:#b0b6bf; font-size:12px; border-radius:4px; }
 .area-steps .current { color:#211d15; background:var(--accent); border-color:var(--accent); font-weight:800; }

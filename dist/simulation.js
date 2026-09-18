@@ -8,7 +8,8 @@ export function createRun(room,stats,runId='run-'+Date.now()) {
 }
 function enterArea(r,room) {
   const position=r.areaIndex>0&&room.entry?room.entry:room.spawn;
-  Object.assign(r,{room,phase:'playing',robot:{...position,angle:0,move:0,bag:0,bagValue:0,squash:0},debris:room.debris.map((d,i)=>({...d,resistance:Number.isFinite(d.resistance)?Math.max(1,d.resistance):1,vx:0,vy:0,angle:i*2.39996,amount:1,collected:false,progress:0,loose:d.type!=='stuck'})),trinket:{...room.trinket,collected:false},cleaned:0,total:room.debris.length,percent:0,unloading:0,nearestStation:0,full:false,finishProgress:0,particles:[],pickupCooldown:0,fullNotified:false});
+  const bag=r.robot?.bag??0,bagValue=r.robot?.bagValue??0;
+  Object.assign(r,{room,phase:'playing',robot:{...position,angle:0,move:0,bag,bagValue,squash:0},debris:room.debris.map((d,i)=>({...d,resistance:Number.isFinite(d.resistance)?Math.max(1,d.resistance):1,vx:0,vy:0,angle:i*2.39996,amount:1,collected:false,progress:0,loose:d.type!=='stuck'})),trinket:{...room.trinket,collected:false},cleaned:0,total:room.debris.length,percent:0,unloading:0,nearestStation:0,full:bag>=r.stats.capacity,finishProgress:0,particles:[],pickupCooldown:0,fullNotified:false});
   // Connected areas continue through the opposite doorway without a new start gate.
 }
 export function clearLine(room,ax,ay,bx,by) {
@@ -32,10 +33,12 @@ function burst(r,x,y,color,count=4) {
   for(let i=0;i<count&&r.particles.length<110;i++){let a=(i*2.4+r.time)*3,s=20+(i%4)*12;r.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.45,maxLife:.45,color,size:2+i%3});}
 }
 function finishArea(r) {
-  r.coins+=r.robot.bagValue; r.robot.bag=0;r.robot.bagValue=0;r.unloading=0;
-  r.cleaned=r.total;r.percent=1;r.full=false;
+  r.cleaned=r.total;r.percent=1;
   if(r.areaIndex<r.areaCount-1){r.phase='exiting';r.events.push({type:'area-clear',areaIndex:r.areaIndex,value:r.coins});}
-  else {r.phase='finishing';r.events.push({type:'finish',value:r.coins});}
+  else {
+    r.coins+=r.robot.bagValue;r.robot.bag=0;r.robot.bagValue=0;r.unloading=0;r.full=false;
+    r.phase='finishing';r.events.push({type:'finish',value:r.coins});
+  }
 }
 export function step(r,dt,input={x:0,y:0}) {
   dt=clamp(Number.isFinite(dt)?dt:0,0,.05); if(!dt)return;
@@ -50,6 +53,13 @@ export function step(r,dt,input={x:0,y:0}) {
   if(isWalkable(r.room,b.x,b.y+dy,17))b.y+=dy;
   b.move=Math.hypot(b.x-oldX,b.y-oldY)/dt;
   if(b.move>3){const target=Math.atan2(b.y-oldY,b.x-oldX);let diff=Math.atan2(Math.sin(target-b.angle),Math.cos(target-b.angle));b.angle+=diff*Math.min(1,dt*14);}
+  let nearest=Infinity;r.room.stations.forEach((s,i)=>{let d=Math.hypot(s.x-b.x,s.y-b.y);if(d<nearest){nearest=d;r.nearestStation=i;}});
+  if(nearest<48&&b.bag>0){
+    r.unloading=Math.min(1,r.unloading+dt/0.85);
+    if(r.unloading>=1){let v=b.bagValue;r.coins+=v;b.bag=0;b.bagValue=0;r.unloading=0;r.fullNotified=false;r.events.push({type:'unload',value:v});burst(r,b.x,b.y,'#f4c95d',9);}
+  }else r.unloading=0;
+  r.full=b.bag>=r.stats.capacity;
+  if(r.full&&!r.fullNotified){r.events.push({type:'full'});r.fullNotified=true;}
   if(r.phase==='exiting'){
     const exit=r.room.exit;
     if(exit&&b.move>0&&Math.hypot(exit.x-b.x,exit.y-b.y)<28){
@@ -59,13 +69,6 @@ export function step(r,dt,input={x:0,y:0}) {
     }
     return;
   }
-  let nearest=Infinity;r.room.stations.forEach((s,i)=>{let d=Math.hypot(s.x-b.x,s.y-b.y);if(d<nearest){nearest=d;r.nearestStation=i;}});
-  if(nearest<48&&b.bag>0){
-    r.unloading=Math.min(1,r.unloading+dt/0.85);
-    if(r.unloading>=1){let v=b.bagValue;r.coins+=v;b.bag=0;b.bagValue=0;r.unloading=0;r.fullNotified=false;r.events.push({type:'unload',value:v});burst(r,b.x,b.y,'#f4c95d',9);}
-  }else r.unloading=0;
-  r.full=b.bag>=r.stats.capacity;
-  if(r.full&&!r.fullNotified){r.events.push({type:'full'});r.fullNotified=true;}
   if(!r.full&&r.unloading===0) {
     for(const d of r.debris) {
       if(d.collected)continue;

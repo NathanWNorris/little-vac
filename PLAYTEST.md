@@ -1,6 +1,16 @@
 # Sweep Shift validation
 
-Current local candidate: **1.4.0**. Earlier sections below are historical evidence.
+Current local candidate: **1.4.1**. Earlier sections below are historical evidence.
+
+## Version 1.4.1 — carried dirt and drop-off guidance
+
+Intermediate completion no longer deposits or clears the bag. Dirt count and weighted coin value survive doorway entry, with the full-bag flag already correct in the first frame. Cleared areas permit normal dock unloading. Final job completion still pays the remaining bag exactly once.
+
+Regression checks physically carry full and partial bags through a doorway, block new pickups while full, unload at the old or new dock, reset partial unloading progress at entry, and reconcile all material value. App checks cover bag-value labels, pending totals, pause/browse/resume, cancelled quit, restart, and confirmed quit. The HUD distinguishes value in the bag from the total pending job earnings; area-clear no longer plays an unloading sound.
+
+Syntax, the standard 24-job/50-area earned route, and all **36 app groups** passed. Deep physics completed 24 starter jobs, 40 additional Endless rooms, and 86,400 random-motion frames without a carried-bag softlock or currency mismatch. The earned route used 2,079 simulated seconds; times are automated, not human playtime. The six-build matrix below belongs to 1.4.0 and was not repeated for this patch.
+
+Mint drop-off guidance is shown from 80% capacity, taking priority over the amber exit route. Route verification covered 23,668 reachable-cell routes and 3,968 priority states. An isolated static browser gallery visually confirmed full-bag guidance with closed/open exits and its switch back to amber when empty, plus the drop-off marker at 320px render width. The live 1.4.1 preview showed the new in-bag coin label and an empty warning/error log. These browser checks are not a full manual campaign replay.
 
 ## Version 1.4.0 — connected areas and full cleaning
 

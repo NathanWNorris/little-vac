@@ -1,17 +1,24 @@
-# Sweep Shift 1.4.0 local release candidate
+# Sweep Shift 1.4.1 local release candidate
 
-The current **1.4.0** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.4.1** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **57,814 bytes**.
-- SHA-256: **8f355e5841b19dea9dd00954d678c578e1c51103727c27ae8b20f789e989c89a**.
+- Size: **58,489 bytes**.
+- SHA-256: **b17d2dc43d0e6589ad909529706558eb0f90a36903d044f35af12a9572178b10**.
 - All source, archive, and extracted hashes match.
-- Syntax, standard, deep, and 144-run upgrade-build verification passed. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
+- Syntax, standard campaign, deep physics, and 36 app-orchestration groups passed. See [PLAYTEST.md](PLAYTEST.md) for evidence and the distinction between automated simulation and browser checks.
 
-## What changed in 1.4.0
+## What changed in 1.4.1
+
+- Dirt and its coin value remain in the bag when an area clears and when entering the next area. Partial and full bags both carry correctly.
+- The drop-off dock works after clearing an area as well as during cleaning. Final job completion pays any remaining bag once.
+- A mint/green route arrow leads to the drop-off at 80%+ capacity, with an EMPTY BAG marker when full. It takes priority over the exit arrow until the bag is emptied.
+- The HUD now shows the coin value still in the bag and keeps the complete pending job total visible. Full-bag instructions appear immediately after a doorway transition.
+
+## Previous 1.4.0 changes
 
 - 24 campaign jobs now contain **50 different areas**. From room 9 onward, jobs expand from two connected areas to four.
 - Clean **100%** to open the next-area door or finish. No leftover dirt is automatically collected; golden rings reveal even very faint remaining dust.

@@ -4,7 +4,7 @@ const W = 960, H = 640, CELL = 40;
 const PALETTES = LOCATIONS.map(location => location.palette);
 const CONFETTI = ['#ed826e', '#f6d570', '#c4f2df', '#76cbd2', '#fcf0d7'];
 const cache = new WeakMap();
-const exitPaths = new WeakMap();
+const guidancePaths = new WeakMap();
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const noise = (a, b = 0) => { const n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return n - Math.floor(n); };
 
@@ -396,8 +396,8 @@ function drawFans(ctx, fans, time, still) {
 function station(ctx, s, hint, active, time, still) {
   const pulse = still ? .55 : .5 + Math.sin(time * 4) * .5;
   if (hint) {
-    ctx.fillStyle = `rgba(251,235,142,${.13 + pulse * .08})`; ctx.beginPath(); ctx.arc(s.x, s.y, 47, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#fff0a2'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+    ctx.fillStyle = `rgba(162,244,207,${.13 + pulse * .08})`; ctx.beginPath(); ctx.arc(s.x, s.y, 47, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#b9ffe0'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
     ctx.beginPath(); ctx.arc(s.x, s.y, 45, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
   }
   ellipse(ctx, s.x + 2, s.y + 9, 31, 23, '#17343838');
@@ -412,8 +412,8 @@ function station(ctx, s, hint, active, time, still) {
   ctx.beginPath(); ctx.moveTo(s.x - 8, s.y - 16); ctx.lineTo(s.x - 8, s.y - 10); ctx.moveTo(s.x - 12, s.y - 13); ctx.lineTo(s.x - 8, s.y - 9); ctx.lineTo(s.x - 4, s.y - 13); ctx.stroke();
   if (hint) {
     box(ctx, s.x - 44, s.y + 33, 88, 20, 10, '#23474c');
-    ctx.font = 'bold 10px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff2b8';
-    ctx.fillText('EMPTY HERE', s.x, s.y + 43);
+    ctx.font = 'bold 10px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#c8ffe4';
+    ctx.fillText(typeof hint === 'string' ? hint : 'DROP-OFF', s.x, s.y + 43);
   }
 }
 function debris(ctx, d, loc, time, still) {
@@ -588,16 +588,18 @@ function clearRouteSegment(room, from, to) {
   }
   return true;
 }
-function exitRoute(room, robot) {
-  const door = room.exit;
-  if (!door) return [];
+function routeTo(room, robot, destination, kind) {
+  if (!destination) return [];
   const cols = room.grid[0].length, rows = room.grid.length;
-  let data = exitPaths.get(room);
+  let targets = guidancePaths.get(room);
+  if (!targets) { targets = new Map(); guidancePaths.set(room, targets); }
+  const key = `${kind}:${destination.x}:${destination.y}`;
+  let data = targets.get(key);
   if (!data) {
-    // A reverse breadth-first search is computed once per area. Arrows follow
-    // its open floor cells instead of sending players through the furniture.
+    // Each area and target has its own reverse search. Switching between the
+    // exit and a drop-off can never reuse a route to the wrong destination.
     const next = new Int16Array(cols * rows).fill(-1), queue = [];
-    const end = Math.floor(door.y / CELL) * cols + Math.floor(door.x / CELL);
+    const end = Math.floor(destination.y / CELL) * cols + Math.floor(destination.x / CELL);
     next[end] = end; queue.push(end);
     for (let head = 0; head < queue.length; head++) {
       const cell = queue[head], x = cell % cols, y = Math.floor(cell / cols);
@@ -607,7 +609,7 @@ function exitRoute(room, robot) {
         next[index] = cell; queue.push(index);
       }
     }
-    data = { next, end, start: -1, points: [] }; exitPaths.set(room, data);
+    data = { next, end, start: -1, points: [] }; targets.set(key, data);
   }
   const start = Math.floor(robot.y / CELL) * cols + Math.floor(robot.x / CELL);
   if (start !== data.start) {
@@ -619,13 +621,22 @@ function exitRoute(room, robot) {
         if (cell === data.end) break;
         cell = data.next[cell];
       }
-      data.points.push({ x: door.x, y: door.y });
+      data.points.push({ x: destination.x, y: destination.y });
     }
   }
   return data.points;
 }
-function exitGuidance(ctx, run, time, still) {
-  const route = exitRoute(run.room, run.robot);
+function guidanceTarget(run) {
+  if (run.started === false || !['playing', 'exiting'].includes(run.phase) || run.unloading > 0) return null;
+  const fill = run.robot.bag / Math.max(1, run.stats.capacity);
+  if (run.full || fill >= .8) {
+    const point = run.room.stations[run.nearestStation || 0];
+    if (point) return { point, kind: 'dock', shadow: '#21493b', line: '#a4f5cf', arrow: '#ceffe7' };
+  }
+  return run.phase === 'exiting' && run.room.exit ? { point: run.room.exit, kind: 'exit', shadow: '#493a21', line: '#ffdd7d', arrow: '#ffe499' } : null;
+}
+function routeGuidance(ctx, run, target, time, still) {
+  const route = routeTo(run.room, run.robot, target.point, target.kind);
   if (!route.length) return;
   // Smooth only the first few steps, and only when the vacuum itself fits on
   // that line. This stops a diagonal arrow clipping the corner of a cabinet.
@@ -633,7 +644,7 @@ function exitGuidance(ctx, run, time, still) {
   for (let i = 0; i < Math.min(route.length, 5); i++) {
     if (clearRouteSegment(run.room, run.robot, route[i])) first = i;
   }
-  const target = route[first], dx = target.x - run.robot.x, dy = target.y - run.robot.y, distance = Math.hypot(dx, dy);
+  const waypoint = route[first], dx = waypoint.x - run.robot.x, dy = waypoint.y - run.robot.y, distance = Math.hypot(dx, dy);
   ctx.save();
   ctx.beginPath(); ctx.moveTo(run.robot.x, run.robot.y);
   let last = run.robot, length = 0;
@@ -645,14 +656,14 @@ function exitGuidance(ctx, run, time, still) {
     }
     ctx.lineTo(point.x, point.y); length += segment; last = point;
   }
-  ctx.strokeStyle = '#493a2199'; ctx.lineWidth = 4; ctx.setLineDash([3, 10]); ctx.stroke();
-  ctx.strokeStyle = '#ffdd7d'; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle = target.shadow + '99'; ctx.lineWidth = 4; ctx.setLineDash([3, 10]); ctx.stroke();
+  ctx.strokeStyle = target.line; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
   if (distance > 28) {
     const angle = Math.atan2(dy, dx), reach = Math.min(distance - 4, 51 + (still ? 0 : Math.sin(time * 3) * 3));
     ctx.translate(run.robot.x + Math.cos(angle) * reach, run.robot.y + Math.sin(angle) * reach); ctx.rotate(angle);
     ctx.beginPath(); ctx.moveTo(-9, -8); ctx.lineTo(0, 0); ctx.lineTo(-9, 8);
-    ctx.strokeStyle = '#493a21'; ctx.lineWidth = 7; ctx.stroke();
-    ctx.strokeStyle = '#ffe499'; ctx.lineWidth = 3.5; ctx.stroke();
+    ctx.strokeStyle = target.shadow; ctx.lineWidth = 7; ctx.stroke();
+    ctx.strokeStyle = target.arrow; ctx.lineWidth = 3.5; ctx.stroke();
   }
   ctx.restore();
 }
@@ -721,8 +732,13 @@ export function render(ctx, run, options = {}) {
   ctx.save(); ctx.clip(background.floorPath);
   drawFans(ctx, run.room.fans, time, still);
   ctx.restore();
+  const target = guidanceTarget(run);
+  if (target) {
+    ctx.save(); ctx.clip(background.floorPath); routeGuidance(ctx, run, target, time, still); ctx.restore();
+  }
   const fill = run.robot.bag / Math.max(1, run.stats.capacity);
-  run.room.stations.forEach((s, i) => station(ctx, s, fill >= .8 && i === run.nearestStation, run.unloading > 0 && i === run.nearestStation, time, still));
+  const nearestStation = run.nearestStation || 0, needsDock = ['playing', 'exiting'].includes(run.phase) && (run.full || fill >= .8);
+  run.room.stations.forEach((s, i) => station(ctx, s, needsDock && i === nearestStation ? (run.full ? 'EMPTY BAG' : 'DROP-OFF') : false, run.unloading > 0 && i === nearestStation, time, still));
   areaEntry(ctx, run.room);
   if (run.phase !== 'exiting') areaDoor(ctx, run, time, still);
   remainingDebrisHints(ctx, run);
@@ -731,7 +747,6 @@ export function render(ctx, run, options = {}) {
   for (const d of run.debris) if (d.type !== 'dust') debris(ctx, d, run.room.location, time, still);
   trinket(ctx, run.trinket, time, still);
   if (run.phase === 'exiting') {
-    ctx.save(); ctx.clip(background.floorPath); exitGuidance(ctx, run, time, still); ctx.restore();
     areaDoor(ctx, run, time, still);
   }
   if (options.pointer && ['playing', 'exiting'].includes(run.phase)) {
