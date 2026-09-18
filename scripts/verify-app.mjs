@@ -13,7 +13,7 @@ const source = (await readFile(new URL('../dist/app.js', import.meta.url), 'utf8
 const dependencies = { ...rooms, ...progression, ...simulation, ...storeModule, ...inputModule, ...ui, render() {}, drawTitle() {} };
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 const makeApp = new AsyncFunction('deps', 'window', 'document', 'navigator', 'performance', 'requestAnimationFrame', 'setTimeout', 'clearTimeout', 'crypto', 'console',
-  `const {${Object.keys(dependencies).join(',')}}=deps;\n${source}\nreturn {act,startRoom,requestStart,completed,frame,rooms,shop,continueShift,publicState,pointerMove,pointer:()=>input.pointer,run:()=>run};`);
+  `const {${Object.keys(dependencies).join(',')}}=deps;\n${source}\nreturn {act,startRoom,requestStart,completed,frame,rooms,shop,continueShift,publicState,pointerDown,pointerMove,pointerUp,pointer:()=>input.pointer,run:()=>run};`);
 
 function fixtureCareer(count = 0) {
   const career = progression.defaultCareer();
@@ -28,7 +28,7 @@ async function boot(initial = fixtureCareer()) {
     hold() { lockGate = new Promise(resolve => { releaseLock = resolve; }); },
     release() { releaseLock?.(); releaseLock = null; },
   };
-  const events = new Map(), documentEvents = new Map(), nodes = new Map();
+  const events = new Map(), documentEvents = new Map(), nodes = new Map(), webTools = new Map();
   let document;
   function node(id = '') {
     return { id, innerHTML: '', textContent: '', hidden: false, disabled: false, open: false, isConnected: true, dataset: {}, style: {}, tagName: 'DIV',
@@ -39,7 +39,7 @@ async function boot(initial = fixtureCareer()) {
       getBoundingClientRect() { return { left: 0, top: 0, bottom: 640, width: 960, height: 640 }; },
     };
   }
-  document = { hidden: false, activeElement: null, body: node('body'), addEventListener(name,callback) {if(!documentEvents.has(name))documentEvents.set(name,[]);documentEvents.get(name).push(callback);}, querySelector(selector) {
+  document = { hidden: false, activeElement: null, body: node('body'), modelContext: {registerTool(tool){webTools.set(tool.name,tool);}}, addEventListener(name,callback) {if(!documentEvents.has(name))documentEvents.set(name,[]);documentEvents.get(name).push(callback);}, querySelector(selector) {
     if (!nodes.has(selector)) nodes.set(selector, node(selector));
     return nodes.get(selector);
   } };
@@ -49,7 +49,7 @@ async function boot(initial = fixtureCareer()) {
   };
   const errors = [];
   const app = await makeApp(dependencies, window, document, { locks }, { now: () => timestamp }, () => {}, () => 0, () => {}, { randomUUID: () => String(++timestamp) }, { error: error => errors.push(error) });
-  return { ...app, storage, locks, nodes, errors,
+  return { ...app, storage, locks, nodes, errors, webTools, focused:()=>document.activeElement,
     keyEvent(type,key){for(const callback of documentEvents.get(type)||[])callback({key,target:{tagName:'CANVAS',closest:()=>null},preventDefault(){}});},
     async externalCareer(career) { storage.setItem(progression.SAVE_KEY, JSON.stringify(career)); for (const callback of events.get('storage') || []) await callback({ key: progression.SAVE_KEY }); },
     async settle() { const run = app.run(); run.phase = 'complete'; run.time = 100; run.percent = 1; run.coins = run.room.debris.reduce((sum, piece) => sum + piece.value, 0); await app.completed(); },
@@ -230,6 +230,7 @@ await test('choosing another room requires confirmation and cancel keeps current
 
 await test('a confirmed restart freezes the old room while waiting for its save lock', async () => {
   const app = await boot(); await app.startRoom(1);
+  await app.act('begin-room');
   const active = app.run(); active.time = 10;
   await app.act('pause'); app.locks.hold();
   const restart = app.act('restart-confirm');
@@ -242,6 +243,7 @@ await test('a confirmed restart freezes the old room while waiting for its save 
 
 await test('a confirmed room switch freezes the old room during its delayed save', async () => {
   const app = await boot(fixtureCareer(1)); await app.startRoom(1);
+  await app.act('begin-room');
   const active = app.run(); active.time = 10;
   await app.requestStart(2); app.locks.hold();
   const switching = app.act('switch-confirm');
@@ -253,6 +255,7 @@ await test('a confirmed room switch freezes the old room during its delayed save
 
 await test('a career reset cannot finish or reward the old room while storage is delayed', async () => {
   const app = await boot(fixtureCareer(1)); await app.startRoom(2);
+  await app.act('begin-room');
   const active = app.run(); active.phase = 'finishing'; active.finishProgress = 0.999;
   await app.act('new'); app.locks.hold();
   const resetting = app.act('reset-confirm');
@@ -339,6 +342,7 @@ await test('a reset during a delayed ending save cannot claim that the reset cam
 
 await test('reopening controls in a later room freezes the run and preserves it on resume', async () => {
   const app = await boot(fixtureCareer(12)); await app.startRoom(13);
+  await app.act('begin-room');
   const active = app.run(); active.time = 15; active.robot.bag = 5;
   await app.act('pause'); await app.act('controls');
   assert.equal(app.publicState().paused, true);
@@ -351,6 +355,7 @@ await test('reopening controls in a later room freezes the run and preserves it 
 
 await test('a quick key tap between simulation frames cancels the old mouse target', async () => {
   const app = await boot(); await app.startRoom(1);
+  await app.act('begin-room');
   app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:550,clientY:540});
   assert.equal(app.pointer().x,550);
   app.keyEvent('keydown','ArrowUp'); app.keyEvent('keyup','ArrowUp');
@@ -358,6 +363,73 @@ await test('a quick key tap between simulation frames cancels the old mouse targ
   const before={x:app.run().robot.x,y:app.run().robot.y};
   app.frame(1000);app.frame(1100);
   assert.equal(app.run().robot.x,before.x);assert.equal(app.run().robot.y,before.y);
+});
+
+await test('new rooms freeze time, suction, movement and rewards until an explicit left click', async () => {
+  const app = await boot(); await app.startRoom(1);
+  const run = app.run();
+  Object.assign(run.debris[0], {x:run.robot.x, y:run.robot.y, type:'crumb', collected:false, amount:1});
+  const before = JSON.stringify(run);
+  const pointer = {pointerId:1,pointerType:'mouse',isPrimary:true,clientX:550,clientY:540,button:0};
+  app.pointerMove(pointer); app.keyEvent('keydown','ArrowRight');
+  for (let stamp=100;stamp<=10000;stamp+=100) app.frame(stamp);
+  assert.equal(app.publicState().awaitingStart,true);
+  assert.equal(app.pointer(),null);
+  assert.equal(JSON.stringify(run),before,'Even nearby debris must remain untouched while reading instructions');
+  for (const rejected of [{button:2},{button:1},{isPrimary:false}]) app.pointerDown({...pointer,...rejected});
+  assert.equal(app.publicState().awaitingStart,true);
+  assert.throws(()=>app.webTools.get('move_robot').execute({x:1,y:0,seconds:1}),/Start the room first/);
+  app.pointerDown(pointer); app.pointerUp(pointer);
+  assert.equal(app.publicState().awaitingStart,false);
+  assert.equal(app.pointer(),null,'Start click must not steer toward the button or an old target');
+  assert.equal(app.nodes.get('#roomStart').hidden,true);
+  app.frame(10100);
+  assert(run.time>0&&run.time<=.101,'Reading time must never be counted as cleaning time');
+  assert.equal(run.robot.x,JSON.parse(before).robot.x,'Keys pressed before starting must be cleared');
+  assert(run.collectedCount>0,'Automatic suction starts after the explicit click');
+  app.pointerMove(pointer); app.pointerUp(pointer);
+  assert.equal(app.pointer().x,550,'Mouse following needs no held button after starting');
+});
+
+await test('menus preserve readiness and return focus to Start, while Resume does not re-arm a started room', async () => {
+  const app = await boot(); await app.startRoom(1);
+  const startButton = app.nodes.get('#roomStart [data-action="begin-room"]');
+  assert.equal(app.focused(),startButton);
+  await app.act('controls'); await app.act('begin-room');
+  assert.equal(app.publicState().awaitingStart,true,'Instructions dialog must block starting');
+  await app.act('resume'); assert.equal(app.focused(),startButton);
+  await app.act('rooms'); await app.act('resume-room');
+  assert.equal(app.publicState().awaitingStart,true);
+  await app.act('begin-room');
+  await app.act('pause'); await app.act('resume');
+  await app.act('rooms'); await app.act('resume-room');
+  assert.equal(app.publicState().awaitingStart,false);
+  assert.equal(app.focused(),app.nodes.get('#gameCanvas'));
+});
+
+await test('restarts, replays, next rooms, and Endless always wait for a fresh Start', async () => {
+  const app = await boot(fixtureCareer(24)); await app.startRoom(1); await app.act('begin-room');
+  await app.act('restart-confirm'); assert.equal(app.publicState().awaitingStart,true);
+  await app.act('begin-room'); await app.settle(); await app.act('replay');
+  assert.equal(app.publicState().awaitingStart,true);
+  await app.act('begin-room'); await app.settle(); await app.act('room:2');
+  assert.equal(app.publicState().awaitingStart,true);
+  await app.act('begin-room'); await app.settle(); await app.startRoom(0,'0');
+  assert.equal(app.publicState().awaitingStart,true); assert.equal(app.run().time,0);
+});
+
+await test('touch can start then drag, and a start action cannot bypass pending room setup', async () => {
+  const app = await boot(); await app.startRoom(1);
+  app.locks.hold(); const restarting = app.act('restart-confirm');
+  app.pointerDown({pointerId:1,pointerType:'mouse',button:0});
+  assert.equal(app.publicState().awaitingStart,true);
+  app.locks.release(); await restarting;
+  const touch = {pointerId:2,pointerType:'touch',isPrimary:true,button:0,clientX:300,clientY:400};
+  app.pointerDown(touch); assert.equal(app.publicState().awaitingStart,false);
+  const x=app.run().robot.x;
+  app.pointerMove({...touch,clientX:340}); app.frame(100); app.frame(200);
+  assert(app.run().robot.x>x,'The first touch may continue naturally into a steering gesture');
+  app.pointerUp(touch);
 });
 
 console.log(`App orchestration verified: ${checks} checks passed.`);

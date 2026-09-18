@@ -336,7 +336,7 @@ function robot(ctx, r, capacity, color, time, still, full = false) {
   ctx.restore();
 }
 function suction(ctx, run, time, still) {
-  if (run.full || run.unloading > 0 || run.phase !== 'playing') return;
+  if (run.started === false || run.full || run.unloading > 0 || run.phase !== 'playing') return;
   const r = run.robot, radius = run.stats.radius;
   const grad = ctx.createRadialGradient(r.x, r.y, 21, r.x, r.y, radius);
   grad.addColorStop(0, '#fffbe800'); grad.addColorStop(.64, '#fff8dd13'); grad.addColorStop(1, '#fff8dd00');

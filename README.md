@@ -2,7 +2,7 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.2.1** fixes exact-95% completion rounding, stale rooms after a progress reset, cross-tab menu totals, delayed ending validation, and postgame navigation. The phone HUD has a larger finish goal and a more compact layout. See the [current deep audit](docs/AUDIT-1.2.1.md), [1.2.0 redesign](docs/REDESIGN-1.2.0.md), and historical [playtest results](PLAYTEST.md).
+Version **1.2.2** adds a clear click-to-start screen to every room. Movement, suction, and the medal timer wait until you start; the instructions explain steering, emptying the bag, and the 95% finish goal. See the [previous deep audit](docs/AUDIT-1.2.1.md), [1.2.0 redesign](docs/REDESIGN-1.2.0.md), and historical [playtest results](PLAYTEST.md).
 
 Sweep Shift is a browser game about a vacuum robot cleaning messy rooms. Collect debris, dock to empty the bag, and spend earned coins on upgrades.
 
@@ -10,8 +10,9 @@ The campaign has 24 authored rooms across a workshop, an after-hours arcade, a g
 
 ## Play
 
-- Move with **WASD or the arrow keys**, or **move your mouse over the room** and the robot follows it. No click or hold is needed; leaving the play area stops mouse steering.
-- On a touchscreen, **drag to steer** with the movement joystick.
+- **Left-click to start each room**, or press **Enter / Space** on the Start button. Nothing moves or counts toward your time while you read the instructions.
+- After starting, move with **WASD or the arrow keys**, or **move your mouse over the room** and the robot follows it. No holding is needed; leaving the play area stops mouse steering.
+- On a touchscreen, **tap to start**, then **drag to steer** with the movement joystick or room.
 - Suction is automatic. Park beside a **collection station** to empty the bag automatically.
 - A full bag stops suction, but the robot can still move normally.
 - Optional keepsakes go to their own collection shelf, even when the dirt bag is full.

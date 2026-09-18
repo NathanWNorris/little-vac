@@ -1,19 +1,28 @@
-# Sweep Shift 1.2.1 local release candidate
+# Sweep Shift 1.2.2 local release candidate
 
-The current **1.2.1** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this audit. Public publishing has not been performed.
+The current **1.2.2** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
 
 ## Verified build
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **11 files**, index.html at root, no external runtime dependencies or QA fixtures.
-- Size: **44,629 bytes**.
-- SHA-256: **0bdaa62122417944cb8406a2c20e4022dd9e2510c702f5a1cb35dbc3d2b22788**.
-- All source, archive, and extracted hashes match. The exact package displayed v1.2.1, started a room, and opened Pause without browser errors or warnings.
-- Final syntax and deep verification passed: 16 progression, 17 input, 10 store, and 24 app groups; 1,000 generated layouts; 48 campaign completions across earned and starter builds; 43 Endless completions; replay; 86,400 random-movement frames.
-- Real-time browser play completed room 13 and a room-1 replay, checked rewards, bought an earned upgrade, reloaded, opened room 14, and verified the ending/Endless/postgame menus using separate test careers.
+- Size: **45,633 bytes**.
+- SHA-256: **71e06836f749d333d31bebfb4cca6ceee48bf03c5a6b7a84be09d5977b9c10ec**.
+- All source, archive, and extracted hashes match.
+- Syntax and standard verification passed: 16 progression, 17 input, 10 store, and 28 app groups; 1,000 generated layouts; 24 earned-upgrade campaign completions; 3 Endless completions; replay. Targeted app checks passed again after the final focus fix.
+- Isolated browser checks confirmed a stopped timer before Start, primary-click activation, Space-button activation, restart readiness, live movement after starting, and canvas focus after clicking. Instructions fit 320×640 and 960×500 viewports without internal scrolling or horizontal overflow. No browser errors or warnings were reported.
+- The previous 1.2.1 audit also covered a deeper campaign matrix, full room-13 and room-1 browser runs, earned purchases/reload, and postgame menus. These unchanged mechanics were not manually replayed end-to-end for this start-screen update.
 - Existing v1 saves migrate consistently without losing progress. Player save data was not used for testing or reset.
 
-See [the current deep audit](docs/AUDIT-1.2.1.md) for exact evidence and limits. Phone checks used browser viewports, not physical devices.
+See [the previous deep audit](docs/AUDIT-1.2.1.md) for earlier evidence and limits. Phone layout checks used browser viewports, not physical devices. Touch start-and-drag behavior is covered by the input/app tests; a physical touchscreen was not tested.
+
+## What changed in 1.2.2
+
+- Every new, restarted, replayed, or Endless room waits for a primary click before movement, suction, or timing starts.
+- A compact instruction screen explains steering without holding, automatic vacuuming, green docks, the 95% goal, and upgrades after completion.
+- Start supports native Enter/Space button activation and touch taps. Pausing or browsing menus preserves whether a room has started.
+- Hovering, movement keys, secondary clicks, and agent movement cannot bypass the start screen. Waiting time and stale inputs are cleared on activation.
+- Focus returns to Start after dialogs while waiting, then to the canvas after starting. Save format and progress are unchanged.
 
 ## What changed in 1.2.1
 

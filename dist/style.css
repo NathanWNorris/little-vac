@@ -757,6 +757,68 @@ body[data-screen="play"] .footer {
 .joystick,.touch-hint {
   display:none
 }
+.room-start {
+  position:absolute;
+  inset:0;
+  z-index:3;
+  display:grid;
+  place-items:safe center;
+  overflow:auto;
+  padding:18px;
+  background:rgba(18,21,25,.94);
+  cursor:pointer
+}
+.arena:has(.room-start:not([hidden])) {
+  min-height:280px
+}
+.room-start[hidden] {
+  display:none
+}
+.start-card {
+  width:min(100%,390px);
+  text-align:center
+}
+.start-card h2 {
+  font-size:26px;
+  margin-bottom:12px
+}
+.start-steer,.start-rules {
+  font-size:13px;
+  line-height:1.55
+}
+.start-steer {
+  color:var(--text)
+}
+.start-rules {
+  margin:12px 0 18px
+}
+.start-rules strong {
+  color:var(--text)
+}
+.start-card button {
+  min-width:210px;
+  min-height:48px
+}
+.start-keys {
+  margin-top:12px;
+  font-size:11px;
+  line-height:1.5
+}
+.touch-copy {
+  display:none
+}
+@media(pointer:coarse) {
+  .mouse-copy {display:none}
+  .touch-copy {display:inline}
+  .start-keys {display:none}
+}
+@media(max-width:660px),(max-height:760px) {
+  .room-start {padding:12px}
+  .start-card h2 {font-size:21px;margin-bottom:6px}
+  .start-steer,.start-rules {font-size:12px;line-height:1.4}
+  .start-rules {margin:8px 0 12px}
+  .start-keys {font-size:10px;margin-top:8px}
+}
 .game-bottom {
   display:flex;
   justify-content:space-between;
