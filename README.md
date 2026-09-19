@@ -10,9 +10,9 @@ Later jobs connect several areas through walkable hallways. Clean an area to 100
 
 Built with **JavaScript, Canvas, and Web Audio**, without external runtime libraries or downloaded art and sound assets. The game includes keyboard, mouse, and touch controls, local saves, and automated campaign and progression checks.
 
-Current build: **1.6.6**. Upgrades shows one coin counter in the top navigation. Syntax, 45 app checks, package integrity, and the hosted display check passed. The itch.io page remains Draft. Paused upgrades still spend saved coins; pending job earnings stay unavailable until the whole job is complete.
+Current build: **1.6.7**. Upgrades has four simple rows showing an icon, benefit, and price; exact stats and robot colors open only when needed. A paused shop has one Resume action and one coin counter. Syntax, 45 app checks, desktop/320px layout checks, package integrity, and the hosted display check passed. The itch.io page remains Draft. Purchases use saved coins; pending job earnings stay unavailable until the whole job is complete.
 
-Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft with the verified 1.6.6 build uploaded.
+Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft with the verified 1.6.7 build uploaded.
 
 ## Play
 

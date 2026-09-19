@@ -1,4 +1,12 @@
-# Little Vac 1.6.6 — upload handoff
+# Little Vac 1.6.7 — upload handoff
+
+Version **1.6.7** simplifies Upgrades to four icon/benefit/price rows, optional stats and robot colors, one wallet, and one Resume action for a paused job. Pending earnings remain separate. Syntax and **45 app groups** passed; **960 × 800** and **320px** browser checks passed without horizontal overflow, including expanded stats. The color section stayed open and focus remained on Mint after equipping it.
+
+The ZIP is **65,844 bytes**, has **12 runtime files** and root `index.html`, and has SHA-256 **2f74d3afea138c01390c7f2cffc585224cc335b2257540954524d49a14110133**. Source/archive/extraction hashes match. `artifacts/publish-1.6.7` contains the current build/description/notes, retained cover/launch and five gallery images, the refreshed **1080 × 880** Upgrades screenshot, and a file manifest.
+
+The saved/reloaded browser-playable upload displays **v1.6.7**. Hosted Upgrades showed four rows, collapsed stats/colors, and one wallet with 5 coins. Room 2 and existing upgrade ranks were retained; warning/error logs were empty. The replacement screenshot persisted as gallery image `30101140`, replacing `30099715`; exactly six images remain. No hosted purchase was performed. **Draft remains selected and Public unselected; no public-publish action was taken.**
+
+## Historical 1.6.6 handoff
 
 Version **1.6.6** removes the duplicate balance beside the Upgrades heading. The top navigation keeps the single coin icon and number. Purchasing and pending earnings are unchanged. Syntax checks and all **45 app checks** passed; local and hosted Upgrades screens were visually checked. The hosted v1.6.6 screen exposes exactly one balance, retains the existing 5 coins and Room 2 progress, and has no browser warnings/errors. **The itch.io project remains Draft; Public is unselected.**
 

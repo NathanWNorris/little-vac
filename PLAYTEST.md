@@ -1,6 +1,14 @@
 # Little Vac validation
 
-## Version 1.6.6 — one balance on Upgrades
+## Version 1.6.7 — simpler Upgrades
+
+Upgrades now uses four icon/benefit/price rows, optional stats and color sections, one wallet, and one Resume action for a paused job. Pending earnings remain separate. Syntax and **45 app groups** passed. Local browser checks at **960 × 800** and **320px** passed; the narrow view's client/scroll widths were **305 / 305**, with no horizontal overflow, including a separately expanded stats table. After equipping Mint, the color section stayed open and focus remained on that shell. These are targeted interface checks, not a new campaign or physical-phone playthrough.
+
+The package is **65,844 bytes**, has **12 runtime files** and root `index.html`, and has SHA-256 **2f74d3afea138c01390c7f2cffc585224cc335b2257540954524d49a14110133**. Source/archive/extraction hashes match. The complete `artifacts/publish-1.6.7` handoff includes the refreshed **1080 × 880** Upgrades screenshot.
+
+The saved/reloaded browser-playable upload's [actual iframe](https://html-classic.itch.zone/html/19305257/index.html?v=1789836003) displayed **v1.6.7**. Hosted Upgrades visibly showed four rows, collapsed stats/colors, and one navigation wallet with **5 coins**. The existing career retained Room 2, width/bag ranks 1, and speed/pull ranks 0; warning/error logs were empty. Gallery image `30101140` replaced `30099715` after the user cleared the native confirmation; the draft retained exactly six images and its Draft badge. No hosted purchase was performed. **Draft remained selected and Public unselected; no public-publish action was taken.**
+
+## Historical version 1.6.6 — one balance on Upgrades
 
 Version **1.6.6** removes the duplicate balance beside the Upgrades heading. The top navigation keeps the single coin icon and number. Purchasing and pending earnings are unchanged. Syntax checks and all **45 app checks** passed; local and hosted Upgrades screens were visually checked. The hosted v1.6.6 screen exposes exactly one balance, retains the existing 5 coins and Room 2 progress, and has no browser warnings/errors. **The itch.io project remains Draft; Public is unselected.**
 

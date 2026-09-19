@@ -74,7 +74,7 @@ export function navigation(career, screen, active) {
   const count = affordable(career).length;
   const selected = screen === 'result' || screen === 'endless' ? 'rooms' : screen === 'shop' ? 'shop' : screen;
   const tab = (id, label, detail = '') => `<button class="nav-item ${selected === id ? 'selected' : ''}" data-action="${id}" ${selected === id ? 'aria-current="page"' : ''}><span>${label}</span>${detail}</button>`;
-  return `${tab('rooms', 'Rooms')}${tab('shop', 'Upgrades', count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures')}<div class="nav-spacer"></div>${active && screen !== 'play' ? action('resume-room', 'Resume room', 'nav-resume') : ''}${coinBalance(career.coins,'nav-wallet')}`;
+  return `${tab('rooms', 'Rooms')}${tab('shop', 'Upgrades', count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures')}<div class="nav-spacer"></div>${active && screen !== 'play' && screen !== 'shop' ? action('resume-room', 'Resume room', 'nav-resume') : ''}${coinBalance(career.coins,'nav-wallet')}`;
 }
 
 export function pausedRoomBanner(run) {
@@ -189,10 +189,32 @@ function effect(key, stats) {
   if (key === 'speed') return `${Math.round(stats.speed / 150 * 100)}% speed`;
   return `${stats.pull.toFixed(2)}× pull`;
 }
-export function shopMarkup(career, active) {
-  const current = statsFor(career.upgrades), count = affordable(career).length, ranks = Object.values(career.upgrades).reduce((a, b) => a + b, 0);
-  return `<div class="page-head"><div><h1>Upgrades</h1><p>${active?'Spend saved coins. Upgrades work when you resume.':'Spend coins earned from completed rooms.'}</p></div></div>
-    <div class="shop-guidance"><p>${ranks === 20 ? 'All upgrades purchased.' : count ? `${count} ${count === 1 ? 'upgrade' : 'upgrades'} available to buy.` : 'Finish a room to earn more coins.'}</p>${active ? '' : action(career.unlocked <= 24 ? 'continue' : 'rooms', career.unlocked <= 24 ? `Play room ${career.unlocked}` : 'Choose a room', 'primary')}</div>
-    <section class="upgrade-grid" aria-label="Robot upgrades">${UPGRADES.map(u => {const rank = career.upgrades[u.key], price = upgradePrice(u.key, rank), maxed = rank === 5, canBuy = !maxed && career.coins >= price, next = statsFor({...career.upgrades, [u.key]:Math.min(5, rank + 1)}); return `<article class="upgrade-card ${canBuy ? 'affordable' : ''}" id="upgrade-${u.key}"><div class="upgrade-card-top"><span class="level-label">Level ${rank} / 5</span></div><h2 tabindex="-1">${esc(u.name)}</h2><p>${esc(u.description)}</p><div class="upgrade-comparison"><div><small>NOW</small><strong>${effect(u.key, current)}</strong></div>${maxed ? '' : `<div><small>NEXT</small><strong>${effect(u.key, next)}</strong></div>`}</div><div class="ranks" aria-hidden="true">${[1,2,3,4,5].map(i => `<i class="${rank >= i ? 'on' : ''}"></i>`).join('')}</div>${!maxed && !canBuy ? `<div class="purchase-status">Earn ${money(price - career.coins)} more coins</div>` : ''}${action(`buy:${u.key}`, maxed ? 'Fully upgraded' : `Buy · ${money(price)} coins`, 'primary', maxed || !canBuy ? 'disabled' : '')}</article>`; }).join('')}</section>
-    <div class="section-head"><h2>Robot color</h2><span>One new color every six rooms. Appearance only.</span></div><div class="shell-row">${SHELLS.map(s => `<button class="shell ${career.shell === s.id ? 'selected' : ''}" data-action="shell:${s.id}" aria-pressed="${career.shell === s.id}" ${career.completed.length < s.unlockAfter ? 'disabled' : ''}><span class="shell-dot" style="background:${s.color}"></span><strong>${esc(s.name)}</strong><small>${career.shell === s.id ? 'Equipped' : career.completed.length < s.unlockAfter ? `Finish room ${s.unlockAfter}` : 'Equip'}</small></button>`).join('')}</div>`;
+const upgradeCopy = {
+  width: {benefit:'Clean a wider path.', short:'Sweep', art:'<path d="M11 10h18v9H11zM20 5v5M7 29h26M10 25l-4 4 4 4M30 25l4 4-4 4"/>'},
+  bag: {benefit:'Carry more before emptying.', short:'Bag', art:'<path d="M14 9V6h12v3M10 11h20l3 22H7zM10 16h20M17 23h6"/>'},
+  speed: {benefit:'Move around faster.', short:'Wheels', art:'<circle cx="24" cy="23" r="10"/><circle cx="24" cy="23" r="3"/><path d="M4 12h13M4 19h7M4 26h5M24 13v7M14 23h7M24 26v7M27 23h7"/>'},
+  pull: {benefit:'Pick up stubborn dirt faster.', short:'Suction', art:'<path d="M12 6h16v8l5 6H7l5-6zM20 24v10M16 29l4-5 4 5M8 28l3-3M30 30l3 3"/>'}
+};
+function upgradeIcon(key) {
+  return `<svg class="upgrade-icon" viewBox="0 0 40 40" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${upgradeCopy[key].art}</svg>`;
+}
+export function shopMarkup(career, run = null) {
+  const current = statsFor(career.upgrades), count = affordable(career).length;
+  const maxedOut = UPGRADES.every(u => career.upgrades[u.key] === 5);
+  const nextAction = run ? action('resume-room', 'Resume room', 'primary') : action(career.unlocked <= 24 ? 'continue' : 'rooms', career.unlocked <= 24 ? `Play room ${career.unlocked}` : 'Choose a room', 'primary');
+  const hint = run ? `<strong>${money(run.coins + run.robot.bagValue)} coins pending.</strong> Finish this job to collect them.` : maxedOut ? 'Your vacuum is fully upgraded.' : count ? 'Pick an upgrade for your next clean.' : 'Finish a room to earn more coins.';
+  return `<section class="shop-page" aria-labelledby="shop-title">
+    <div class="page-head shop-head"><h1 id="shop-title">Upgrades</h1>${nextAction}</div>
+    <p class="shop-hint">${hint}</p>
+    <section class="upgrade-list" aria-label="Robot upgrades">${UPGRADES.map(u => {
+      const rank = career.upgrades[u.key], price = upgradePrice(u.key, rank), maxed = rank === 5, canBuy = !maxed && career.coins >= price;
+      const label = maxed ? `${u.name}: fully upgraded` : `Buy ${u.name} for ${money(price)} coins${canBuy ? '' : `. Earn ${money(price - career.coins)} more coins`}`;
+      return `<article class="upgrade-row" id="upgrade-${u.key}">${upgradeIcon(u.key)}<div class="upgrade-copy"><div class="upgrade-title"><h2 tabindex="-1">${esc(u.name)}</h2><span class="level-label">${rank}/5<span class="sr-only"> upgrades purchased</span></span></div><p>${upgradeCopy[u.key].benefit}</p></div>${action(`buy:${u.key}`, maxed ? 'Maxed ✓' : `<span>Buy</span>${coinBalance(price)}`, 'primary upgrade-buy', `${maxed || !canBuy ? 'disabled' : ''} aria-label="${esc(label)}"`)}</article>`;
+    }).join('')}</section>
+    <details class="shop-disclosure" id="upgrade-details"><summary>Upgrade details</summary><div class="shop-details-body"><p>${run ? 'Spend saved coins. Upgrades work when you resume.' : 'Each upgrade has five levels.'}</p><table class="upgrade-stats"><caption class="sr-only">Current stats and your next upgrade</caption><thead><tr><th scope="col">Part</th><th scope="col">Now</th><th scope="col">Next</th></tr></thead><tbody>${UPGRADES.map(u => {
+      const rank = career.upgrades[u.key], next = statsFor({...career.upgrades, [u.key]:Math.min(5, rank + 1)});
+      return `<tr><th scope="row">${upgradeCopy[u.key].short}</th><td>${effect(u.key, current)}</td><td>${rank === 5 ? 'Maxed' : effect(u.key, next)}</td></tr>`;
+    }).join('')}</tbody></table></div></details>
+    <details class="shop-disclosure" id="robot-colors"><summary>Robot color<span class="color-sample" style="background:${SHELLS.find(s => s.id === career.shell)?.color || SHELLS[0].color}" aria-hidden="true"></span></summary><div class="shop-details-body"><p>A new color every six rooms. Just for looks.</p><div class="shell-row">${SHELLS.map(s => `<button class="shell ${career.shell === s.id ? 'selected' : ''}" data-action="shell:${s.id}" aria-pressed="${career.shell === s.id}" ${career.completed.length < s.unlockAfter ? 'disabled' : ''}><span class="shell-dot" style="background:${s.color}"></span><strong>${esc(s.name)}</strong><small>${career.shell === s.id ? 'Equipped' : career.completed.length < s.unlockAfter ? `Finish room ${s.unlockAfter}` : 'Equip'}</small></button>`).join('')}</div></div></details>
+  </section>`;
 }
