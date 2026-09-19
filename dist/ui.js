@@ -7,6 +7,7 @@ export const coinBalance = (value, style = '') => `<span class="coin-balance ${s
 export const timeText = value => Number.isFinite(value) ? `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, '0')}` : '—';
 export const action = (id, label, style = 'secondary', extra = '') => `<button class="${style}" data-action="${id}" ${extra}>${label}</button>`;
 export const affordable = career => UPGRADES.filter(u => career.upgrades[u.key] < 5 && upgradePrice(u.key, career.upgrades[u.key]) <= career.coins);
+export const menuHeading = (title, career, id = '') => `<div class="page-head menu-head"><h1${id ? ` id="${esc(id)}"` : ''}>${esc(title)}</h1>${coinBalance(career.coins,'menu-wallet')}</div>`;
 
 export function menuIcon(kind) {
   const shapes = {
@@ -74,7 +75,7 @@ export function navigation(career, screen, active) {
   const count = affordable(career).length;
   const selected = screen === 'result' || screen === 'endless' ? 'rooms' : screen === 'shop' ? 'shop' : screen;
   const tab = (id, label, detail = '') => `<button class="nav-item ${selected === id ? 'selected' : ''}" data-action="${id}" ${selected === id ? 'aria-current="page"' : ''}><span>${label}</span>${detail}</button>`;
-  return `${tab('rooms', 'Rooms')}${tab('shop', 'Upgrades', count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures')}<div class="nav-spacer"></div>${active && screen !== 'play' ? action('resume-room', 'Resume room', 'nav-resume') : ''}${screen === 'shop' ? '' : coinBalance(career.coins,'nav-wallet')}`;
+  return `${tab('rooms', 'Rooms')}${tab('shop', 'Upgrades', count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures')}<div class="nav-spacer"></div>${active && screen !== 'play' ? action('resume-room', 'Resume room', 'nav-resume') : ''}`;
 }
 
 export function pausedRoomBanner(run) {
@@ -177,7 +178,7 @@ export function roomsMarkup(career, district, active = false) {
     const unlocked = isRoomUnlocked(career, r.id), completed = career.completed.includes(r.id), medal = ['', 'Bronze', 'Silver', 'Gold'][career.medals[r.id]], found = career.trinkets.includes(r.id);
     return `<button class="room-tile ${completed ? 'cleaned' : unlocked ? 'next-room' : 'locked'}" data-location="${r.location}" data-action="room:${r.id}" ${unlocked ? '' : 'disabled'}>${roomPreview(r.id)}<span class="room-tile-body"><span class="room-tile-top"><span class="room-number">${String(r.id).padStart(2, '0')}</span><strong>${esc(r.name)}</strong></span><span class="room-meta">${r.areaCount>1?`${r.areaCount} connected areas · `:''}${completed ? `${medal ? `${medal} medal` : 'Completed'} · Best ${timeText(career.bestTimes[r.id])} · ${found ? 'Treasure found' : 'Treasure missing'}` : unlocked ? (r.areaCount>1?'Clean 100% in each area':'Next room · Clean 100% to finish') : `Finish room ${r.id - 1} to unlock`}</span></span><span class="room-state">${completed ? 'Replay' : unlocked ? 'Play' : 'Locked'}</span></button>`;
   };
-  return `<div class="page-head"><div><h1>Choose a room</h1><p>${done ? 'All rooms unlocked. Replay a room or try Endless.' : 'Finish a room to unlock the next.'}</p></div><span class="page-counter">${career.completed.length}<small>/ 24 complete</small></span></div>
+  return `${menuHeading('Rooms', career)}<p class="menu-hint">${career.completed.length} / 24 complete · ${done ? 'Replay a room or try Endless.' : 'Finish a room to unlock the next.'}</p>
     <nav class="districts" aria-label="Locations">${LOCATIONS.map((l, i) => `<button data-action="district:${i}" data-location="${i}" class="district ${i === district ? 'selected' : ''}" aria-pressed="${i === district}"><span class="district-number">0${i + 1}</span><strong>${esc(l.name)}</strong><small>${career.unlocked > i * 6 ? `Rooms ${i * 6 + 1}–${(i + 1) * 6}` : `Finish room ${i * 6} to unlock`}</small></button>`).join('')}</nav>
     <div class="location-heading" data-location="${district}"><h2>${esc(location.name)}</h2><p>${esc(location.subtitle)}</p></div><div class="room-tiles" data-location="${district}">${CAMPAIGN.filter(r => r.location === district).map(roomCard).join('')}</div>
     <section class="endless-card"><div><h2>Endless</h2><p>${done ? 'Generated rooms. All your upgrades.' : 'Finish all 24 rooms to unlock.'}</p></div>${action('endless', done ? 'Play endless' : 'Locked', 'secondary', done ? '' : 'disabled')}</section>`;
@@ -203,7 +204,7 @@ export function shopMarkup(career, run = null) {
   const maxedOut = UPGRADES.every(u => career.upgrades[u.key] === 5);
   const hint = run ? `<strong>${money(run.coins + run.robot.bagValue)} coins pending.</strong> Finish this job to collect them.` : maxedOut ? 'Your vacuum is fully upgraded.' : count ? 'Pick an upgrade for your next clean.' : 'Finish a room to earn more coins.';
   return `<section class="shop-page" aria-labelledby="shop-title">
-    <div class="page-head shop-head"><h1 id="shop-title">Upgrades</h1>${coinBalance(career.coins,'shop-wallet')}</div>
+    ${menuHeading('Upgrades', career, 'shop-title')}
     <p class="shop-hint">${hint}</p>
     <section class="upgrade-list" aria-label="Robot upgrades">${UPGRADES.map(u => {
       const rank = career.upgrades[u.key], price = upgradePrice(u.key, rank), maxed = rank === 5, canBuy = !maxed && career.coins >= price;

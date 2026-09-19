@@ -34,7 +34,16 @@ async function boot(initial = fixtureCareer(), { blockedStorage = false, deniedL
   function node(id = '') {
     return { id, innerHTML: '', textContent: '', hidden: false, disabled: false, open: false, isConnected: true, dataset: {}, style: {}, tagName: 'DIV',
       classList: { add() {}, remove() {}, toggle() {} }, addEventListener() {}, setAttribute() {}, insertAdjacentHTML(_position, html) { this.innerHTML += html; },
-      querySelector(selector) { return selector === 'h1' || selector === 'h2' ? node('heading') : null; }, querySelectorAll() { return []; },
+      querySelector(selector) { return selector === 'h1' || selector === 'h2' ? node('heading') : null; },
+      querySelectorAll(selector) {
+        if (selector !== '.menu-wallet') return [];
+        // Model wallet replacement so async saves can be checked without rebuilding the view.
+        const owner = this;
+        return [...this.innerHTML.matchAll(/<span\b[^>]*class="[^"]*\bmenu-wallet\b[^"]*"[^>]*>[\s\S]*?<\/span><\/span>/g)].map(match => ({
+          get outerHTML() { return match[0]; },
+          set outerHTML(html) { owner.innerHTML = owner.innerHTML.replace(match[0], html); },
+        }));
+      },
       focus() { document.activeElement = this; }, getContext() { return { setTransform() {} }; },
       showModal() { this.open = true; }, close() { this.open = false; },
       getBoundingClientRect() { return { left: 0, top: 0, bottom: 640, width: 960, height: 640 }; },
@@ -114,7 +123,7 @@ await test('saved coins buy upgrades while the room is paused, preserving cleani
   assert.equal(app.publicState().paused,true);
   assert.match(app.nodes.get('#main').innerHTML,/317 coins pending/);
   assert.match(app.nodes.get('#main').innerHTML,/Spend saved coins/);
-  assert(app.nodes.get('#main').innerHTML.includes(ui.coinBalance(before.coins,'shop-wallet')),'The shop wallet shows the saved career balance available to spend');
+  assert(app.nodes.get('#main').innerHTML.includes(ui.coinBalance(before.coins,'menu-wallet')),'The shop wallet shows the saved career balance available to spend');
   await app.act('buy:bag', { disabled: false });
   assert.equal(app.publicState().career.coins,before.coins-180);assert.equal(app.publicState().career.upgrades.bag,1);
   app.frame(1000);app.frame(1100);
@@ -370,13 +379,21 @@ await test('a career reset cannot finish or reward the old room while storage is
   assert.equal(app.publicState().career.coins, 0); assert.deepEqual(app.publicState().career.completed, []);
 });
 
-await test('a delayed purchase does not pull the player back after they navigate to Rooms', async () => {
-  const app = await boot(fixtureCareer(1)); await app.act('shop'); app.locks.hold();
-  const purchase = app.act('buy:bag', { disabled: false });
-  await app.act('rooms');
-  app.locks.release(); await purchase;
-  assert.equal(app.publicState().career.upgrades.bag, 1);
-  assert.equal(app.publicState().screen, 'rooms');
+await test('a delayed purchase refreshes the visible balance without moving the player from Rooms or Treasures', async () => {
+  for (const destination of ['rooms', 'collection']) {
+    const app = await boot(fixtureCareer(1)); await app.act('shop'); app.locks.hold();
+    const before = app.publicState().career.coins;
+    const purchase = app.act('buy:bag', { disabled: false });
+    await app.act(destination);
+    const focused = app.focused(), main = app.nodes.get('#main');
+    assert(main.innerHTML.includes(ui.coinBalance(before, 'menu-wallet')));
+    app.locks.release(); await purchase;
+    assert.equal(app.publicState().career.upgrades.bag, 1);
+    assert.equal(app.publicState().screen, destination);
+    assert.equal(app.focused(), focused, 'The arriving purchase must not move keyboard focus');
+    assert(main.innerHTML.includes(ui.coinBalance(before - 180, 'menu-wallet')), 'The current menu must show the saved balance after the purchase');
+    assert(!main.innerHTML.includes(ui.coinBalance(before, 'menu-wallet')), 'The previous saved balance must not remain visible');
+  }
 });
 
 await test('queued purchases and shell changes are rejected if play resumes or a dialog opens before saving',async()=>{
