@@ -1,5 +1,9 @@
 # Little Vac validation
 
+## Version 1.6.8 — balance beside the heading
+
+Version **1.6.8** removes Play room from Upgrades and moves the single coin balance beside its heading. Active jobs keep one Resume room action in navigation. Syntax and all **45 app checks** passed; desktop and 320px views were checked (305px client/scroll width, no horizontal overflow). The verified ZIP contains **12 runtime files**, is **65,802 bytes**, and has SHA-256 **00877bba2f4d48a63016ab5e0c04bb1a6e3a78185f70539c43706589969ec513**. Source/archive/extraction hashes match. The saved hosted build displays **v1.6.8**, with one **5-coin** balance beside Upgrades and no Play room button. Existing upgrades remain intact and browser warning/error logs are empty. The existing project remains **Draft**, with Public unselected.
+
 ## Version 1.6.7 — simpler Upgrades
 
 Upgrades now uses four icon/benefit/price rows, optional stats and color sections, one wallet, and one Resume action for a paused job. Pending earnings remain separate. Syntax and **45 app groups** passed. Local browser checks at **960 × 800** and **320px** passed; the narrow view's client/scroll widths were **305 / 305**, with no horizontal overflow, including a separately expanded stats table. After equipping Mint, the color section stayed open and focus remained on that shell. These are targeted interface checks, not a new campaign or physical-phone playthrough.

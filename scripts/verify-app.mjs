@@ -114,7 +114,7 @@ await test('saved coins buy upgrades while the room is paused, preserving cleani
   assert.equal(app.publicState().paused,true);
   assert.match(app.nodes.get('#main').innerHTML,/317 coins pending/);
   assert.match(app.nodes.get('#main').innerHTML,/Spend saved coins/);
-  assert(app.nodes.get('#gameNav').innerHTML.includes(ui.coinBalance(before.coins,'nav-wallet')),'The navigation wallet shows the saved career balance available to spend');
+  assert(app.nodes.get('#main').innerHTML.includes(ui.coinBalance(before.coins,'shop-wallet')),'The shop wallet shows the saved career balance available to spend');
   await app.act('buy:bag', { disabled: false });
   assert.equal(app.publicState().career.coins,before.coins-180);assert.equal(app.publicState().career.upgrades.bag,1);
   app.frame(1000);app.frame(1100);
@@ -182,7 +182,7 @@ await test('Pause, Rooms, and Home open Upgrades directly while preserving the u
     assert.equal(app.nodes.get('#modal').open,false,'Upgrades no longer asks the player to discard the room');
     const markup=app.nodes.get('#main').innerHTML;
     assert.match(markup,/51 coins pending/);assert.match(markup,/Finish this job to collect them/);
-    assert.match(markup,/data-action="resume-room"/);
+    assert.match(app.nodes.get('#gameNav').innerHTML,/data-action="resume-room"/,'The paused room remains reachable through navigation');
     assert.doesNotMatch(markup,/data-action="quit-confirm"/);
     app.frame(1000);app.frame(1100);assert.equal(run.time,25);
     assert.deepEqual(app.publicState().career,career,'Opening the shop does not collect pending job coins');
@@ -314,10 +314,10 @@ await test('another tab’s completion and found treasure refresh the title and 
   assert.doesNotMatch(app.nodes.get('#main').innerHTML, /Hidden in room 1<\/small>/);
 });
 
-await test('Choose a room in the completed-career shop opens Rooms after an endless shift', async () => {
+await test('Rooms navigation from the completed-career shop opens room selection after an endless shift', async () => {
   const initial = fixtureCareer(24); initial.lastRoom = 0; initial.endingSeen = true;
   const app = await boot(initial); await app.act('shop');
-  assert.match(app.nodes.get('#main').innerHTML, /data-action="rooms"[^>]*>Choose a room<\/button>/);
+  assert.match(app.nodes.get('#gameNav').innerHTML, /data-action="rooms"/);
   await app.act('rooms');
   assert.equal(app.publicState().screen, 'rooms');
   assert.equal(app.run(), null);

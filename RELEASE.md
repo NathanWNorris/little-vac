@@ -1,4 +1,8 @@
-# Little Vac 1.6.7 draft release candidate
+# Little Vac 1.6.8 draft release candidate
+
+Version **1.6.8** removes Play room from Upgrades and moves the single coin balance beside its heading. Active jobs keep one Resume room action in navigation. Syntax and all **45 app checks** passed; desktop and 320px views were checked (305px client/scroll width, no horizontal overflow). The verified ZIP contains **12 runtime files**, is **65,802 bytes**, and has SHA-256 **00877bba2f4d48a63016ab5e0c04bb1a6e3a78185f70539c43706589969ec513**. Source/archive/extraction hashes match. The saved hosted build displays **v1.6.8**, with one **5-coin** balance beside Upgrades and no Play room button. Existing upgrades remain intact and browser warning/error logs are empty. The existing project remains **Draft**, with Public unselected.
+
+## Historical 1.6.7 draft release candidate
 
 Version **1.6.7** simplifies Upgrades to four icon/benefit/price rows, with optional stats and robot-color sections. The paused shop has one Resume action, one wallet, and separate pending earnings. Syntax and **45 app groups** passed. Browser checks at **960 × 800** and **320px** passed without horizontal overflow, including expanded stats. The color section stayed open and focus remained on the Mint shell after equipping it.
 

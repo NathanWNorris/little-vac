@@ -533,9 +533,10 @@ body[data-screen="title"] .footer button {color:#b8c1ba}
   margin:0 0 12px;
   flex-wrap:nowrap
 }
-.shop-head>button {
+.shop-wallet {
   flex-shrink:0;
-  font-size:13px
+  font-size:28px;
+  font-weight:800
 }
 .shop-hint {
   font-size:13px;
@@ -1429,9 +1430,8 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
     gap:10px;
     font-size:13px
   }
-  .shop-head>button {
-    font-size:11px;
-    padding:10px
+  .shop-wallet {
+    font-size:24px
   }
   .shop-hint {
     font-size:12px;

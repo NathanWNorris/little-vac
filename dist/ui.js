@@ -74,7 +74,7 @@ export function navigation(career, screen, active) {
   const count = affordable(career).length;
   const selected = screen === 'result' || screen === 'endless' ? 'rooms' : screen === 'shop' ? 'shop' : screen;
   const tab = (id, label, detail = '') => `<button class="nav-item ${selected === id ? 'selected' : ''}" data-action="${id}" ${selected === id ? 'aria-current="page"' : ''}><span>${label}</span>${detail}</button>`;
-  return `${tab('rooms', 'Rooms')}${tab('shop', 'Upgrades', count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures')}<div class="nav-spacer"></div>${active && screen !== 'play' && screen !== 'shop' ? action('resume-room', 'Resume room', 'nav-resume') : ''}${coinBalance(career.coins,'nav-wallet')}`;
+  return `${tab('rooms', 'Rooms')}${tab('shop', 'Upgrades', count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures')}<div class="nav-spacer"></div>${active && screen !== 'play' ? action('resume-room', 'Resume room', 'nav-resume') : ''}${screen === 'shop' ? '' : coinBalance(career.coins,'nav-wallet')}`;
 }
 
 export function pausedRoomBanner(run) {
@@ -201,10 +201,9 @@ function upgradeIcon(key) {
 export function shopMarkup(career, run = null) {
   const current = statsFor(career.upgrades), count = affordable(career).length;
   const maxedOut = UPGRADES.every(u => career.upgrades[u.key] === 5);
-  const nextAction = run ? action('resume-room', 'Resume room', 'primary') : action(career.unlocked <= 24 ? 'continue' : 'rooms', career.unlocked <= 24 ? `Play room ${career.unlocked}` : 'Choose a room', 'primary');
   const hint = run ? `<strong>${money(run.coins + run.robot.bagValue)} coins pending.</strong> Finish this job to collect them.` : maxedOut ? 'Your vacuum is fully upgraded.' : count ? 'Pick an upgrade for your next clean.' : 'Finish a room to earn more coins.';
   return `<section class="shop-page" aria-labelledby="shop-title">
-    <div class="page-head shop-head"><h1 id="shop-title">Upgrades</h1>${nextAction}</div>
+    <div class="page-head shop-head"><h1 id="shop-title">Upgrades</h1>${coinBalance(career.coins,'shop-wallet')}</div>
     <p class="shop-hint">${hint}</p>
     <section class="upgrade-list" aria-label="Robot upgrades">${UPGRADES.map(u => {
       const rank = career.upgrades[u.key], price = upgradePrice(u.key, rank), maxed = rank === 5, canBuy = !maxed && career.coins >= price;
