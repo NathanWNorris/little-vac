@@ -1,6 +1,6 @@
 # Sweep Shift validation
 
-Current local candidate: **1.6.1**. Earlier sections below are historical evidence.
+Current draft candidate: **1.6.1**, uploaded to itch.io with public visibility still off. Earlier sections below are historical evidence.
 
 ## 2026-09-19 — final publication pass, version 1.6.1
 
@@ -16,7 +16,13 @@ The unmodified extracted release ZIP passed a local **960 × 800 iframe** check 
 
 Local marketing HTML now matches the current cream/red/dark-green theme and describes **24 jobs, 50 areas, 100% cleaning, and walkable hallways**. Verified promotional PNGs are `marketing/cover.png` (**1260 × 1000**), `marketing/banner.png` (**1260 × 320**), and `marketing/launch.png` (**960 × 800**). The current gallery comes from the actual app: `marketing/01-rooms.png`, `marketing/02-arcade.png`, `marketing/03-greenhouse.png`, `marketing/04-rooftop.png`, `marketing/02-upgrades.png`, and `marketing/06-hallway.png`. Older JPGs are historical and must be excluded from the new upload.
 
-The publication handoff targets `artifacts/publish-1.6.1` with the game ZIP, current PNG assets, `description.html`, and `UPLOAD-NOTES.md`. No external upload or publication occurred during this pass. The current itch.io draft has not been reverified; its last recorded inspection was the older 1.1.0 draft. Remaining steps are to upload the current files, verify the actual hosted game and page, and leave the final public-publish action to the user.
+The `artifacts/publish-1.6.1` handoff was uploaded to the existing [itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**. The current tagline and description, cover, banner, launch image, and six gallery screenshots persisted. The user removed seven obsolete screenshots after a deletion dialog stalled browser control. Store colors saved as background **#17292d**, content **#f2e6c9**, text **#203b3b**, and links **#a63e27**.
+
+The actual [hosted game iframe](https://html-classic.itch.zone/html/19303530/index.html?v=1789828455) loaded in Chrome and displayed footer **v1.6.1**. Continue opened Room 2 parked at **0% with an empty bag**. Clicking Start and steering with the mouse reached **5%**, carrying **16 / 120 pieces worth 22 coins**. Escape paused. Upgrades showed one **Leave this job?** prompt; **Keep playing** restored the same 5% and 16 pieces. Reopening Upgrades and confirming Quit opened the shop directly without a second prompt, discarded unfinished earnings, and left the existing **5 saved coins** unchanged.
+
+Reload retained **Room 2**, **5 saved coins**, and the existing upgrade ranks: **Wider sweep 1, Bigger bag 1, Quicker wheels 0, Stronger suction 0**. A new Room 2 started from its parked state with the **D** key; clicking outside the iframe paused it. The empty test job was quit and the hosted game returned to Home. Browser warning/error logs were empty both before and after reload, before the separate fullscreen attempts below. This hosted smoke test did **not** complete a job or buy an upgrade; completed-job rewards and new-purchase persistence remain the local evidence described above. No production game source changed. **Draft remains selected and the final public-publish action has not been taken.**
+
+A later check attempted itch.io's external **Enter fullscreen** control twice, once by its semantic control and once by coordinate click. `document.fullscreenElement` remained false. The host page at `fooded.itch.io` logged `TypeError: not granted` and a `NotSupportedError` because `screen.orientation.lock` was unavailable on this device. The errors did not originate in the game iframe and embedded gameplay was unaffected. **Fullscreen could not be verified under automated Chrome**; the earlier empty-log result applies only to the game/start/pause/reload smoke check, not the entire session. No game or host-button change was made.
 
 ## 2026-09-18 — version 1.6.1 deep playthrough and interface cleanup
 

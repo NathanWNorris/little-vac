@@ -1,6 +1,6 @@
-# Sweep Shift 1.6.1 local release candidate
+# Sweep Shift 1.6.1 draft release candidate
 
-The current **1.6.1** build is local. The last recorded inspection of the **itch.io draft** found **1.1.0**; its current state has not yet been reverified in this publication pass. No new upload or public publishing is claimed.
+The tested **1.6.1** build, current description, and refreshed artwork are uploaded to the [itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**. The actual hosted iframe displays **v1.6.1** and passed the hosted controls, pause, upgrade-confirmation, and existing-save smoke test. **Draft remains selected; public publishing has not been performed.**
 
 ## Current readiness — 2026-09-19
 
@@ -10,7 +10,10 @@ The current **1.6.1** build is local. The last recorded inspection of the **itch
 - The unchanged extracted ZIP passed a local **960 × 800 sandboxed iframe** check: v1.6.1 startup, click/WASD activation, outside-click pause, one Upgrades confirmation, direct shop navigation after quitting, and no unfinished payout. Warning/error logs were empty. This models an embedded game locally; it does not verify the live itch.io build or a physical phone.
 - A late-career fixture completed the first of Room 22's four areas, verified the locked gate and two-way hallway, and retained carried dirt, coins, and partial area-2 cleaning. This was not a complete four-area browser playthrough.
 - Local [store description](marketing/description.html) and the current promotional/gallery PNGs below match the cream/red/dark-green theme and current rules. Older JPGs are historical and must not be included in the new upload.
-- No external upload or publication occurred. Remaining steps: upload the current package and assets, verify the actual hosted game and page, then leave the final public-publish action to the user. The last observed 1.1.0 draft is documented below as historical evidence.
+- The browser-playable ZIP, current description and tagline, cover, banner, launch image, and six new gallery screenshots persisted on the itch.io draft. The user removed seven old screenshots after their deletion dialog stalled browser control.
+- Store colors were saved: background **#17292d**, content **#f2e6c9**, text **#203b3b**, and links **#a63e27**. The actual [hosted iframe](https://html-classic.itch.zone/html/19303530/index.html?v=1789828455) loaded **v1.6.1**. Click/mouse and WASD activation, cleaning, Escape and outside-frame pause, one Upgrades confirmation, Keep playing, and direct quit-to-shop passed. Reload retained the existing Room 2 unlock, 5 saved coins, and purchased upgrade ranks; quitting did not award unfinished coins. Warning/error logs were empty during this smoke test, before the separate fullscreen check below.
+- itch.io's external fullscreen control could not be verified in automated Chrome. Two activation attempts left fullscreen inactive and produced host-page `TypeError: not granted` and `NotSupportedError` for unavailable `screen.orientation.lock`. These errors came from `fooded.itch.io`, not the game iframe; embedded gameplay remained functional. The game and host fullscreen button were not changed.
+- The hosted smoke test did not complete a job or make a purchase. Completed-job rewards and new-purchase persistence were verified locally as described above. The hosted game was left at Home without an unfinished test job. The remaining action is public publishing, deliberately left to the user. The old 1.1.0 draft inspection below is historical evidence.
 
 ## Current upload assets
 
@@ -21,7 +24,7 @@ The current **1.6.1** build is local. The last recorded inspection of the **itch
 - Actual-app gallery: `marketing/01-rooms.png`, `marketing/02-arcade.png`, `marketing/03-greenhouse.png`, `marketing/04-rooftop.png`, `marketing/02-upgrades.png`, and `marketing/06-hallway.png`.
 - Description: `marketing/description.html`.
 
-Use `artifacts/publish-1.6.1` for the handoff containing the ZIP, these current PNGs, `description.html`, and `UPLOAD-NOTES.md`. Exclude all older JPG screenshots. These local files have not yet been verified on the hosted page.
+The `artifacts/publish-1.6.1` handoff contains the uploaded ZIP, current PNGs, `description.html`, and `UPLOAD-NOTES.md`. The current artwork and six screenshots persisted on the hosted draft; older JPG screenshots were excluded. The hosted version and gameplay smoke checks passed within the scope stated above.
 
 ## Verified local build — 2026-09-18
 
@@ -189,12 +192,12 @@ Use `artifacts/publish-1.6.1` for the handoff containing the ZIP, these current 
 
 - Title: **Sweep Shift**.
 - Short description: **Clean 24 rooms, earn coins, and upgrade a tiny vacuum robot. A cozy browser game with endless shifts to unlock.**
-- Updated local copy for the next upload: [marketing/description.html](marketing/description.html).
+- This historical copy was replaced by the current [store description](marketing/description.html) in the 1.6.1 draft upload.
 - Type: HTML game; Simulation; free/no payments; comments enabled.
 - Tags: cleaning, cozy, relaxing, singleplayer, top-down.
 - Embed: **960 × 800**, mobile friendly, fullscreen control and scrollbars enabled; autostart disabled.
 - Disclosure: AI-assisted Graphics, Text & Dialog, and Code; original procedurally synthesized audio described accurately.
-- At the last recorded inspection, the hosted store used the prior cream/teal theme, robot cover, banner, and launch artwork. The next upload needs the current 1.6.1 theme and assets.
+- At that inspection, the hosted store used the prior cream/teal theme, robot cover, banner, and launch artwork. These were replaced by current theme colors and assets in the 1.6.1 draft upload.
 
 Five prior 1.1.0 gameplay/menu screenshots are marketing/01-rooms.jpg through 05-upgrades.jpg. The upgrade screenshot was taken in the same audit before the final supporting-sentence edit, with legitimately earned affordable upgrades visible. Previous PNG screenshots are retained as source backups.
 
