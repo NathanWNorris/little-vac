@@ -114,7 +114,7 @@ await test('saved coins buy upgrades while the room is paused, preserving cleani
   assert.equal(app.publicState().paused,true);
   assert.match(app.nodes.get('#main').innerHTML,/317 coins pending/);
   assert.match(app.nodes.get('#main').innerHTML,/Spend saved coins/);
-  assert(app.nodes.get('#main').innerHTML.includes(ui.money(before.coins)),'The spendable balance remains the saved career balance');
+  assert(app.nodes.get('#gameNav').innerHTML.includes(ui.coinBalance(before.coins,'nav-wallet')),'The navigation wallet shows the saved career balance available to spend');
   await app.act('buy:bag', { disabled: false });
   assert.equal(app.publicState().career.coins,before.coins-180);assert.equal(app.publicState().career.upgrades.bag,1);
   app.frame(1000);app.frame(1100);

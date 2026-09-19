@@ -1,4 +1,10 @@
-# Little Vac 1.6.5 draft release candidate
+# Little Vac 1.6.6 draft release candidate
+
+Version **1.6.6** removes the duplicate balance beside the Upgrades heading. The top navigation keeps the single coin icon and number. Purchasing and pending earnings are unchanged. Syntax checks and all **45 app checks** passed; local and hosted Upgrades screens were visually checked. The hosted v1.6.6 screen exposes exactly one balance, retains the existing 5 coins and Room 2 progress, and has no browser warnings/errors. **The itch.io project remains Draft; Public is unselected.**
+
+The verified archive is **64,876 bytes**, contains **12 runtime files** with root `index.html`, and has SHA-256 **328d71200f16f00c24b0f2daa272b5490afd126c732d3710c11a7e90be488537**. Source/archive/extraction hashes match. The current handoff is `artifacts/publish-1.6.6`.
+
+## Historical 1.6.5 draft release candidate
 
 Version **1.6.5** replaces visible saved-balance labels with a shared coin icon and number in navigation, Upgrades, Pause details, and result totals. Accessible labels retain the amount and “coins”; pending-earnings wording is unchanged. The mobile header wraps to avoid crowding. Syntax and **45 app groups** passed; desktop and 320px layout checks found no horizontal overflow.
 

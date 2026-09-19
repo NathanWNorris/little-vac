@@ -283,7 +283,7 @@ body:not([data-screen="title"]) main {
   margin-top:8px;
   font-size:14px
 }
-.page-counter,.balance {
+.page-counter {
   font-size:30px;
   line-height:1.1;
   font-weight:800;
@@ -1331,7 +1331,7 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
   .page-head p {
     font-size:12px
   }
-  .page-counter,.balance {
+  .page-counter {
     font-size:24px
   }
   .page-counter small {

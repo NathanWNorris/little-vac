@@ -1,5 +1,11 @@
 # Little Vac validation
 
+## Version 1.6.6 — one balance on Upgrades
+
+Version **1.6.6** removes the duplicate balance beside the Upgrades heading. The top navigation keeps the single coin icon and number. Purchasing and pending earnings are unchanged. Syntax checks and all **45 app checks** passed; local and hosted Upgrades screens were visually checked. The hosted v1.6.6 screen exposes exactly one balance, retains the existing 5 coins and Room 2 progress, and has no browser warnings/errors. **The itch.io project remains Draft; Public is unselected.**
+
+## Historical 1.6.5 record
+
 Current draft candidate: **1.6.5**, simplifying the coin display. Local checks, packaging, and the hosted display check passed. Earlier versions, filenames, hashes, URLs, and results below are historical evidence and are not validation of this package.
 
 ## Version 1.6.5 — simpler coin display
