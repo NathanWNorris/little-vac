@@ -3,7 +3,12 @@ import {UPGRADES, SHELLS, statsFor, upgradePrice, isRoomUnlocked} from './progre
 
 export const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const money = value => Math.floor(value).toLocaleString();
-export const coinBalance = (value, style = '') => `<span class="coin-balance ${style}" role="img" aria-label="${money(value)} coins"><svg class="coin-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10" fill="#d9aa43" stroke="#866024" stroke-width="2"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#f3d586" stroke-width="1.5"/><path d="M12 8v8" stroke="#866024" stroke-width="2" stroke-linecap="round"/></svg><span aria-hidden="true">${money(value)}</span></span>`;
+export const coinBalance = (value, style = '') => {
+  const exact = money(value), compact = value >= 10_000 && style.split(/\s+/).includes('menu-wallet');
+  const unit = value >= 1_000_000 ? 1_000_000 : 1_000;
+  const display = compact ? `${(Math.floor(value / (unit / 10)) / 10).toLocaleString(undefined, {maximumFractionDigits:1})}${unit === 1_000_000 ? 'M' : 'K'}` : exact;
+  return `<span class="coin-balance ${style}" role="img" aria-label="${exact} coins" title="${exact} coins"><svg class="coin-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10" fill="#d9aa43" stroke="#866024" stroke-width="2"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#f3d586" stroke-width="1.5"/><path d="M12 8v8" stroke="#866024" stroke-width="2" stroke-linecap="round"/></svg><span aria-hidden="true">${display}</span></span>`;
+};
 export const timeText = value => Number.isFinite(value) ? `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, '0')}` : '—';
 export const action = (id, label, style = 'secondary', extra = '') => `<button class="${style}" data-action="${id}" ${extra}>${label}</button>`;
 export const affordable = career => UPGRADES.filter(u => career.upgrades[u.key] < 5 && upgradePrice(u.key, career.upgrades[u.key]) <= career.coins);
@@ -79,7 +84,7 @@ export function navigation(career, screen, active) {
 }
 
 export function pausedRoomBanner(run) {
-  return `<aside class="paused-room"><div><strong>${esc(run.room.name)} · Paused at ${Math.floor(run.percent * 100)}%</strong><p><strong>${money(run.coins+run.robot.bagValue)} coins pending.</strong> Finish this job to collect them.</p></div>${action('resume-room','Resume room')}</aside>`;
+  return `<aside class="paused-room"><div><strong>${esc(run.room.name)} · Paused at ${Math.floor(run.percent * 100)}%</strong><p><strong>${money(run.coins+run.robot.bagValue)} coins pending.</strong> Finish this job to collect them.</p></div></aside>`;
 }
 
 const previews = new Map();

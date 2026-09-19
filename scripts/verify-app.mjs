@@ -32,8 +32,10 @@ async function boot(initial = fixtureCareer(), { blockedStorage = false, deniedL
   const events = new Map(), documentEvents = new Map(), nodes = new Map(), webTools = new Map();
   let document;
   function node(id = '') {
-    return { id, innerHTML: '', textContent: '', hidden: false, disabled: false, open: false, isConnected: true, dataset: {}, style: {}, tagName: 'DIV',
-      classList: { add() {}, remove() {}, toggle() {} }, addEventListener() {}, setAttribute() {}, insertAdjacentHTML(_position, html) { this.innerHTML += html; },
+    return { id, innerHTML: '', textContent: '', hidden: false, disabled: false, open: false, isConnected: true, dataset: {}, style: {}, attributes: {}, tagName: 'DIV',
+      classList: { add() {}, remove() {}, toggle() {} }, addEventListener() {},
+      setAttribute(name, value) { this.attributes[name] = String(value); }, getAttribute(name) { return this.attributes[name] ?? null; },
+      insertAdjacentHTML(_position, html) { this.innerHTML += html; },
       querySelector(selector) { return selector === 'h1' || selector === 'h2' ? node('heading') : null; },
       querySelectorAll(selector) {
         if (selector !== '.menu-wallet') return [];
@@ -610,8 +612,9 @@ await test('fresh WASD, uppercase WASD and arrow keys start at the dock and stee
     const app=await boot();await app.startRoom(1);const run=app.run();
     const origin={x:run.robot.x,y:run.robot.y};
     app.pointerMove({pointerId:1,pointerType:'mouse',isPrimary:true,clientX:550,clientY:300});
-    app.keyEvent('keydown',key);app.frame(100);app.frame(200);
+    app.keyEvent('keydown',key,{target:app.focused()});app.frame(100);app.frame(200);
     assert.equal(app.publicState().awaitingStart,false,key+' starts the room');
+    assert.equal(app.nodes.get('#gameCanvas').tabIndex,0,'Starting from the focused Start button enables canvas keyboard focus');
     assert((run.robot[axis]-origin[axis])*sign>0,key+' steers immediately');
     assert.equal(app.pointer(),null,'Keyboard startup must discard hovering mouse targets');
     app.keyEvent('keyup',key);
@@ -625,6 +628,7 @@ await test('restarting returns to the dock and waits for a fresh key instead of 
   app.keyEvent('keydown','d');app.frame(100);app.frame(200);
   assert(app.run().robot.x>app.run().room.stations[0].x);
   await app.act('restart-confirm');
+  assert.equal(app.nodes.get('#gameCanvas').tabIndex,-1,'Restarting takes the covered canvas out of the tab order');
   const parked={x:app.run().robot.x,y:app.run().robot.y};
   assert.deepEqual(parked,app.run().room.stations[0]);
   app.keyEvent('keydown','d',{repeat:true});
@@ -639,17 +643,26 @@ await test('restarting returns to the dock and waits for a fresh key instead of 
 await test('menus preserve readiness and return focus to Start, while Resume does not re-arm a started room', async () => {
   const app = await boot(); await app.startRoom(1);
   const startButton = app.nodes.get('#roomStart [data-action="begin-room"]');
+  const canvas = app.nodes.get('#gameCanvas');
   assert.equal(app.focused(),startButton);
+  assert.equal(canvas.tabIndex,-1,'Only Start should be tabbable inside the waiting arena');
+  assert.match(canvas.getAttribute('aria-label'),/Parked at the drop-off dock/);
   await app.act('controls'); await app.act('begin-room');
   assert.equal(app.publicState().awaitingStart,true,'Instructions dialog must block starting');
   await app.act('resume'); assert.equal(app.focused(),startButton);
   await app.act('rooms'); await app.act('resume-room');
   assert.equal(app.publicState().awaitingStart,true);
+  assert.equal(canvas.tabIndex,-1,'Resuming an unstarted room must keep its canvas out of the tab order');
   await app.act('begin-room');
+  assert.equal(canvas.tabIndex,0);
+  assert.match(canvas.getAttribute('aria-label'),/Move your mouse without holding/);
+  assert.doesNotMatch(canvas.getAttribute('aria-label'),/Parked|to start/,'Started-room instructions must not tell screen-reader players they are still parked');
   await app.act('pause'); await app.act('resume');
   await app.act('rooms'); await app.act('resume-room');
   assert.equal(app.publicState().awaitingStart,false);
   assert.equal(app.focused(),app.nodes.get('#gameCanvas'));
+  assert.equal(canvas.tabIndex,0,'Resuming a started room keeps the canvas keyboard-accessible');
+  assert.doesNotMatch(canvas.getAttribute('aria-label'),/Parked|to start/,'Returning from a menu retains the active steering instructions');
 });
 
 await test('restarts, replays, next rooms, and Endless always wait for a fresh Start', async () => {

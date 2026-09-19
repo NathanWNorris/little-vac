@@ -1,3 +1,11 @@
+# Little Vac 1.6.10 upload
+
+Version **1.6.10** passed the full earned 24-job/50-area campaign, 24 starter jobs, 144 campaign runs across six upgrade builds, additional Endless runs, and 88 app/input/progression/store groups. Fixed duplicate Resume controls, pre-start keyboard focus, stale accessible instructions, large wallet layout, and misleading treasure/suction copy. Manual browser checks covered a full first-room completion, purchases, reload persistence, startup, menus, settings, and Endless restart. See [the full audit](../docs/RELEASE-AUDIT-1.6.10.md) for exact coverage and device limits.
+
+The 12-file ZIP is **66,161 bytes**, SHA-256 **61884fae9f3b07d70f58d10bf217e3f8a3c19bd9e03281c3f86d51974d71fca5**; source/archive/extraction hashes match. The saved hosted build displays **v1.6.10** and retains the existing player save. Browser-playable is checked; **Draft remains selected and Public unselected**. Physical phones and native fullscreen exit remain unverified; an itch.io orientation-lock warning is recorded in the audit.
+
+The six-image gallery is retained; its two menu screenshots predate the shared balance location.
+
 # Little Vac 1.6.9 upload
 
 Version **1.6.9** uses a shared coin display across menus. Rooms, Upgrades, and Treasures have identical wallet coordinates at desktop and 320px widths; Home, Endless, completion, and campaign-ending screens also display it at the top right. Navigation no longer duplicates the balance. The room completion count moves into the Rooms subtitle, and paused notices follow the shared heading. Purchases refresh visible balances without changing the current screen or focus. Syntax and all **45 app checks** passed, including delayed purchases while browsing Rooms or Treasures. Narrow layouts have no horizontal overflow. The ZIP has **12 runtime files**, root `index.html`, **65,916 bytes**, and SHA-256 **5f073d1a460b2b07e0fd5f73a4c2d6e63b336396603bbd1f436a81616c956d96**; source/archive/extraction hashes match. The hosted **v1.6.9** build displays the existing **5 coins** on Home, Rooms, Upgrades, and Treasures. All three tabbed pages have identical wallet coordinates. Room 2 progress remains intact and browser warning/error logs are empty. Browser-playable is saved, **Draft** remains selected, and Public remains unselected.
