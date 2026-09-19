@@ -70,14 +70,14 @@ export function guideArt(kind) {
 }
 
 export function navigation(career, screen, active) {
-  const count = active ? 0 : affordable(career).length;
+  const count = affordable(career).length;
   const selected = screen === 'result' || screen === 'endless' ? 'rooms' : screen === 'shop' ? 'shop' : screen;
   const tab = (id, label, detail = '') => `<button class="nav-item ${selected === id ? 'selected' : ''}" data-action="${id}" ${selected === id ? 'aria-current="page"' : ''}><span>${label}</span>${detail}</button>`;
-  return `${tab('rooms', 'Rooms')}${tab('shop', 'Upgrades', active ? '<span class="nav-lock" aria-label="Locked until you finish or quit this room" title="Finish or quit this room to upgrade">Locked</span>' : count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures')}<div class="nav-spacer"></div>${active && screen !== 'play' ? action('resume-room', 'Resume room', 'nav-resume') : ''}<span class="nav-wallet" aria-label="${money(career.coins)} saved coins">${money(career.coins)}<small>saved coins</small></span>`;
+  return `${tab('rooms', 'Rooms')}${tab('shop', 'Upgrades', count ? `<span class="nav-count" aria-label="${count} affordable upgrade choices">${count}</span>` : '')}${tab('collection', 'Treasures')}<div class="nav-spacer"></div>${active && screen !== 'play' ? action('resume-room', 'Resume room', 'nav-resume') : ''}<span class="nav-wallet" aria-label="${money(career.coins)} saved coins">${money(career.coins)}<small>saved coins</small></span>`;
 }
 
 export function pausedRoomBanner(run) {
-  return `<aside class="paused-room"><div><strong>${esc(run.room.name)} · Paused at ${Math.floor(run.percent * 100)}%</strong><p>Finish or quit this room to buy upgrades.</p></div>${action('quit','Quit room & upgrade')}</aside>`;
+  return `<aside class="paused-room"><div><strong>${esc(run.room.name)} · Paused at ${Math.floor(run.percent * 100)}%</strong><p><strong>${money(run.coins+run.robot.bagValue)} coins pending.</strong> Finish this job to collect them.</p></div>${action('resume-room','Resume room')}</aside>`;
 }
 
 const previews = new Map();
@@ -190,7 +190,7 @@ function effect(key, stats) {
 }
 export function shopMarkup(career, active) {
   const current = statsFor(career.upgrades), count = affordable(career).length, ranks = Object.values(career.upgrades).reduce((a, b) => a + b, 0);
-  return `<div class="page-head"><div><h1>Upgrades</h1><p>Spend coins earned from completed rooms.</p></div><span class="balance" aria-label="${money(career.coins)} saved coins">${money(career.coins)}<small>saved coins</small></span></div>
+  return `<div class="page-head"><div><h1>Upgrades</h1><p>${active?'Spend saved coins. Upgrades work when you resume.':'Spend coins earned from completed rooms.'}</p></div><span class="balance" aria-label="${money(career.coins)} saved coins">${money(career.coins)}<small>saved coins</small></span></div>
     <div class="shop-guidance"><p>${ranks === 20 ? 'All upgrades purchased.' : count ? `${count} ${count === 1 ? 'upgrade' : 'upgrades'} available to buy.` : 'Finish a room to earn more coins.'}</p>${active ? '' : action(career.unlocked <= 24 ? 'continue' : 'rooms', career.unlocked <= 24 ? `Play room ${career.unlocked}` : 'Choose a room', 'primary')}</div>
     <section class="upgrade-grid" aria-label="Robot upgrades">${UPGRADES.map(u => {const rank = career.upgrades[u.key], price = upgradePrice(u.key, rank), maxed = rank === 5, canBuy = !maxed && career.coins >= price, next = statsFor({...career.upgrades, [u.key]:Math.min(5, rank + 1)}); return `<article class="upgrade-card ${canBuy ? 'affordable' : ''}" id="upgrade-${u.key}"><div class="upgrade-card-top"><span class="level-label">Level ${rank} / 5</span></div><h2 tabindex="-1">${esc(u.name)}</h2><p>${esc(u.description)}</p><div class="upgrade-comparison"><div><small>NOW</small><strong>${effect(u.key, current)}</strong></div>${maxed ? '' : `<div><small>NEXT</small><strong>${effect(u.key, next)}</strong></div>`}</div><div class="ranks" aria-hidden="true">${[1,2,3,4,5].map(i => `<i class="${rank >= i ? 'on' : ''}"></i>`).join('')}</div>${!maxed && !canBuy ? `<div class="purchase-status">Earn ${money(price - career.coins)} more coins</div>` : ''}${action(`buy:${u.key}`, maxed ? 'Fully upgraded' : `Buy · ${money(price)} coins`, 'primary', maxed || !canBuy ? 'disabled' : '')}</article>`; }).join('')}</section>
     <div class="section-head"><h2>Robot color</h2><span>One new color every six rooms. Appearance only.</span></div><div class="shell-row">${SHELLS.map(s => `<button class="shell ${career.shell === s.id ? 'selected' : ''}" data-action="shell:${s.id}" aria-pressed="${career.shell === s.id}" ${career.completed.length < s.unlockAfter ? 'disabled' : ''}><span class="shell-dot" style="background:${s.color}"></span><strong>${esc(s.name)}</strong><small>${career.shell === s.id ? 'Equipped' : career.completed.length < s.unlockAfter ? `Finish room ${s.unlockAfter}` : 'Equip'}</small></button>`).join('')}</div>`;

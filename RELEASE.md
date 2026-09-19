@@ -1,8 +1,18 @@
-# Little Vac 1.6.3 draft release candidate
+# Little Vac 1.6.4 draft release candidate
+
+Version **1.6.4** allows upgrades from Pause and the menus while retaining the active job. Purchases spend saved career coins; pending job coins remain unavailable until every area is complete. Resume uses the upgraded stats without resetting cleaning, bag contents, or job progress. Quitting is no longer required to buy upgrades.
+
+Targeted checks passed **45 app**, **16 progression**, **17 input**, and **10 career-store** groups, plus syntax checks for **9 runtime modules and 10 scripts**. Local Chrome verified direct menu-to-Upgrades navigation, distinct saved/pending coins, shell selection, and resume with the same cleaning and bag. Automated tests cover saved-coin purchases, changed stats, full-bag resume, insufficient saved funds despite pending coins, asynchronous guards, and one-time settlement. No full campaign or physical-device rerun is claimed.
+
+The verified ZIP is **64,754 bytes**, contains **12 runtime files** with root `index.html`, and has SHA-256 **0b181e7d4f7a2e7279069ddef47965b47d792f9c076549a068cc1cd0499c08d6**. Source, archive, and extraction hashes match. `artifacts/publish-1.6.4` contains the build, current description/notes, retained Little Vac artwork and six gallery PNGs, and a file manifest.
+
+The browser-playable build and updated description persisted after saving/reloading the itch.io **Draft**. The actual iframe displays **v1.6.4**. Hosted Continue → D → Escape → Main menu → Upgrades opened directly without a quit prompt, kept pending and saved coins separate, and resumed the same Room 2. Reload retained the existing career; no browser warnings/errors appeared. This did not include a hosted purchase or completed job. **Draft remains visible, Public remains unselected, and no public-publish action has been taken.** Earlier release records below describe their historical behavior, including the former quit-before-upgrading rule.
+
+## Historical 1.6.3 draft release candidate
 
 Version **1.6.3** renames the game to **Little Vac**. Packaging, refreshed branded artwork, and the GitHub/itch.io renames are complete. The browser-playable upload and targeted hosted startup/help check passed. **The itch.io page remains Draft; public publishing has not been performed.**
 
-## Current branding release — 2026-09-19
+## Historical 1.6.3 branding release — 2026-09-19
 
 - Current source destination: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). Current draft destination: [Little Vac](https://fooded.itch.io/little-vac), existing project **5021059**. Both renames persisted after saving and reloading; the actual hosted iframe displays **LITTLE VAC v1.6.3**.
 - The title, wordmark, browser metadata, marketing templates, and current links use Little Vac. The cream/red/dark-green theme and robot artwork are retained.

@@ -10,9 +10,9 @@ Later jobs connect several areas through walkable hallways. Clean an area to 100
 
 Built with **JavaScript, Canvas, and Web Audio**, without external runtime libraries or downloaded art and sound assets. The game includes keyboard, mouse, and touch controls, local saves, and automated campaign and progression checks.
 
-Current build: **1.6.3**, the Little Vac branding update. Packaging, targeted automated checks, and the hosted startup/help smoke test passed. The itch.io page remains a draft; no public-publish action has been taken. The illustrated tutorial appears until the first completed room. Later jobs and replays use a small click/WASD start prompt; the full guide remains available in **How to play**. The robot always waits at its dock for a deliberate start. Physics, balance, and save format are unchanged.
+Current build: **1.6.4**, adding upgrades while a job is paused. Targeted automated checks, local browser checks, packaging, and the hosted menu/resume smoke check passed. The build and description are uploaded. The itch.io page remains a draft; no public-publish action has been taken. The illustrated tutorial appears until the first completed room. Later jobs and replays use a small click/WASD start prompt; the full guide remains available in **How to play**. The robot always waits at its dock for a deliberate start.
 
-Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The renamed store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft with the verified 1.6.3 build uploaded.
+Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft with the verified 1.6.4 build uploaded.
 
 ## Play
 
@@ -35,11 +35,11 @@ There are no lives or mandatory time limits. Bronze rewards finishing; optional 
 
 Four upgrade categories each have five purchasable ranks: cleaning width, bag capacity, movement speed, and pull strength. Every location completed unlocks another cosmetic shell, for five shells in total. Each campaign room also contains one optional trinket for the collection shelf.
 
-Use **Rooms** to see your next room, browse location previews, or replay a completed room. Use **Upgrades** to compare your current robot with the next rank, see what you can afford, and change its color. Purchases use saved career coins. Upgrades unlock only after finishing a room or using **Pause → Quit & upgrade** and confirming. Pausing or browsing rooms alone does not unlock purchases. Quitting discards only the unfinished room’s cleaning and coins.
+Use **Rooms** to see your next room, browse location previews, or replay a completed room. Use **Upgrades** to compare your current robot with the next rank, see what you can afford, and change its color. Open Upgrades from Pause or the menus and spend **saved career coins** while the current job stays paused. Resume the same job with the new stats; its cleaning, bag contents, and progress are kept. Pending coins from the unfinished job cannot be spent and enter your balance only after every area is complete. Quitting is optional and still discards the unfinished job’s cleaning and coins.
 
 Completing a room unlocks the next one regardless of medal, trinket, or upgrade choices. Replays pay their cleaning coins again; completion bonuses, medal improvements, and trinket bonuses are awarded only when newly earned.
 
-Coins, completed rooms, medals, best times, upgrades, shells, trinkets, and settings save in this browser. A room's coins enter your career balance only after completion. Browsing in-game menus pauses the active room; discarding the room, closing the page, or reloading loses its unfinished cleaning and coins, including material already emptied at a station. Clearing browser data also clears the career. If browser storage fails, a visible warning explains that the current career remains only in memory for that tab's session.
+Coins, completed rooms, medals, best times, upgrades, shells, trinkets, and settings save in this browser. A job's coins enter your career balance only after every area is complete. Browsing in-game menus pauses the active job; discarding it, closing the page, or reloading loses its unfinished cleaning and coins, including material already emptied at a station. Clearing browser data also clears the career. If browser storage fails, a visible warning explains that the current career remains only in memory for that tab's session.
 
 ## Run locally
 

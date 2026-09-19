@@ -1,6 +1,18 @@
 # Little Vac validation
 
-Current draft candidate: **1.6.3**, a branding update from Sweep Shift to **Little Vac**. Packaging, current artwork capture, and the targeted hosted smoke check are complete. The itch.io page remains a draft. Earlier versions, filenames, hashes, URLs, and results below are historical evidence and are not validation of the new package.
+Current draft candidate: **1.6.4**, adding upgrades while a job is paused. Targeted automated checks, local browser checks, packaging, and the hosted menu/resume smoke check passed. The build and description are uploaded to the itch.io draft. Earlier versions, filenames, hashes, URLs, and results below are historical evidence and are not validation of the new package.
+
+## Version 1.6.4 — upgrades without leaving the job
+
+Open Upgrades from Pause or the menus, spend saved career coins, and resume the same job with the new stats. Cleaning, bag contents, and job progress survive the purchase and menu transitions. Pending job coins cannot be spent and are paid only after the whole job is complete. Quitting remains optional and still discards unfinished cleaning and coins.
+
+Automated validation passed **45 app**, **16 progression**, **17 input**, and **10 career-store** groups; syntax passed for **9 runtime modules and 10 scripts**. Coverage includes saved-coin purchases, updated stats and full-bag resume, pending-only funds being insufficient, asynchronous guards, and one-time job settlement.
+
+Local Chrome used an isolated six-room QA career. Ordinary mouse cleaning in Room 7 reached **8%**, **25 / 150** bag space, **29 pending coins**, and **395 saved coins**. **Pause → Main menu → Upgrades** opened directly without a quit dialog and kept the pending balance distinct. Equipping Coral preserved the run, and Resume retained **8%** cleaning and **25** bag pieces. No warnings/errors appeared. This browser check exercised menu navigation and shell selection; actual saved-coin purchases and stat changes were verified in the automated app tests.
+
+The verified ZIP contains **12 runtime files** with root `index.html`, is **64,754 bytes**, and has SHA-256 **0b181e7d4f7a2e7279069ddef47965b47d792f9c076549a068cc1cd0499c08d6**. Source/archive/extracted hashes match. The handoff is `artifacts/publish-1.6.4`. No new campaign or physical-device playthrough is claimed. Older quit-before-upgrading restrictions are historical and are superseded by this change.
+
+The browser-playable ZIP replaced the previous `little-vac-itch.zip` upload; its playable setting and revised description persisted after saving/reloading. The [actual hosted iframe](https://html-classic.itch.zone/html/19304630/index.html?v=1789833338) displayed **v1.6.4**. The existing career retained **Room 2**, **5 coins**, width/bag ranks **1 / 5**, and speed/pull ranks **0**. **Continue → D → Escape → Main menu → Upgrades** opened directly without a quit prompt. The shop kept Room 2 paused and displayed **0 pending coins** separately from **5 saved coins**; Resume returned to that same room at **0%** with **0 / 120** bag space. Reload returned to Home with Room 2 available. No browser warnings/errors appeared. No hosted purchase or job completion was performed; those transactions are covered by the automated tests. The hosted shop screenshot is `tmp/little-vac-1.6.4-hosted-shop.jpg`. **Draft remained visible and Public unselected; no public-publish action was taken.**
 
 ## 2026-09-19 — version 1.6.3 branding update
 

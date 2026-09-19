@@ -1,4 +1,18 @@
-# Little Vac 1.6.3 — upload handoff
+# Little Vac 1.6.4 — upload handoff
+
+Version **1.6.4** adds upgrades while the current job is paused. Open Upgrades from Pause or the menus, spend saved career coins, and resume with the new stats. Cleaning, bag contents, and job progress stay intact. Pending job coins remain unavailable until every area is complete; quitting is no longer required for a purchase.
+
+Validation passed **45 app**, **16 progression**, **17 input**, and **10 career-store** groups, plus syntax for **9 runtime modules and 10 scripts**. Local Chrome verified direct menu-to-Upgrades navigation, separate pending coins, Coral selection, and resume without losing **8%** cleaning or **25 / 150** bag contents. Automated tests cover saved-coin buys, changed stats/full-bag resume, pending-only insufficient funds, asynchronous guards, and one-time settlement. No new campaign or physical-device playthrough is claimed.
+
+The existing [Little Vac project](https://fooded.itch.io/little-vac), project **5021059**, remains **Draft**. The 1.6.4 browser-playable build and updated description persisted after saving/reloading, and the hosted menu/resume smoke check passed. Do not select Public or perform the final public-publish action. The previous handoff below is historical.
+
+## Files in artifacts/publish-1.6.4
+
+The handoff contains `little-vac-itch.zip`, current `description.html` and `UPLOAD-NOTES.md`, the existing Little Vac `cover.png` and `launch.png`, six gallery PNGs retained from 1.6.3, and `manifest.json`. The ZIP is **64,754 bytes**, has **12 runtime files** and root `index.html`, and has SHA-256 **0b181e7d4f7a2e7279069ddef47965b47d792f9c076549a068cc1cd0499c08d6**. Source, archive, and extraction hashes match. The new description removes the former quit-before-upgrading advice and explains that only saved coins can buy upgrades.
+
+The actual iframe displays **v1.6.4**. Hosted Continue → D → Escape → Main menu → Upgrades opened directly without a quit prompt, showed Room 2 paused with **0 pending** and **5 saved** coins, and resumed the same room at **0%** with **0 / 120** bag space. Reload retained Room 2 and the existing width/bag upgrades. No browser warnings/errors appeared. No hosted purchase or completed job is claimed; automated tests cover those transactions. **Draft remained visible and Public unselected.** The hosted shop screenshot is `tmp/little-vac-1.6.4-hosted-shop.jpg`.
+
+## Historical 1.6.3 handoff
 
 Updated September 19, 2026. Version **1.6.3** is the Little Vac branding update. Packaging, refreshed artwork capture, and the GitHub/itch.io renames are complete. The browser-playable upload and targeted hosted startup/help check passed. The page remains in Draft and has not been published publicly.
 
@@ -29,7 +43,7 @@ Keep the page in Draft. The user's publishing boundary is to stop at the final p
 
 Editor: https://itch.io/game/edit/5021059#published. Do not select Public or perform the final public-publish action.
 
-## Current validation
+## Historical 1.6.3 validation
 
 Version 1.6.3 passed 42 app groups, 17 input groups, syntax checking, and package integrity checks. The new cover, launch, and optional banner have the required 1260 × 1000, 960 × 800, and 1260 × 320 dimensions. The hosted smoke check confirmed LITTLE VAC, v1.6.3, the new name in Credits, compact Room 2 startup at 0% with an empty 0 / 120 bag, D activation, Escape pause, and the three illustrated help steps with Back to Pause. Reload retained Room 2, 5 coins, width/bag upgrades at 1 / 5, and speed/pull at 0.
 
