@@ -1,8 +1,29 @@
 # Sweep Shift 1.6.1 local release candidate
 
-The current **1.6.1** build is local. The reviewed **itch.io draft** still hosts **1.1.0** and was not changed during this update. Public publishing has not been performed.
+The current **1.6.1** build is local. The last recorded inspection of the **itch.io draft** found **1.1.0**; its current state has not yet been reverified in this publication pass. No new upload or public publishing is claimed.
 
-## Verified build
+## Current readiness — 2026-09-19
+
+- The current standard suite passed all **24 jobs / 50 areas**, 3 Endless runs, and a replay. Supporting checks now total **84 groups**: 41 app, 17 input, 10 store, and 16 progression. New app regressions cover denied storage/Web Locks and stale-input cleanup on blur or hidden-page pause.
+- A fresh browser career finished Room 1 at 100%, earned **350 coins** and the Tiny wrench, unlocked Room 2, and bought Wider sweep rank 1 for **180 coins**. The remaining **170 coins**, upgrade, and unlock survived reload. See [PLAYTEST.md](PLAYTEST.md) for scope and limitations.
+- Simulation, room content, balance, and save format are unchanged. The prior deep and six-build matrix results below are historical validation of that same engine, not newly repeated runs.
+- The unchanged extracted ZIP passed a local **960 × 800 sandboxed iframe** check: v1.6.1 startup, click/WASD activation, outside-click pause, one Upgrades confirmation, direct shop navigation after quitting, and no unfinished payout. Warning/error logs were empty. This models an embedded game locally; it does not verify the live itch.io build or a physical phone.
+- A late-career fixture completed the first of Room 22's four areas, verified the locked gate and two-way hallway, and retained carried dirt, coins, and partial area-2 cleaning. This was not a complete four-area browser playthrough.
+- Local [store description](marketing/description.html) and the current promotional/gallery PNGs below match the cream/red/dark-green theme and current rules. Older JPGs are historical and must not be included in the new upload.
+- No external upload or publication occurred. Remaining steps: upload the current package and assets, verify the actual hosted game and page, then leave the final public-publish action to the user. The last observed 1.1.0 draft is documented below as historical evidence.
+
+## Current upload assets
+
+- Game: `artifacts/sweep-shift-itch.zip`; unchanged **64,683 bytes**, SHA-256 **573520085d2c25f00144c4e8562cae6b14841809fac374071446d27da5f67d00**.
+- Cover: `marketing/cover.png` (**1260 × 1000**).
+- Banner: `marketing/banner.png` (**1260 × 320**).
+- Launch image: `marketing/launch.png` (**960 × 800**).
+- Actual-app gallery: `marketing/01-rooms.png`, `marketing/02-arcade.png`, `marketing/03-greenhouse.png`, `marketing/04-rooftop.png`, `marketing/02-upgrades.png`, and `marketing/06-hallway.png`.
+- Description: `marketing/description.html`.
+
+Use `artifacts/publish-1.6.1` for the handoff containing the ZIP, these current PNGs, `description.html`, and `UPLOAD-NOTES.md`. Exclude all older JPG screenshots. These local files have not yet been verified on the hosted page.
+
+## Verified local build — 2026-09-18
 
 - Archive: artifacts/sweep-shift-itch.zip
 - Contents: **12 files**, index.html at root, no external runtime dependencies or QA fixtures.
@@ -164,7 +185,7 @@ The current **1.6.1** build is local. The reviewed **itch.io draft** still hosts
 - Fixed suction through furniture corners, full bags blocking keepsakes, dust remainder accounting, unrelated touch releases, stale-save overwrites, seed-zero replay, delayed restart/reset races, rejected reward screens, and delayed purchases taking over navigation.
 - Original store and onboarding wording informed by [official comparable-game research](docs/COMPARABLE-GAMES.md).
 
-## Existing 1.1.0 store page
+## Previously inspected 1.1.0 store page
 
 - Title: **Sweep Shift**.
 - Short description: **Clean 24 rooms, earn coins, and upgrade a tiny vacuum robot. A cozy browser game with endless shifts to unlock.**
@@ -173,11 +194,11 @@ The current **1.6.1** build is local. The reviewed **itch.io draft** still hosts
 - Tags: cleaning, cozy, relaxing, singleplayer, top-down.
 - Embed: **960 × 800**, mobile friendly, fullscreen control and scrollbars enabled; autostart disabled.
 - Disclosure: AI-assisted Graphics, Text & Dialog, and Code; original procedurally synthesized audio described accurately.
-- The hosted store still uses the prior cream/teal theme, robot cover, banner, and launch artwork. Refresh these to match 1.2.0 before the next upload.
+- At the last recorded inspection, the hosted store used the prior cream/teal theme, robot cover, banner, and launch artwork. The next upload needs the current 1.6.1 theme and assets.
 
 Five prior 1.1.0 gameplay/menu screenshots are marketing/01-rooms.jpg through 05-upgrades.jpg. The upgrade screenshot was taken in the same audit before the final supporting-sentence edit, with legitimately earned affordable upgrades visible. Previous PNG screenshots are retained as source backups.
 
-## Draft status: still 1.1.0
+## Historical draft inspection — 1.1.0
 
 The [existing itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**, received the **1.1.0** ZIP and five screenshots in the previous audit. At that time, reload confirmed the browser-playable upload, revised tagline/description, and Draft visibility. The five refreshed screenshots are first in the saved gallery; two earlier screenshots remain afterward. The uploaded iframe loaded version 1.1, retained the existing 365-coin career, started room 2, handled pickup/pause, and kept the room intact through the former Upgrades/Resume flow. Its error/warning log was empty. These are historical checks; **1.1.1, 1.1.2, 1.2.0, and 1.2.1 have not been uploaded**, and the final public-publish action has not been taken.
 

@@ -3,31 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=1260,initial-scale=1">
-  <meta name="description" content="Original illustrated cover artwork for Sweep Shift.">
+  <meta name="description" content="Sweep Shift cover using the game's workshop title artwork.">
   <title>Sweep Shift — Cover artwork</title>
   <style>
-    *{box-sizing:border-box}html,body{margin:0;width:1260px;height:1000px;overflow:hidden;background:#f6eedb;color:#173f3c}
-    body{font-family:'Trebuchet MS',system-ui,sans-serif}
-    .cover{width:1260px;height:1000px;position:relative;overflow:hidden;background:#f6eedb}
-    canvas{display:block;position:absolute;left:0;top:166px;width:1260px;height:840px}
-    .top-glow{position:absolute;inset:0 0 auto;height:350px;background:linear-gradient(#fff9e9 0%,#fff9e9e8 60%,#fff9e900 100%);pointer-events:none}
-    .brand{position:absolute;left:67px;top:60px;display:flex;align-items:center;gap:20px;font-weight:900;letter-spacing:-6px;font-size:106px;line-height:1.08;margin:0}
-    .brand .spark{font-size:74px;line-height:1;color:#598777;letter-spacing:0;transform:rotate(8deg)}
-    .brand .shift{font-weight:400}
-    .tagline{position:absolute;left:76px;top:182px;font-size:37px;letter-spacing:-1px;line-height:1.35;margin:0;color:#527668}
-    .tagline em{font-family:Georgia,serif;font-weight:400;font-style:italic;color:#39735f}
-    .seal{position:absolute;right:72px;top:82px;width:160px;height:160px;border:1px solid #a6bfae;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;background:#eaf1dea6;transform:rotate(8deg);padding:18px;text-align:center}
-    .seal strong{font-size:20px;line-height:1.18;font-weight:800;letter-spacing:-.3px}.seal span{font-size:10px;letter-spacing:1.4px;font-weight:700;color:#648374;white-space:nowrap}.seal i{font-size:24px;font-style:normal;color:#709b80}
-    .bottom{position:absolute;left:75px;bottom:44px;padding:14px 22px;border:1px solid #fffdf1;border-radius:15px;background:#fffdf2eb;box-shadow:0 5px 15px #284e4310;display:flex;align-items:center;gap:20px;font-size:14px;font-weight:800;letter-spacing:1.8px}
-    .bottom .dot{width:7px;height:7px;border-radius:50%;background:#dc9877}.bottom small{font-size:12px;letter-spacing:.4px;font-weight:400;color:#658173}
+    *{box-sizing:border-box}html,body{margin:0;width:1260px;height:1000px;overflow:hidden;background:#17292d;color:#f2e6c9}
+    body{font-family:Arial,Helvetica,sans-serif}.cover{position:relative;width:1260px;height:1000px;overflow:hidden}
+    canvas{position:absolute;display:block;width:1500px;height:1000px;left:-110px;top:0}
+    h1{position:absolute;left:76px;top:112px;margin:0;font:900 202px/.86 Impact,'Arial Black',Arial,sans-serif;letter-spacing:-3px;color:#f2e6c9;text-shadow:5px 6px 0 #0d1b20;transform:rotate(-3deg);transform-origin:left center}
+    h1 span{display:block;color:#ee7951}.tagline{position:absolute;left:80px;top:552px;margin:0;font-size:36px;line-height:1.35;font-weight:700}
+    .details{position:absolute;left:80px;bottom:85px;margin:0;padding-top:19px;border-top:4px solid #ce5b3e;font:700 17px/1.7 'Courier New',monospace;letter-spacing:1px;color:#c3cec6}
   </style>
 </head>
-<body><main class="cover" aria-label="Sweep Shift promotional cover: a friendly mint vacuum robot cleans a colorful toy room.">
-  <canvas id="coverArt" width="960" height="640" aria-hidden="true"></canvas>
-  <div class="top-glow"></div>
-  <h1 class="brand"><span class="spark" aria-hidden="true">✦</span><span>sweep<span class="shift">shift</span></span></h1>
-  <p class="tagline">A little mess. A <em>lovely</em> clean.</p>
-  <div class="seal"><span>A COZY LITTLE</span><strong>CLEANING GAME</strong><i aria-hidden="true">✦</i></div>
-  <div class="bottom"><span>VACUUM. UPGRADE. UNWIND.</span><span class="dot"></span><small>24 rooms + endless shifts</small></div>
-</main><script type="module">import {drawTitle} from '../render.js'; const canvas=document.querySelector('#coverArt'); drawTitle(canvas.getContext('2d'),0,true); document.documentElement.dataset.coverReady='true';</script></body>
+<body><main class="cover" aria-label="Sweep Shift: a vacuum robot leaving a clean trail across a workshop floor.">
+  <canvas id="coverArt" width="1500" height="1000" aria-hidden="true"></canvas>
+  <h1>SWEEP <span>SHIFT</span></h1>
+  <p class="tagline">Clean rooms.<br>Upgrade your vacuum.</p>
+  <p class="details">24 JOBS · 50 AREAS<br>ENDLESS SHIFT TO UNLOCK</p>
+</main><script type="module">import {drawTitle} from '../render.js';const canvas=document.querySelector('#coverArt'),ctx=canvas.getContext('2d');ctx.scale(1500/960,1000/640);drawTitle(ctx,0,true);document.documentElement.dataset.coverReady='true';</script></body>
 </html>

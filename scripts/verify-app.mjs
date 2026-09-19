@@ -21,11 +21,11 @@ function fixtureCareer(count = 0) {
   for (let id = 1; id <= count; id++) progression.settleRun(career, { runId: `fixture-${id}`, roomId: id, coins: 300, time: 110, medal: 2, trinket: false });
   return career;
 }
-async function boot(initial = fixtureCareer()) {
+async function boot(initial = fixtureCareer(), { blockedStorage = false, deniedLocks = false } = {}) {
   let text = JSON.stringify(initial), timestamp = 0, releaseLock = null, lockGate = Promise.resolve();
   const storage = { getItem() { return text; }, setItem(key, value) { assert.equal(key, progression.SAVE_KEY); text = value; } };
   const locks = {
-    async request(name, callback) { assert.equal(name, progression.SAVE_KEY); await lockGate; return callback(); },
+    async request(name, callback) { assert.equal(name, progression.SAVE_KEY); if (deniedLocks) throw new DOMException('Storage access denied', 'SecurityError'); await lockGate; return callback(); },
     hold() { lockGate = new Promise(resolve => { releaseLock = resolve; }); },
     release() { releaseLock?.(); releaseLock = null; },
   };
@@ -48,10 +48,13 @@ async function boot(initial = fixtureCareer()) {
     matchMedia: () => ({ matches: false }), scrollTo({ top }) { this.scrollY = top; },
     addEventListener(name, callback) { if (!events.has(name)) events.set(name, []); events.get(name).push(callback); },
   };
+  if (blockedStorage) Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Storage access denied', 'SecurityError'); } });
   const errors = [];
   const app = await makeApp(dependencies, window, document, { locks }, { now: () => timestamp }, () => {}, () => 0, () => {}, { randomUUID: () => String(++timestamp) }, { error: error => errors.push(error) });
   return { ...app, storage, locks, nodes, errors, webTools, focused:()=>document.activeElement,
     keyEvent(type,key,options={}){for(const callback of documentEvents.get(type)||[])callback({key,target:{tagName:'CANVAS',closest:()=>null},preventDefault(){},...options});},
+    blur(){for(const callback of events.get('blur')||[])callback();},
+    visibility(hidden){document.hidden=hidden;for(const callback of documentEvents.get('visibilitychange')||[])callback();},
     async externalCareer(career) { storage.setItem(progression.SAVE_KEY, JSON.stringify(career)); for (const callback of events.get('storage') || []) await callback({ key: progression.SAVE_KEY }); },
     async settle() { const run = app.run(); run.phase = 'complete'; run.areaStates.forEach(state=>state.cleared=true); run.time = 100; run.percent = 1; run.coins = run.room.debris.reduce((sum, piece) => sum + piece.value, 0); await app.completed(); },
   };
@@ -59,6 +62,46 @@ async function boot(initial = fixtureCareer()) {
 
 let checks = 0;
 async function test(name, body) { await body(); checks++; console.log(`PASS ${name}`); }
+
+await test('denied embedded-browser storage still allows a warned, playable session', async () => {
+  const initial=fixtureCareer(),app=await boot(initial,{blockedStorage:true,deniedLocks:true});
+  assert.equal(app.publicState().screen,'title');
+  assert.equal(app.nodes.get('#saveWarning').hidden,false);
+  assert.match(app.nodes.get('#saveWarning').textContent,/progress will disappear when you leave/);
+  await app.act('continue');assert.equal(app.publicState().awaitingStart,true);
+  app.keyEvent('keydown','d');app.frame(100);app.frame(200);
+  assert(app.run().robot.x>app.run().room.spawn.x,'Denied locks must fall back so a fresh room can start');
+  await app.settle();
+  assert.equal(app.publicState().screen,'result');assert.deepEqual(app.publicState().career.completed,[1]);
+  const coins=app.publicState().career.coins;
+  await app.act('shop');await app.act('buy:bag');await app.act('continue');
+  assert.equal(app.run().room.id,2);assert.equal(app.run().stats.capacity,120);
+  assert.equal(app.publicState().career.coins,coins-180);
+  assert.equal(app.publicState().awaitingStart,true,'The next room still waits for a deliberate start');
+  assert.deepEqual(JSON.parse(app.storage.getItem()),initial,'Memory-only play must not overwrite inaccessible persistent storage');
+  assert.deepEqual(app.errors,[]);
+});
+
+await test('leaving the tab or iframe pauses every input mode and clears its held movement', async () => {
+  for(const interrupt of ['blur','hidden'])for(const mode of ['mouse','keyboard','touch']){
+    const app=await boot();await app.startRoom(1);await app.act('begin-room');
+    const robot=app.run().robot,origin=robot.x;
+    const pointer={pointerId:1,pointerType:mode==='touch'?'touch':'mouse',isPrimary:true,button:0,clientX:robot.x+100,clientY:robot.y};
+    if(mode==='keyboard')app.keyEvent('keydown','d');
+    else if(mode==='mouse')app.pointerMove(pointer);
+    else{app.pointerDown(pointer);app.pointerMove({...pointer,clientX:pointer.clientX+40});}
+    app.frame(100);app.frame(200);assert(robot.x>origin,mode+' must be moving before interruption');
+    const stopped={x:robot.x,y:robot.y,time:app.run().time};
+    if(interrupt==='blur')app.blur();else app.visibility(true);
+    assert.equal(app.publicState().paused,true);assert.equal(app.nodes.get('#modal').open,true);
+    app.frame(300);app.frame(400);
+    assert.deepEqual({x:robot.x,y:robot.y,time:app.run().time},stopped,interrupt+' freezes the run');
+    if(interrupt==='hidden')app.visibility(false);
+    await app.act('resume');app.frame(500);
+    assert.deepEqual({x:robot.x,y:robot.y},{x:stopped.x,y:stopped.y},mode+' cannot resume stale movement');
+    app.keyEvent('keydown','d');app.frame(600);assert(robot.x>stopped.x,'Fresh input works after resuming');
+  }
+});
 
 await test('an active room stays intact and cannot be upgraded through Rooms or the shop action', async () => {
   const app = await boot(fixtureCareer(1));

@@ -2,7 +2,23 @@
 
 Current local candidate: **1.6.1**. Earlier sections below are historical evidence.
 
-## Version 1.6.1 — deep playthrough and interface cleanup
+## 2026-09-19 — final publication pass, version 1.6.1
+
+The current standard suite passed the earned **24-job / 50-area campaign**, **3 Endless runs**, and a replay. The supporting suites now contain **84 passing groups**: 41 app, 17 input, 10 career-store, and 16 progression groups. Two new app regressions cover startup with denied storage/Web Locks and safe pause/input cleanup after window blur or document visibility changes. The simulation, authored rooms, balance, and save format remain unchanged. The earlier deep physics and six-build results below still apply to that unchanged engine; those large matrices were not rerun during this publication pass.
+
+A fresh, isolated browser career completed **Room 1 at 100%** through ordinary play. The job took **3:23 of game time**, earned **255 cleaning coins + 95 bonus coins = 350 coins**, received Bronze, found the **Tiny wrench**, and unlocked **Room 2**. Buying the first **Wider sweep** rank cost **180 coins**, left **170 coins**, and increased the rank to **1**. Reloading preserved the earned unlock, purchase, and balance, verified in the actual interface. This is a complete opening-job browser playthrough, not a manual replay of the campaign; it did not modify the user's career.
+
+The economy review also confirmed that bronze completion without treasures or replays earns **17,926 coins** and funds all **20 upgrade ranks** for **13,200 coins** by Room 21. No upgrade, medal target, or treasure is required to finish the campaign. Ending-seen state and Endless access persist independently, and completion/replay checks prevent duplicate achievement payouts. Automated route times do not measure human difficulty or enjoyment.
+
+A separate completed-career `?career=24` fixture tested Room 22, which has four areas. Its first area was cleaned to **100%** through normal play. The gate blocked passage before completion and allowed travel in both directions afterward. Backtracking retained **18 bag pieces worth 39 coins**, **2% cleaning in area 2**, and **269 pending job coins**. This check completed one area and exercised its hallway; it did **not** complete the whole four-area job. Room 7's arcade and Room 13's greenhouse also received partial play and screenshot checks.
+
+The unmodified extracted release ZIP passed a local **960 × 800 iframe** check served through `tmp/serve-release-check.mjs`, with a `localhost` frame inside a `127.0.0.1` parent and sandbox permissions `allow-scripts allow-same-origin allow-pointer-lock`. It loaded **v1.6.1**, accepted click/WASD activation, paused when clicking outside the game, showed one Upgrades confirmation, and went directly to the shop after confirmed quitting without awarding unfinished coins. Warning/error logs were empty for this iframe session and the fresh-career browser session. This is a local model of an embedded game, not a live itch.io verification or physical-phone test. The ZIP remains **64,683 bytes**, SHA-256 **573520085d2c25f00144c4e8562cae6b14841809fac374071446d27da5f67d00**.
+
+Local marketing HTML now matches the current cream/red/dark-green theme and describes **24 jobs, 50 areas, 100% cleaning, and walkable hallways**. Verified promotional PNGs are `marketing/cover.png` (**1260 × 1000**), `marketing/banner.png` (**1260 × 320**), and `marketing/launch.png` (**960 × 800**). The current gallery comes from the actual app: `marketing/01-rooms.png`, `marketing/02-arcade.png`, `marketing/03-greenhouse.png`, `marketing/04-rooftop.png`, `marketing/02-upgrades.png`, and `marketing/06-hallway.png`. Older JPGs are historical and must be excluded from the new upload.
+
+The publication handoff targets `artifacts/publish-1.6.1` with the game ZIP, current PNG assets, `description.html`, and `UPLOAD-NOTES.md`. No external upload or publication occurred during this pass. The current itch.io draft has not been reverified; its last recorded inspection was the older 1.1.0 draft. Remaining steps are to upload the current files, verify the actual hosted game and page, and leave the final public-publish action to the user.
+
+## 2026-09-18 — version 1.6.1 deep playthrough and interface cleanup
 
 The audit found no confirmed simulation bug. This patch clarifies that coins save only when the whole job is finished, uses consistent dock terminology, removes repeated upgrade purchase/status labels, and replaces unrelated ending glyphs with a paper **24 / 24** completion stamp and shorter buttons. The simulation and save format are unchanged.
 
