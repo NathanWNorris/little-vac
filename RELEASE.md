@@ -1,8 +1,23 @@
-# Sweep Shift 1.6.2 draft release candidate
+# Little Vac 1.6.3 draft release candidate
+
+Version **1.6.3** renames the game to **Little Vac**. Packaging, refreshed branded artwork, and the GitHub/itch.io renames are complete. Hosted upload and validation are pending. **The itch.io page remains Draft; public publishing has not been performed.**
+
+## Current branding release — 2026-09-19
+
+- Current source destination: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). Current draft destination: [Little Vac](https://fooded.itch.io/little-vac), existing project **5021059**. Both renames have been saved; the new hosted build has not yet been verified.
+- The title, wordmark, browser metadata, marketing templates, and current links use Little Vac. The cream/red/dark-green theme and robot artwork are retained.
+- Retain the legacy `sweep-shift-career-v1` save key for compatibility. Physics, room content, upgrade balance, and the tutorial rules are outside this branding change.
+- Packaged `artifacts/little-vac-itch.zip`: **64,759 bytes**, **12 runtime files**, root `index.html`, SHA-256 **d8e1db30193e66843f193aaeafbfcdfac69de94a1c9455bde4c6d452e2807d39**. Source/archive/extracted hashes match. The complete handoff is `artifacts/publish-1.6.3`.
+- Recaptured branded cover (**1260 × 1000**), launch (**960 × 800**), optional banner (**1260 × 320**), Rooms, and Upgrades images. The four gameplay gallery images contain no old wordmark and are unchanged. Five obsolete JPG screenshots are backed up locally in `artifacts/legacy-branding-1.6.2` and removed from active marketing assets. No oversized page banner is required.
+- Targeted validation passed **42 app groups**, **17 input groups**, and syntax checking. Recheck the title, artwork, startup/help, and draft status on the hosted build after upload. Prior playthrough results below remain historical evidence.
+
+## Historical 1.6.2 draft release candidate
+
+Versions through 1.6.2 used the former **Sweep Shift** name. Their original filenames, URLs, hashes, and test observations below are retained as historical records.
 
 The **1.6.2** ZIP is uploaded to the existing [itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**. Reload confirmed the actual hosted version, shorter description, and simplified store setup. **The Draft badge remains visible; public publishing has not been performed.**
 
-## Current change and validation — 2026-09-19
+## Historical 1.6.2 change and validation — 2026-09-19
 
 - The illustrated tutorial appears until Room 1 is completed. Later jobs and replays use a compact click/WASD start prompt; **How to play** still opens the full picture guide. The vacuum remains parked until an explicit start action.
 - Targeted validation passed **42 app groups**, **17 input groups**, and syntax checking. The new regression reproduced the old repeated tutorial and verifies its replacement, idle/hover freeze, click/WASD activation, replay after reload, and manual Help. Desktop and **320px** visual checks passed.
@@ -11,7 +26,7 @@ The **1.6.2** ZIP is uploaded to the existing [itch.io draft](https://fooded.itc
 - The existing completed-Room-1 career opened Room 2 with the floor visible and the compact left-click/WASD prompt. It remained parked at **0% and 0 / 120 bag space**. Pressing **D** removed the prompt and started the job; **Pause → How to play** retained the full three-step illustrated guide. This is a targeted hosted startup/help check, not another completed-job or purchase playthrough.
 - The publication boundary remains the final public-publish action. Keep the project in Draft for the user.
 
-## Current upload assets
+## Historical 1.6.2 upload assets
 
 - Game: `artifacts/sweep-shift-itch.zip`, **64,762 bytes**, **12 runtime files** with `index.html` at the root. SHA-256: **90c65a6ab10bb7e2596de99ed80fd9b5188ad45e1e701b0a056f09ecef2c1219**.
 - Handoff: `artifacts/publish-1.6.2`, containing that ZIP, the existing verified cover and gallery PNGs, a launch-image backup, current `description.html`, upload notes, and a file manifest.
@@ -212,7 +227,7 @@ The `artifacts/publish-1.6.1` handoff contains the uploaded ZIP, current PNGs, `
 
 ## Previously inspected 1.1.0 store page
 
-- Title: **Sweep Shift**.
+- Historical title: **Sweep Shift** (renamed Little Vac in 1.6.3).
 - Short description: **Clean 24 rooms, earn coins, and upgrade a tiny vacuum robot. A cozy browser game with endless shifts to unlock.**
 - This historical copy was replaced by the current [store description](marketing/description.html) in the 1.6.1 draft upload.
 - Type: HTML game; Simulation; free/no payments; comments enabled.

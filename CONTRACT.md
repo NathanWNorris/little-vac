@@ -1,4 +1,4 @@
-# Sweep Shift module contract
+# Little Vac module contract
 
 No runtime dependencies. ESM modules under dist, Node test scripts under scripts. World size 960 x 640. Floor cells are 40px, 24 columns x 16 rows. Floor grid uses 1 walkable, 0 void/wall. Furniture rectangles carve non-walkable cells. Robot radius 17. Art is original Canvas paths; no external fonts/assets needed.
 
@@ -7,6 +7,7 @@ Export LOCATIONS array of four objects {name,subtitle,palette:{floor,floor2,wall
 
 ## progression.js (progression agent)
 Export SAVE_KEY='sweep-shift-career-v1', defaultCareer(), validateCareer(raw), loadCareer(storage), saveCareer(storage,career), statsFor(upgrades), UPGRADES, SHELLS, upgradePrice(key,rank), buyUpgrade(career,key), settleRun(career,result), selectShell(career,id), isRoomUnlocked(career,id).
+The legacy save key intentionally remains unchanged after the Little Vac rename, so existing player careers keep loading. Keep the isolated QA storage bucket unchanged as well.
 Career shape {version:1,coins:0,unlocked:1,completed:[],medals:{},bestTimes:{},trinkets:[],upgrades:{width:0,bag:0,speed:0,pull:0},shell:'mint',settings:{muted:false,effects:0.65,reducedMotion:false},lastRoom:1,endingSeen:false}. completed/trinkets arrays of IDs. Medals numeric 1 bronze 2 silver 3 gold keyed room id. buyUpgrade/selectShell mutate career and return {ok,message}; settleRun mutates career returning {coins,bonus,newMedal,newTrinket,newShell,endlessUnlocked}; result {runId:string,roomId:1..24 or 0,coins:integer,time:seconds,medal:1..3,trinket:boolean}. Must reject duplicate run IDs using bounded career history; completion/medal/trinket bonuses only first/improvement. Return coins total awarded including base. loadCareer returns {career,status:'ok'|'new'|'blocked'|'recovered'}; saveCareer returns bool. statsFor returns {radius:54..94,capacity:90..240,speed:150..225,pull:1..2.25}. UPGRADES array {key,name,description}, five ranks each; SHELLS [{id,name,color,unlockAfter:0/6/12/18/24}]. Original-code-drawn cosmetics. No bonus for endless uniquecompletion. Upgrade costs are 180, 320, 550, 900, and 1,350 coins per category. A first campaign clear funds all 20 ranks without replay grinding.
 
 ## simulation.js (root)

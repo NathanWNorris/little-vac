@@ -1,4 +1,6 @@
-# Sweep Shift 1.1.2 audit
+# Little Vac 1.1.2 audit (historical)
+
+Historical record from before the Little Vac rename. Original package filenames, hashes, mechanics, and test results below describe that version.
 
 This local audit continues from 1.1.1. It covers controls, app transitions, room completion, progression, and interface clarity. The hosted itch.io draft remains 1.1.0; this audit does not claim a new upload or publication.
 

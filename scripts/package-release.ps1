@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $distPath = [IO.Path]::GetFullPath((Join-Path $projectRoot 'dist'))
-$artifactPath = [IO.Path]::GetFullPath((Join-Path $projectRoot 'artifacts/sweep-shift-itch.zip'))
+$artifactPath = [IO.Path]::GetFullPath((Join-Path $projectRoot 'artifacts/little-vac-itch.zip'))
 $checkPath = [IO.Path]::GetFullPath((Join-Path $projectRoot 'tmp/package-check'))
 $rootPrefix = $projectRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
 foreach ($target in @($artifactPath, $checkPath)) {

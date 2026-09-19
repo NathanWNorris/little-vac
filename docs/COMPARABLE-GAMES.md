@@ -1,21 +1,21 @@
-# Sweep Shift: comparable-game research
+# Little Vac: comparable-game research
 
-Research date: 2026-09-17. The first pass reviewed developer/publisher store copy; the second pass reviewed developer support posts and patch notes. This is not a playtest of the comparison games or evidence that a particular wording will increase sales. Prices, reviews, and user-assigned tags were not used to make design decisions.
+Research date: 2026-09-17. This historical research informed versions 1.1–1.1.2; the product name was updated to Little Vac in 1.6.3. The older 95% finish target and startup wording below are historical and do not describe the current game. The first pass reviewed developer/publisher store copy; the second pass reviewed developer support posts and patch notes. This is not a playtest of the comparison games or evidence that a particular wording will increase sales. Prices, reviews, and user-assigned tags were not used to make design decisions.
 
 ## What the sources show
 
-| Primary source | What its published copy actually supports | Lesson inferred for Sweep Shift |
+| Primary source | What its published copy actually supports | Lesson inferred for Little Vac |
 | --- | --- | --- |
-| [PowerWash Simulator — developer Steam listing](https://store.steampowered.com/app/1290000/PowerWash_Simulator/) | The title names the central activity. Its opening describes the cleaning action and sensory satisfaction. The longer description connects career jobs to tools and upgrades. Separate sections distinguish relaxed career/free play from timed or resource-based challenges. | State the action immediately, then the upgrade loop. Explain that medals are optional rather than implying Sweep Shift has no recorded time. |
-| [Fresh Start Cleaning Simulator — publisher Steam listing](https://store.steampowered.com/app/1856030/Fresh_Start_Cleaning_Simulator/) | A distinctive name is followed by a literal cleaning descriptor. The description emphasizes visible environmental restoration. Separate sections explain collected rubbish becoming experience and experience buying efficiency upgrades. | Keep the Sweep Shift name while adding a short genre descriptor in discovery surfaces. Explicitly connect finishing rooms, saved coins, and robot upgrades. |
+| [PowerWash Simulator — developer Steam listing](https://store.steampowered.com/app/1290000/PowerWash_Simulator/) | The title names the central activity. Its opening describes the cleaning action and sensory satisfaction. The longer description connects career jobs to tools and upgrades. Separate sections distinguish relaxed career/free play from timed or resource-based challenges. | State the action immediately, then the upgrade loop. Explain that medals are optional rather than implying Little Vac has no recorded time. |
+| [Fresh Start Cleaning Simulator — publisher Steam listing](https://store.steampowered.com/app/1856030/Fresh_Start_Cleaning_Simulator/) | A distinctive name is followed by a literal cleaning descriptor. The description emphasizes visible environmental restoration. Separate sections explain collected rubbish becoming experience and experience buying efficiency upgrades. | Keep the Little Vac name while adding a short genre descriptor in discovery surfaces. Explicitly connect finishing rooms, saved coins, and robot upgrades. |
 | [Loddlenaut — publisher Steam listing](https://store.steampowered.com/app/1644940/Loddlenaut/) | The developer-written description establishes the player's role and setting, then uses short action-led feature bullets for exploration, creature care, cleaning, special tools, and recycling into upgrades. | A playful brand can work if the next sentence tells the player who they control and what they do. Separate core actions, progression, and optional treasures into short, concrete explanations. |
-| [Dream Cleaner — creator itch.io page](https://overcookedwalrus.itch.io/dream-cleaner) | The creator's short About paragraph describes cleaning rooms, disposing of trash, earning money, and buying upgrades. A nearby Controls list names movement, interaction, and the key that opens the upgrade store. The page labels the game as in development. | Put the complete cleaning/reward loop and how to reach upgrades near the Play control. For Sweep Shift, visible navigation is clearer than requiring players to discover an undocumented key. |
+| [Dream Cleaner — creator itch.io page](https://overcookedwalrus.itch.io/dream-cleaner) | The creator's short About paragraph describes cleaning rooms, disposing of trash, earning money, and buying upgrades. A nearby Controls list names movement, interaction, and the key that opens the upgrade store. The page labels the game as in development. | Put the complete cleaning/reward loop and how to reach upgrades near the Play control. For Little Vac, visible navigation is clearer than requiring players to discover an undocumented key. |
 
 These pages establish how those games describe themselves. The recommendations in the last column are our editorial interpretation. No claim about their in-game menus, conversion rates, or control quality is made from store copy alone.
 
-## Original wording for Sweep Shift
+## Original wording for Little Vac
 
-Use the existing **Sweep Shift** brand. For the store title, browser title, or search description, a clear expanded name is **Sweep Shift — Cozy Robot Cleaning**. Keep the short wordmark in the game itself.
+Use the existing **Little Vac** brand. For the store title, browser title, or search description, a clear expanded name is **Little Vac — Cozy Robot Cleaning**. Keep the short wordmark in the game itself.
 
 Suggested short description:
 
@@ -48,13 +48,13 @@ Touch instructions should be shown when relevant to the input/viewport: **Drag t
 - Resume action: **Resume cleaning**, followed by the room name and saved in-session cleaning percentage.
 - Relaxed-play reassurance: **No lives or failed rooms. Time medals are optional.**
 
-Avoid replacing literal navigation labels with mood copy such as “Your next fresh start” or “A better kind of clean.” Those phrases can remain as supporting flavor. Avoid advertising idle automation, prestige, or an infinite campaign: Sweep Shift has a finite authored campaign and an unlockable generated mode.
+Avoid replacing literal navigation labels with mood copy such as “Your next fresh start” or “A better kind of clean.” Those phrases can remain as supporting flavor. Avoid advertising idle automation, prestige, or an infinite campaign: Little Vac has a finite authored campaign and an unlockable generated mode.
 
-All proposed Sweep Shift sentences above are original wording based on this game's implemented behavior. No comparison-game taglines, artwork, or long passages are copied.
+All proposed Little Vac sentences above are original wording based on this game's implemented behavior. No comparison-game taglines, artwork, or long passages are copied.
 
 ## Applied in version 1.1
 
-The store brand remains **Sweep Shift**. The browser title is **Sweep Shift — A cozy robot cleaning game**. The saved store tagline is: “Clean 24 rooms, earn coins, and upgrade a tiny vacuum robot. A cozy browser game with endless shifts to unlock.” The opening, feature bullets, controls, and save explanation were rewritten in marketing/description.html. The game now says **Move to vacuum**, **Dock to empty**, and **Finish & upgrade**, and distinguishes saved coins from unfinished-room earnings.
+At version 1.1, the store and browser titles used the former brand name. The current name is **Little Vac**. The saved store tagline is: “Clean 24 rooms, earn coins, and upgrade a tiny vacuum robot. A cozy browser game with endless shifts to unlock.” The opening, feature bullets, controls, and save explanation were rewritten in marketing/description.html. The game now says **Move to vacuum**, **Dock to empty**, and **Finish & upgrade**, and distinguishes saved coins from unfinished-room earnings.
 
 ## Second pass: clarity while playing
 
@@ -62,10 +62,10 @@ This pass reviewed local version 1.1.1 and informed the local 1.1.2 changes list
 
 ### Primary evidence
 
-| Developer source and date | Published fact | Design inference for Sweep Shift |
+| Developer source and date | Published fact | Design inference for Little Vac |
 | --- | --- | --- |
-| [PowerWash Simulator: Help, Where's The Last Dirt?](https://steamcommunity.com/app/1290000/discussions/2/3111403360720627988/) — developer-tagged pinned post, May 19, 2021, edited December 9, 2021 | The developer describes a remaining-dirt highlight and a Details view with per-part completion percentages and selected-part highlighting. This is historical documented behavior, not a claim that today's controls are identical. | Finishing should depend on finding visible work, not spotting nearly invisible pixels. Keep Sweep Shift's automatic hints and forgiving finish threshold. Explain the target beside the live percentage. |
-| [Loddlenaut: official news](https://steamcommunity.com/app/1644940/allnews/) — September 19 and October 30, 2024 entries | The Goddles update adds a progression-gated map view for locating pollutants and an inventory-capacity upgrade. Version 1.2.3 fixes pollution tracking and a fully cleaned biome remaining at 99%. | Progress totals must match actual remaining work, including when objects disappear. Capacity upgrades should explain the practical benefit. Sweep Shift already has a visible bag count, comparison values, and 80%-clean debris outlines; it does not need a separate scanner system. |
+| [PowerWash Simulator: Help, Where's The Last Dirt?](https://steamcommunity.com/app/1290000/discussions/2/3111403360720627988/) — developer-tagged pinned post, May 19, 2021, edited December 9, 2021 | The developer describes a remaining-dirt highlight and a Details view with per-part completion percentages and selected-part highlighting. This is historical documented behavior, not a claim that today's controls are identical. | Finishing should depend on finding visible work, not spotting nearly invisible pixels. Keep Little Vac's automatic hints and forgiving finish threshold. Explain the target beside the live percentage. |
+| [Loddlenaut: official news](https://steamcommunity.com/app/1644940/allnews/) — September 19 and October 30, 2024 entries | The Goddles update adds a progression-gated map view for locating pollutants and an inventory-capacity upgrade. Version 1.2.3 fixes pollution tracking and a fully cleaned biome remaining at 99%. | Progress totals must match actual remaining work, including when objects disappear. Capacity upgrades should explain the practical benefit. Little Vac already has a visible bag count, comparison values, and 80%-clean debris outlines; it does not need a separate scanner system. |
 | [Fresh Start Cleaning Simulator: official news](https://steamcommunity.com/app/1856030/allnews/) — December 29, 2022 and January 19, 2023 entries | Patch notes add an explicit replay button on the world map and a controls guide accessible beyond the tutorial. | Players should not have to restart the tutorial to remember controls. Completed room buttons should make their replay action explicit. |
 | [Fresh Start Cleaning Simulator: official news](https://steamcommunity.com/app/1856030/allnews/) — December 20, 2022 and January 28, 2025 entries | The release announcement calls out more readable UI and a larger objective icon. The later patch documents fixes to completion, scanner behavior, obscured buttons, and loading-bar visibility. | Check instructions and important states at the actual browser embed size. Distinguish a mechanic that is functioning from one the player can readily understand. |
 

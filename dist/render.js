@@ -1,4 +1,4 @@
-/* Original Canvas artwork for Sweep Shift. No downloaded art, fonts, or assets. */
+/* Original Canvas artwork for Little Vac. No downloaded art, fonts, or assets. */
 import { LOCATIONS, isWalkable } from './rooms.js';
 import { areaOffset, hallwayFor } from './world.js';
 const W = 960, H = 640, CELL = 40;

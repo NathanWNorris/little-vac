@@ -1,4 +1,6 @@
-# Sweep Shift 1.2.0 interface redesign
+# Little Vac 1.2.0 interface redesign (historical)
+
+Historical record from before the Little Vac rename. Original package filenames, hashes, mechanics, and test results below describe that version.
 
 Requested direction: a different theme, less decorative wording, and an obvious home menu.
 

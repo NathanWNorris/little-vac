@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=1260,initial-scale=1">
-  <meta name="description" content="Sweep Shift cover using the game's workshop title artwork.">
-  <title>Sweep Shift — Cover artwork</title>
+  <meta name="description" content="Little Vac cover using the game's workshop title artwork.">
+  <title>Little Vac — Cover artwork</title>
   <style>
     *{box-sizing:border-box}html,body{margin:0;width:1260px;height:1000px;overflow:hidden;background:#17292d;color:#f2e6c9}
     body{font-family:Arial,Helvetica,sans-serif}.cover{position:relative;width:1260px;height:1000px;overflow:hidden}
@@ -14,9 +14,9 @@
     .details{position:absolute;left:80px;bottom:85px;margin:0;padding-top:19px;border-top:4px solid #ce5b3e;font:700 17px/1.7 'Courier New',monospace;letter-spacing:1px;color:#c3cec6}
   </style>
 </head>
-<body><main class="cover" aria-label="Sweep Shift: a vacuum robot leaving a clean trail across a workshop floor.">
+<body><main class="cover" aria-label="Little Vac: a vacuum robot leaving a clean trail across a workshop floor.">
   <canvas id="coverArt" width="1500" height="1000" aria-hidden="true"></canvas>
-  <h1>SWEEP <span>SHIFT</span></h1>
+  <h1>LITTLE <span>VAC</span></h1>
   <p class="tagline">Clean rooms.<br>Upgrade your vacuum.</p>
   <p class="details">24 JOBS · 50 AREAS<br>ENDLESS SHIFT TO UNLOCK</p>
 </main><script type="module">import {drawTitle} from '../render.js';const canvas=document.querySelector('#coverArt'),ctx=canvas.getContext('2d');ctx.scale(1500/960,1000/640);drawTitle(ctx,0,true);document.documentElement.dataset.coverReady='true';</script></body>

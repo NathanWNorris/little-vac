@@ -1,6 +1,6 @@
 {
-  "name": "sweep-shift",
-  "version": "1.6.2",
+  "name": "little-vac",
+  "version": "1.6.3",
   "private": true,
   "type": "module",
   "scripts": {

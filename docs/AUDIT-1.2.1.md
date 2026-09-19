@@ -1,4 +1,6 @@
-# Sweep Shift 1.2.1 deep audit
+# Little Vac 1.2.1 deep audit (historical)
+
+Historical record from before the Little Vac rename. Original package filenames, hashes, mechanics, and test results below describe that version.
 
 September 18, 2026. Scope: another code audit, full automated campaign, real-time browser play, and fixes supported by reproduction. Testing used isolated QA careers; the normal player save was not used for purchases or resets.
 

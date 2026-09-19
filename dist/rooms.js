@@ -4,7 +4,7 @@ export const LOCATIONS = [
   { name: 'Workshop', subtitle: 'Wooden workbenches, tools, and sawdust.', palette: { floor: '#c99b65', floor2: '#d4aa76', wall: '#715239', accent: '#ecb668', dark: '#382c25' }, trinkets: ['Tiny wrench', 'Brass button', 'Wooden duck', 'Lucky bolt', 'Blue marble', 'Pocket robot'] },
   { name: 'After-Hours Arcade', subtitle: 'Neon cabinets, patterned carpet, and leftover tickets.', palette: { floor: '#28243e', floor2: '#302a48', wall: '#57436f', accent: '#79e4f2', dark: '#131b30' }, trinkets: ['Arcade token', 'Pixel heart', 'Prize ticket', 'Glow star', 'Mini spaceship', 'Golden joystick'] },
   { name: 'Greenhouse', subtitle: 'Glass walls, growing beds, and fallen leaves.', palette: { floor: '#beaa8b', floor2: '#ccb99a', wall: '#457b6a', accent: '#7cbf79', dark: '#213f35' }, trinkets: ['Seed locket', 'Ceramic snail', 'Ladybird pin', 'Painted pebble', 'Tiny watering can', 'Sunflower badge'] },
-  { name: 'Rooftop Party', subtitle: 'A wooden deck above the city, after the party.', palette: { floor: '#967163', floor2: '#aa8070', wall: '#526071', accent: '#f5c77b', dark: '#203246' }, trinkets: ['Paper crown', 'Disco charm', 'Little lantern', 'Confetti coin', 'Moon pendant', 'Sweep Shift trophy'] },
+  { name: 'Rooftop Party', subtitle: 'A wooden deck above the city, after the party.', palette: { floor: '#967163', floor2: '#aa8070', wall: '#526071', accent: '#f5c77b', dark: '#203246' }, trinkets: ['Paper crown', 'Disco charm', 'Little lantern', 'Confetti coin', 'Moon pendant', 'Little Vac trophy'] },
 ];
 
 const plans = [

@@ -1,6 +1,16 @@
-# Sweep Shift validation
+# Little Vac validation
 
-Current draft candidate: **1.6.2**, uploaded to itch.io with public visibility still off. Earlier sections below are historical evidence.
+Current draft candidate: **1.6.3**, a branding update from Sweep Shift to **Little Vac**. Packaging and current artwork capture are complete; hosted verification is pending. The itch.io page remains a draft. Earlier versions, filenames, hashes, URLs, and results below are historical evidence and are not validation of the new package.
+
+## 2026-09-19 — version 1.6.3 branding update
+
+The visible game name, marketing templates, current project links, and current documentation use **Little Vac**. The cream/red/dark-green theme and robot artwork are retained. The GitHub repository has been renamed to [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac), and the existing itch.io project title and slug are saved as [Little Vac](https://fooded.itch.io/little-vac). Hosted 1.6.3 upload and validation are still pending.
+
+The legacy `sweep-shift-career-v1` save key is intentionally unchanged. This branding change does not claim a new physics, balance, campaign, or device-validation result. Targeted checks passed **42 app groups**, **17 input groups**, and syntax checking. The new package contains **12 runtime files**, with **index.html at the ZIP root**, is **64,759 bytes**, and has SHA-256 **d8e1db30193e66843f193aaeafbfcdfac69de94a1c9455bde4c6d452e2807d39**. Source, archive, and extracted-file hashes match. This is package integrity validation, not an actual hosted playthrough.
+
+The cover (**1260 × 1000**), launch image (**960 × 800**), optional banner (**1260 × 320**), Rooms screenshot, and Upgrades screenshot were recaptured with the Little Vac branding. Four gameplay gallery images were retained because they contain no old wordmark. PNG formats and dimensions were checked. Five obsolete marketing JPG screenshots were moved, with matching hashes, into the ignored local backup `artifacts/legacy-branding-1.6.2`; Git history also preserves them.
+
+The handoff is `artifacts/publish-1.6.3`, with the exact ZIP, cover, launch image, six gallery PNGs, current description, upload notes, and a SHA-256 manifest. Hosted startup and draft status must be recorded after upload.
 
 ## 2026-09-19 — version 1.6.2 tutorial follow-up
 

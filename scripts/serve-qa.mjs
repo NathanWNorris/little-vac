@@ -62,6 +62,6 @@ http.createServer(async(req,res)=>{
     res.end(status===400?error.message:status===404?'Not found':'QA server error');
   }
 }).listen(port,'127.0.0.1',()=>{
-  console.log(`Sweep Shift isolated QA: http://127.0.0.1:${port}/?fresh=1`);
+  console.log(`Little Vac isolated QA: http://127.0.0.1:${port}/?fresh=1`);
   console.log('Fixtures: ?career=6 / 12 / 18 / 24. Blocked storage: ?storage=blocked.');
 });

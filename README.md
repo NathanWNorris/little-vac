@@ -1,8 +1,8 @@
-# Sweep Shift
+# Little Vac
 
 **Clean rooms. Upgrade your vacuum.**
 
-Sweep Shift is a browser game about a small vacuum robot cleaning messy rooms. Clear **24 jobs and 50 areas** across a workshop, an after-hours arcade, a greenhouse, and a rooftop party. Earn coins, improve the vacuum, find optional treasures, and unlock seeded Endless rooms.
+Little Vac is a browser game about a small vacuum robot cleaning messy rooms. Clear **24 jobs and 50 areas** across a workshop, an after-hours arcade, a greenhouse, and a rooftop party. Earn coins, improve the vacuum, find optional treasures, and unlock seeded Endless rooms.
 
 ![The vacuum traveling through an open hallway between two rooms](marketing/06-hallway.png)
 
@@ -10,7 +10,9 @@ Later jobs connect several areas through walkable hallways. Clean an area to 100
 
 Built with **JavaScript, Canvas, and Web Audio**, without external runtime libraries or downloaded art and sound assets. The game includes keyboard, mouse, and touch controls, local saves, and automated campaign and progression checks.
 
-Current build: **1.6.2**. The illustrated tutorial appears until the first completed room. Later jobs and replays use a small click/WASD start prompt; the full guide remains available in **How to play**. The robot always waits at its dock for a deliberate start. Physics, balance, and save format are unchanged.
+Current build: **1.6.3**, the Little Vac branding update. Packaging and targeted automated checks passed; hosted validation for this version is pending. The itch.io page remains a draft; no public-publish action has been taken. The illustrated tutorial appears until the first completed room. Later jobs and replays use a small click/WASD start prompt; the full guide remains available in **How to play**. The robot always waits at its dock for a deliberate start. Physics, balance, and save format are unchanged.
+
+Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The renamed store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft; the 1.6.3 hosted release check is pending.
 
 ## Play
 
@@ -79,7 +81,7 @@ The full physical-playthrough and release verification results are recorded in [
 
 The renderer draws a 960 × 640 world while the surrounding interface adapts to the available screen. Room layouts use a small walkability grid. Simulation and progression are separate so physical collection, currency integrity, and content reachability can be checked independently.
 
-Saves use the versioned key `sweep-shift-career-v1`. Invalid values are bounded or discarded, and unlocked rooms are derived from a contiguous completed campaign route. The recent-run history prevents the same completed run from being credited repeatedly after a reload.
+Saves retain the legacy versioned key `sweep-shift-career-v1` for compatibility with existing progress; the branding update does not rename that key. Invalid values are bounded or discarded, and unlocked rooms are derived from a contiguous completed campaign route. The recent-run history prevents the same completed run from being credited repeatedly after a reload.
 
 Career changes read the latest save before applying a transaction. Where supported, Web Locks serialize these transactions across tabs. A failed read or write preserves the current tab's career in memory for the rest of the session, so an older disk save cannot silently replace it. The fallback without Web Locks does not guarantee cross-process atomicity in every browser.
 
