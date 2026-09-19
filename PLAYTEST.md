@@ -1,16 +1,22 @@
 # Little Vac validation
 
-Current draft candidate: **1.6.3**, a branding update from Sweep Shift to **Little Vac**. Packaging and current artwork capture are complete; hosted verification is pending. The itch.io page remains a draft. Earlier versions, filenames, hashes, URLs, and results below are historical evidence and are not validation of the new package.
+Current draft candidate: **1.6.3**, a branding update from Sweep Shift to **Little Vac**. Packaging, current artwork capture, and the targeted hosted smoke check are complete. The itch.io page remains a draft. Earlier versions, filenames, hashes, URLs, and results below are historical evidence and are not validation of the new package.
 
 ## 2026-09-19 — version 1.6.3 branding update
 
-The visible game name, marketing templates, current project links, and current documentation use **Little Vac**. The cream/red/dark-green theme and robot artwork are retained. The GitHub repository has been renamed to [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac), and the existing itch.io project title and slug are saved as [Little Vac](https://fooded.itch.io/little-vac). Hosted 1.6.3 upload and validation are still pending.
+The visible game name, marketing templates, current project links, and current documentation use **Little Vac**. The cream/red/dark-green theme and robot artwork are retained. The GitHub repository has been renamed to [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac), and the existing itch.io project title and slug are saved as [Little Vac](https://fooded.itch.io/little-vac). Reload confirmed the title and slug, and the browser-playable 1.6.3 upload passed the hosted smoke check below.
 
 The legacy `sweep-shift-career-v1` save key is intentionally unchanged. This branding change does not claim a new physics, balance, campaign, or device-validation result. Targeted checks passed **42 app groups**, **17 input groups**, and syntax checking. The new package contains **12 runtime files**, with **index.html at the ZIP root**, is **64,759 bytes**, and has SHA-256 **d8e1db30193e66843f193aaeafbfcdfac69de94a1c9455bde4c6d452e2807d39**. Source, archive, and extracted-file hashes match. This is package integrity validation, not an actual hosted playthrough.
 
 The cover (**1260 × 1000**), launch image (**960 × 800**), optional banner (**1260 × 320**), Rooms screenshot, and Upgrades screenshot were recaptured with the Little Vac branding. Four gameplay gallery images were retained because they contain no old wordmark. PNG formats and dimensions were checked. Five obsolete marketing JPG screenshots were moved, with matching hashes, into the ignored local backup `artifacts/legacy-branding-1.6.2`; Git history also preserves them.
 
-The handoff is `artifacts/publish-1.6.3`, with the exact ZIP, cover, launch image, six gallery PNGs, current description, upload notes, and a SHA-256 manifest. Hosted startup and draft status must be recorded after upload.
+The handoff is `artifacts/publish-1.6.3`, with the exact ZIP, cover, launch image, six gallery PNGs, current description, upload notes, and a SHA-256 manifest. `little-vac-itch.zip` is browser-playable; the former `sweep-shift-itch.zip` remains hidden and nonplayable as a rollback archive.
+
+The [actual hosted iframe](https://html-classic.itch.zone/html/19304224/index.html?v=1789832427) displayed **LITTLE VAC**, **v1.6.3**, and the new name in Credits. The saved store gallery contains exactly six images: `30098624`, `30098629`, `30098626`, `30098625`, `30099714`, and `30099715`; old-wordmark images `30098627` and `30098628` were removed. The new launch image was saved as the embed background, with its Little Vac thumbnail visually confirmed after reload. No page banner is configured.
+
+The existing career retained **Room 2**, **5 saved coins**, **Wider sweep 1 / 5**, **Bigger bag 1 / 5**, and no speed/pull upgrades. Room 2 opened parked at **0%**, with **0 / 120** bag space and the compact start prompt. **D** removed the prompt and started the room; **Escape** opened Pause; manual **How to play** showed all three illustrated steps and **Back to Pause**. Reload returned to Home with Room 2 available. No game warnings/errors appeared; two itch.io dashboard `game:set_state` warnings occurred while saving the editor.
+
+This was a targeted hosted branding, startup, help, and existing-save check, without another completed job or purchase. No new campaign, fullscreen, or physical-phone result is claimed. The temporary viewport was reset. One Chrome tab remained at the project editor's visibility controls, showing **Draft selected, Public unselected, and Save visible**. The hosted Home screenshot is `tmp/little-vac-hosted-home.jpg`. **No public-publish action was taken.**
 
 ## 2026-09-19 — version 1.6.2 tutorial follow-up
 

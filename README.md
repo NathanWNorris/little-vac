@@ -10,9 +10,9 @@ Later jobs connect several areas through walkable hallways. Clean an area to 100
 
 Built with **JavaScript, Canvas, and Web Audio**, without external runtime libraries or downloaded art and sound assets. The game includes keyboard, mouse, and touch controls, local saves, and automated campaign and progression checks.
 
-Current build: **1.6.3**, the Little Vac branding update. Packaging and targeted automated checks passed; hosted validation for this version is pending. The itch.io page remains a draft; no public-publish action has been taken. The illustrated tutorial appears until the first completed room. Later jobs and replays use a small click/WASD start prompt; the full guide remains available in **How to play**. The robot always waits at its dock for a deliberate start. Physics, balance, and save format are unchanged.
+Current build: **1.6.3**, the Little Vac branding update. Packaging, targeted automated checks, and the hosted startup/help smoke test passed. The itch.io page remains a draft; no public-publish action has been taken. The illustrated tutorial appears until the first completed room. Later jobs and replays use a small click/WASD start prompt; the full guide remains available in **How to play**. The robot always waits at its dock for a deliberate start. Physics, balance, and save format are unchanged.
 
-Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The renamed store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft; the 1.6.3 hosted release check is pending.
+Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The renamed store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft with the verified 1.6.3 build uploaded.
 
 ## Play
 

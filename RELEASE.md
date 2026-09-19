@@ -1,15 +1,17 @@
 # Little Vac 1.6.3 draft release candidate
 
-Version **1.6.3** renames the game to **Little Vac**. Packaging, refreshed branded artwork, and the GitHub/itch.io renames are complete. Hosted upload and validation are pending. **The itch.io page remains Draft; public publishing has not been performed.**
+Version **1.6.3** renames the game to **Little Vac**. Packaging, refreshed branded artwork, and the GitHub/itch.io renames are complete. The browser-playable upload and targeted hosted startup/help check passed. **The itch.io page remains Draft; public publishing has not been performed.**
 
 ## Current branding release — 2026-09-19
 
-- Current source destination: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). Current draft destination: [Little Vac](https://fooded.itch.io/little-vac), existing project **5021059**. Both renames have been saved; the new hosted build has not yet been verified.
+- Current source destination: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). Current draft destination: [Little Vac](https://fooded.itch.io/little-vac), existing project **5021059**. Both renames persisted after saving and reloading; the actual hosted iframe displays **LITTLE VAC v1.6.3**.
 - The title, wordmark, browser metadata, marketing templates, and current links use Little Vac. The cream/red/dark-green theme and robot artwork are retained.
 - Retain the legacy `sweep-shift-career-v1` save key for compatibility. Physics, room content, upgrade balance, and the tutorial rules are outside this branding change.
 - Packaged `artifacts/little-vac-itch.zip`: **64,759 bytes**, **12 runtime files**, root `index.html`, SHA-256 **d8e1db30193e66843f193aaeafbfcdfac69de94a1c9455bde4c6d452e2807d39**. Source/archive/extracted hashes match. The complete handoff is `artifacts/publish-1.6.3`.
 - Recaptured branded cover (**1260 × 1000**), launch (**960 × 800**), optional banner (**1260 × 320**), Rooms, and Upgrades images. The four gameplay gallery images contain no old wordmark and are unchanged. Five obsolete JPG screenshots are backed up locally in `artifacts/legacy-branding-1.6.2` and removed from active marketing assets. No oversized page banner is required.
-- Targeted validation passed **42 app groups**, **17 input groups**, and syntax checking. Recheck the title, artwork, startup/help, and draft status on the hosted build after upload. Prior playthrough results below remain historical evidence.
+- Targeted validation passed **42 app groups**, **17 input groups**, and syntax checking. Hosted checks confirmed the title/version/Credits, compact Room 2 startup, WASD activation, Escape pause, and the full manual picture guide. Reload retained Room 2, 5 coins, and the purchased width/bag upgrades. This did not complete another job or purchase an upgrade.
+- The saved gallery contains exactly six current images; both old-wordmark screenshots were removed. The new launch image is saved as the embed background, its Little Vac thumbnail was visually confirmed after reload, and no page banner is configured. `little-vac-itch.zip` is browser-playable; the old ZIP is hidden and nonplayable for rollback.
+- No game warnings/errors appeared; two itch.io dashboard `game:set_state` warnings occurred during saving. The final editor view shows **Draft selected, Public unselected, and Save visible**. No public-publish action was taken. Prior campaign, fullscreen, and device limitations remain unchanged; see [PLAYTEST.md](PLAYTEST.md) for exact scope.
 
 ## Historical 1.6.2 draft release candidate
 
