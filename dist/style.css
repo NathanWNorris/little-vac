@@ -200,12 +200,18 @@ small {
   padding:4px 6px 4px 12px;
   white-space:nowrap
 }
-.nav-wallet small {
-  display:block;
-  color:var(--muted);
-  font-size:10px;
-  font-weight:400;
-  line-height:1
+.coin-balance {
+  display:inline-flex;
+  align-items:center;
+  gap:.28em;
+  vertical-align:middle;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap
+}
+.coin-icon {
+  width:1em;
+  height:1em;
+  flex:none
 }
 .nav-resume {
   color:var(--accent);
@@ -284,7 +290,7 @@ body:not([data-screen="title"]) main {
   text-align:right;
   white-space:nowrap
 }
-.page-counter small,.balance small {
+.page-counter small {
   display:block;
   font-size:11px;
   color:var(--muted);
@@ -1314,14 +1320,12 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
     margin:4px 0 8px;
     min-height:36px
   }
-  .nav-wallet small {
-    font-size:8px
-  }
   h1 {
     font-size:27px
   }
   .page-head {
     gap:10px;
+    flex-wrap:wrap;
     margin-bottom:20px
   }
   .page-head p {
@@ -1330,7 +1334,7 @@ dialog:has(.pause-menu) {width:min(390px,calc(100% - 32px));padding:26px 30px 22
   .page-counter,.balance {
     font-size:24px
   }
-  .page-counter small,.balance small {
+  .page-counter small {
     font-size:9px
   }
   .districts {

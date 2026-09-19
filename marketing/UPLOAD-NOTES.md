@@ -1,4 +1,10 @@
-# Little Vac 1.6.4 — upload handoff
+# Little Vac 1.6.5 — upload handoff
+
+Version **1.6.5** uses a shared coin icon and number for saved balances, retains accessible amount-and-coins labels and distinct pending earnings, and wraps the mobile header. Syntax and **45 app groups** passed. Desktop QA at 395 coins and a 320px layout check passed without horizontal overflow. This update does not require new store-description copy.
+
+`artifacts/publish-1.6.5` contains the exact `little-vac-itch.zip`, prior cover/launch artwork and six gallery PNGs, current description and notes, and a file manifest. The ZIP is **64,886 bytes**, with **12 runtime files**, root `index.html`, and SHA-256 **050b9c80275faaa56ca5d69e0655012ddaf4d6e3b9d8aeba23746d3dcbd3c22b**. Source/archive/extraction hashes match. The saved/reloaded browser-playable upload displays **v1.6.5**. Hosted Upgrades shows the coin icon and 5 in navigation/shop, with accessible “5 coins” labels. Existing progress was retained and warning/error logs were empty. **Draft remains selected and Public unselected; no public-publish action was taken.**
+
+## Historical 1.6.4 handoff
 
 Version **1.6.4** adds upgrades while the current job is paused. Open Upgrades from Pause or the menus, spend saved career coins, and resume with the new stats. Cleaning, bag contents, and job progress stay intact. Pending job coins remain unavailable until every area is complete; quitting is no longer required for a purchase.
 

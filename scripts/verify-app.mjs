@@ -756,7 +756,7 @@ await test('partial and full bags retain dirt, coin value, and visible totals ac
     await app.act('pause');
     const pauseMarkup=app.nodes.get('#modalContent').innerHTML;
     assert.match(pauseMarkup,/Area 2 of 2/,'Pause identifies the area entered through the door');
-    assert(pauseMarkup.includes(ui.money(saved.coins)+' saved coins'),'Pause distinguishes the saved balance from unfinished job coins');
+    assert(pauseMarkup.includes(ui.coinBalance(saved.coins)),'Pause distinguishes the saved balance from unfinished job coins');
     assert(pauseMarkup.includes('In bag: '+bagValue+' coins'),'Pause retains the value of carried dirt');
     assert(pauseMarkup.includes('+'+(200+bagValue)+' this job'),'Pause retains deposited and carried coin totals');
     await app.act('resume');await app.act('rooms');await app.act('resume-room');

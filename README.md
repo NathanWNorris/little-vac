@@ -10,9 +10,9 @@ Later jobs connect several areas through walkable hallways. Clean an area to 100
 
 Built with **JavaScript, Canvas, and Web Audio**, without external runtime libraries or downloaded art and sound assets. The game includes keyboard, mouse, and touch controls, local saves, and automated campaign and progression checks.
 
-Current build: **1.6.4**, adding upgrades while a job is paused. Targeted automated checks, local browser checks, packaging, and the hosted menu/resume smoke check passed. The build and description are uploaded. The itch.io page remains a draft; no public-publish action has been taken. The illustrated tutorial appears until the first completed room. Later jobs and replays use a small click/WASD start prompt; the full guide remains available in **How to play**. The robot always waits at its dock for a deliberate start.
+Current build: **1.6.5**, simplifying saved balances to a coin icon and number, with accessible amount-and-coins labels and a wrapping mobile header. Pending job earnings remain separate. Syntax, all 45 app groups, desktop/320px layout checks, packaging, and the hosted display check passed. The itch.io page remains a draft. The illustrated tutorial appears until the first completed room; later jobs use a compact start prompt, and the full guide remains available in **How to play**.
 
-Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft with the verified 1.6.4 build uploaded.
+Source: [NathanWNorris/little-vac](https://github.com/NathanWNorris/little-vac). The store is [Little Vac on itch.io](https://fooded.itch.io/little-vac), currently a draft with the verified 1.6.5 build uploaded.
 
 ## Play
 

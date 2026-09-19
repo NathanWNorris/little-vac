@@ -1,4 +1,10 @@
-# Little Vac 1.6.4 draft release candidate
+# Little Vac 1.6.5 draft release candidate
+
+Version **1.6.5** replaces visible saved-balance labels with a shared coin icon and number in navigation, Upgrades, Pause details, and result totals. Accessible labels retain the amount and “coins”; pending-earnings wording is unchanged. The mobile header wraps to avoid crowding. Syntax and **45 app groups** passed; desktop and 320px layout checks found no horizontal overflow.
+
+The verified ZIP is **64,886 bytes**, with **12 runtime files**, root `index.html`, and SHA-256 **050b9c80275faaa56ca5d69e0655012ddaf4d6e3b9d8aeba23746d3dcbd3c22b**. Source/archive/extraction hashes match. The handoff is `artifacts/publish-1.6.5`, retaining the prior artwork, six gallery images, and description. The saved/reloaded browser-playable upload displays **v1.6.5**; hosted Upgrades visibly shows the coin icon and 5 in navigation/shop, with accessible “5 coins” labels. The existing Room 2 career and upgrades remained intact; warning/error logs were empty. **Draft remains selected and Public unselected; no public-publish action was taken.**
+
+## Historical 1.6.4 draft release candidate
 
 Version **1.6.4** allows upgrades from Pause and the menus while retaining the active job. Purchases spend saved career coins; pending job coins remain unavailable until every area is complete. Resume uses the upgraded stats without resetting cleaning, bag contents, or job progress. Quitting is no longer required to buy upgrades.
 

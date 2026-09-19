@@ -1,6 +1,14 @@
 # Little Vac validation
 
-Current draft candidate: **1.6.4**, adding upgrades while a job is paused. Targeted automated checks, local browser checks, packaging, and the hosted menu/resume smoke check passed. The build and description are uploaded to the itch.io draft. Earlier versions, filenames, hashes, URLs, and results below are historical evidence and are not validation of the new package.
+Current draft candidate: **1.6.5**, simplifying the coin display. Local checks, packaging, and the hosted display check passed. Earlier versions, filenames, hashes, URLs, and results below are historical evidence and are not validation of this package.
+
+## Version 1.6.5 — simpler coin display
+
+Saved balances use a shared SVG coin and number, with accessible amount-and-coins labels; pending-earnings wording is unchanged. The mobile header wraps. Syntax and **45 app groups** passed. Local Chrome checked the desktop QA-six-room shop at **395 coins** and a **320px** layout with client/scroll width **305 / 305**, confirming no horizontal overflow. These are targeted presentation checks, not a new campaign or physical-phone playthrough.
+
+The package is **64,886 bytes**, has **12 runtime files** and root `index.html`, and has SHA-256 **050b9c80275faaa56ca5d69e0655012ddaf4d6e3b9d8aeba23746d3dcbd3c22b**. Source/archive/extraction hashes match. `artifacts/publish-1.6.5` contains the exact ZIP and retained artwork, gallery, and description.
+
+The saved/reloaded browser-playable upload's [actual iframe](https://html-classic.itch.zone/html/19305008/index.html?v=1789834791) displays **v1.6.5**. Hosted desktop Upgrades visibly shows a coin icon and **5** in navigation and the shop, without the former saved-coins label; its accessible image label is **5 coins**. The existing Room 2 career, 5 coins, and width/bag ranks 1 remained unchanged. Warning/error logs were empty. The same single game tab was left at Upgrades. **Draft remained selected and Public unselected; no public-publish action was taken.**
 
 ## Version 1.6.4 — upgrades without leaving the job
 
