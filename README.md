@@ -2,28 +2,20 @@
 
 **Clean rooms. Upgrade your vacuum.**
 
-Version **1.6.1** follows a full campaign and hallway audit with clearer saving instructions, simpler upgrade cards, and a paper completion stamp in the ending. Coins save when the whole job is finished. The simulation and save format are unchanged.
+Sweep Shift is a browser game about a small vacuum robot cleaning messy rooms. Clear **24 jobs and 50 areas** across a workshop, an after-hours arcade, a greenhouse, and a rooftop party. Earn coins, improve the vacuum, find optional treasures, and unlock seeded Endless rooms.
 
-Later areas connect through walkable hallways with a smoothly following camera. A physical gate says **LOCKED — Clean this area to 100% to open**. Once unlocked, the hallway stays open in both directions. Previous rooms retain their cleaned floor, dirt, and treasures; the bag and its coin value travel with the vacuum. You can return to an earlier dock without losing or duplicating earnings. Yellow edge arrows point toward the last few dirt pieces if they are outside the camera view.
+![The vacuum traveling through an open hallway between two rooms](marketing/06-hallway.png)
 
-The play screen keeps one compact bar: **clean percentage, bag space, and Pause**. Pause contains Rooms, Upgrades, and optional job/coin details. Every screen keeps the cream/red workshop theme and each location its distinct artwork. Opening Upgrades during a job asks once: **Keep playing** or **Quit & upgrade**. Help and Settings opened from Pause return there; Main menu keeps the unfinished job paused.
+Later jobs connect several areas through walkable hallways. Clean an area to 100% to open its gate, then travel both ways with your dirt, coins, and room progress intact. A compact HUD keeps the floor visible; yellow markers reveal the last few pieces of dirt.
 
-The campaign has **50 distinct areas across 24 jobs**. Rooms 1–8 stay small; rooms 9–17 have two areas, 18–21 have three, and 22–24 have four. Clear each area to unlock the next hallway. Later dust and stuck leaves take more suction, with fixed difficulty that stronger upgrades make faster. Each job begins parked at its dock and waits for a left click or WASD. Every area has one dock and requires 100% cleaning. Dirt and its coin value stay in the bag between areas; a green arrow leads to the dock when it is nearly full.
+Built with **JavaScript, Canvas, and Web Audio**, without external runtime libraries or downloaded art and sound assets. The game includes keyboard, mouse, and touch controls, local saves, and automated campaign and progression checks.
 
-Sweep Shift is a browser game about a vacuum robot cleaning messy rooms. Collect debris, dock to empty the bag, and spend earned coins on upgrades.
-
-The campaign has 24 jobs with 50 authored areas across a workshop, an after-hours arcade, a greenhouse, and a rooftop party. Finish the campaign to unlock Endless Shift: reproducible generated rooms that can be revisited using a seed.
-
-- **Workshop:** wood floors, tools, workbenches, and sawdust.
-- **After-Hours Arcade:** dark patterned carpet, neon cabinets, game screens, and leftover tickets.
-- **Greenhouse:** glass framing, plant beds, potting benches, soil, and fallen leaves.
-- **Rooftop Party:** a deck above the city, railings, string lights, lounge furniture, and confetti.
-
-Endless rooms use the same location artwork. Decorative scenery is kept outside the walkable floor or within existing furniture footprints; each area has its own connected, walkable floor plan.
+Current build: **1.6.2**. The illustrated tutorial appears until the first completed room. Later jobs and replays use a small click/WASD start prompt; the full guide remains available in **How to play**. The robot always waits at its dock for a deliberate start. Physics, balance, and save format are unchanged.
 
 ## Play
 
 - Every new job starts **parked in the drop-off dock**. **Left-click inside the room**, or press **WASD / an arrow key** to start and steer. Mouse hovering, held-key repeats from a previous room, and unrelated keys cannot start it. The focused Start button also supports Enter / Space.
+- The full picture guide appears only until you complete your first room. Afterward, new jobs and replays show a compact start prompt. **How to play** always opens the full guide.
 - After starting, move with **WASD or the arrow keys**, or **move your mouse over the room** and the robot follows it. No holding is needed; leaving the play area stops mouse steering.
 - On a touchscreen, **tap the Start button**, then **drag to steer** with the movement joystick or room. Swiping the instructions scrolls them without starting the job.
 - Suction is automatic. Each area has **one drop-off dock**. Park beside it to empty the bag automatically.
@@ -94,6 +86,8 @@ Career changes read the latest save before applying a transaction. Where support
 ## Credits and development
 
 Created by **Nathan Norris** with AI assistance for implementation, design iteration, writing, and testing. Artwork is drawn with original Canvas and SVG code; sound effects are synthesized using Web Audio. The playable game does not download fonts, art packs, audio files, or third-party runtime libraries.
+
+[Portfolio](https://nathanwnorris.github.io/) · [Résumé (PDF)](docs/Nathan_Norris_Resume.pdf)
 
 There is no account system, backend, analytics service, or online leaderboard. Verification reports distinguish automated simulation, browser playtesting, and any device checks that were actually performed. Source availability is not a claim that every supported device or browser engine has been tested.
 

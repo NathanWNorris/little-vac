@@ -1,8 +1,29 @@
-# Sweep Shift 1.6.1 draft release candidate
+# Sweep Shift 1.6.2 draft release candidate
+
+The **1.6.2** ZIP is uploaded to the existing [itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**. Reload confirmed the actual hosted version, shorter description, and simplified store setup. **The Draft badge remains visible; public publishing has not been performed.**
+
+## Current change and validation — 2026-09-19
+
+- The illustrated tutorial appears until Room 1 is completed. Later jobs and replays use a compact click/WASD start prompt; **How to play** still opens the full picture guide. The vacuum remains parked until an explicit start action.
+- Targeted validation passed **42 app groups**, **17 input groups**, and syntax checking. The new regression reproduced the old repeated tutorial and verifies its replacement, idle/hover freeze, click/WASD activation, replay after reload, and manual Help. Desktop and **320px** visual checks passed.
+- Simulation, authored rooms, balance, and save format are unchanged. Full campaign and deep physics results below are prior validation of that unchanged engine, not newly repeated playthroughs for 1.6.2.
+- The saved store setup automatically loads the unchanged Home screen, has no oversized page banner, and shows the shorter **197-word** description with exactly six gallery links. The current theme persisted after reload. The hosted footer displays **v1.6.2**; autoloading Home does not start a room.
+- The existing completed-Room-1 career opened Room 2 with the floor visible and the compact left-click/WASD prompt. It remained parked at **0% and 0 / 120 bag space**. Pressing **D** removed the prompt and started the job; **Pause → How to play** retained the full three-step illustrated guide. This is a targeted hosted startup/help check, not another completed-job or purchase playthrough.
+- The publication boundary remains the final public-publish action. Keep the project in Draft for the user.
+
+## Current upload assets
+
+- Game: `artifacts/sweep-shift-itch.zip`, **64,762 bytes**, **12 runtime files** with `index.html` at the root. SHA-256: **90c65a6ab10bb7e2596de99ed80fd9b5188ad45e1e701b0a056f09ecef2c1219**.
+- Handoff: `artifacts/publish-1.6.2`, containing that ZIP, the existing verified cover and gallery PNGs, a launch-image backup, current `description.html`, upload notes, and a file manifest.
+- Cover: `marketing/cover.png` (**1260 × 1000**).
+- Gallery: `marketing/01-rooms.png`, `marketing/02-arcade.png`, `marketing/03-greenhouse.png`, `marketing/04-rooftop.png`, `marketing/02-upgrades.png`, and `marketing/06-hallway.png`.
+- Description: `marketing/description.html`. **No page banner is required**; the older banner is retained only in the historical 1.6.1 handoff.
+
+## Historical 1.6.1 draft release candidate
 
 The tested **1.6.1** build, current description, and refreshed artwork are uploaded to the [itch.io draft](https://fooded.itch.io/sweep-shift), project **5021059**. The actual hosted iframe displays **v1.6.1** and passed the hosted controls, pause, upgrade-confirmation, and existing-save smoke test. **Draft remains selected; public publishing has not been performed.**
 
-## Current readiness — 2026-09-19
+## Historical 1.6.1 readiness — 2026-09-19
 
 - The current standard suite passed all **24 jobs / 50 areas**, 3 Endless runs, and a replay. Supporting checks now total **84 groups**: 41 app, 17 input, 10 store, and 16 progression. New app regressions cover denied storage/Web Locks and stale-input cleanup on blur or hidden-page pause.
 - A fresh browser career finished Room 1 at 100%, earned **350 coins** and the Tiny wrench, unlocked Room 2, and bought Wider sweep rank 1 for **180 coins**. The remaining **170 coins**, upgrade, and unlock survived reload. See [PLAYTEST.md](PLAYTEST.md) for scope and limitations.
@@ -14,10 +35,11 @@ The tested **1.6.1** build, current description, and refreshed artwork are uploa
 - Store colors were saved: background **#17292d**, content **#f2e6c9**, text **#203b3b**, and links **#a63e27**. The actual [hosted iframe](https://html-classic.itch.zone/html/19303530/index.html?v=1789828455) loaded **v1.6.1**. Click/mouse and WASD activation, cleaning, Escape and outside-frame pause, one Upgrades confirmation, Keep playing, and direct quit-to-shop passed. Reload retained the existing Room 2 unlock, 5 saved coins, and purchased upgrade ranks; quitting did not award unfinished coins. Warning/error logs were empty during this smoke test, before the separate fullscreen check below.
 - itch.io's external fullscreen control could not be verified in automated Chrome. Two activation attempts left fullscreen inactive and produced host-page `TypeError: not granted` and `NotSupportedError` for unavailable `screen.orientation.lock`. These errors came from `fooded.itch.io`, not the game iframe; embedded gameplay remained functional. The game and host fullscreen button were not changed.
 - The hosted smoke test did not complete a job or make a purchase. Completed-job rewards and new-purchase persistence were verified locally as described above. The hosted game was left at Home without an unfinished test job. The remaining action is public publishing, deliberately left to the user. The old 1.1.0 draft inspection below is historical evidence.
+- The [project editor](https://itch.io/game/edit/5021059#published) is positioned at visibility controls with **Draft selected, Public unselected, and Save visible**. The editor and hosted Home are retained for the user. A hosted preview screenshot is saved locally at `tmp/itch-1.6.1-hosted-preview.jpg`.
 
-## Current upload assets
+## Historical 1.6.1 upload assets
 
-- Game: `artifacts/sweep-shift-itch.zip`; unchanged **64,683 bytes**, SHA-256 **573520085d2c25f00144c4e8562cae6b14841809fac374071446d27da5f67d00**.
+- Game: `artifacts/publish-1.6.1/sweep-shift-itch.zip`; **64,683 bytes**, SHA-256 **573520085d2c25f00144c4e8562cae6b14841809fac374071446d27da5f67d00**.
 - Cover: `marketing/cover.png` (**1260 × 1000**).
 - Banner: `marketing/banner.png` (**1260 × 320**).
 - Launch image: `marketing/launch.png` (**960 × 800**).
@@ -26,16 +48,16 @@ The tested **1.6.1** build, current description, and refreshed artwork are uploa
 
 The `artifacts/publish-1.6.1` handoff contains the uploaded ZIP, current PNGs, `description.html`, and `UPLOAD-NOTES.md`. The current artwork and six screenshots persisted on the hosted draft; older JPG screenshots were excluded. The hosted version and gameplay smoke checks passed within the scope stated above.
 
-## Verified local build — 2026-09-18
+## Historical 1.6.1 local build — 2026-09-18
 
-- Archive: artifacts/sweep-shift-itch.zip
+- Archive: artifacts/publish-1.6.1/sweep-shift-itch.zip
 - Contents: **12 files**, index.html at root, no external runtime dependencies or QA fixtures.
 - Size: **64,683 bytes**.
 - SHA-256: **573520085d2c25f00144c4e8562cae6b14841809fac374071446d27da5f67d00**.
 - All source, archive, and extracted hashes match.
 - Passed the standard 24-job/50-area earned campaign and 3 Endless runs, plus a fresh deep physics audit: a starter campaign, 40 Endless runs, 86,400 random movement frames, and 144 campaign clears across six upgrade builds at 120Hz. All 82 app/input/store/progression groups passed. A full two-area browser job verified cleaning, backtracking with a loaded bag, treasure, payout, reload persistence, and the next-room unlock. See [PLAYTEST.md](PLAYTEST.md) for exact scope and limitations.
 
-## What changed in 1.6.1
+## Previous 1.6.1 changes
 
 - Clearer coin-saving instructions: earnings save when the whole job is finished.
 - Consistent dock wording and leaner upgrade cards, with shortages and maximum levels still explicit.

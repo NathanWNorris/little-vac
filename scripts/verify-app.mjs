@@ -468,6 +468,35 @@ await test('home primary labels match fresh, completed, and endless destinations
   await endless.act('continue');assert.equal(endless.publicState().screen,'endless');
 });
 
+await test('the full start guide ends after the first completed room, while deliberate starts and manual help remain', async () => {
+  const app=await boot();await app.startRoom(1);
+  assert.match(app.nodes.get('#main').innerHTML,/class="picture-guide"/,'A fresh player sees the picture guide');
+  await app.act('restart-confirm');
+  assert.match(app.nodes.get('#main').innerHTML,/class="picture-guide"/,'Restarting before the first success does not skip learning the controls');
+  await app.act('begin-room');await app.settle();await app.act('room:2');
+  const markup=app.nodes.get('#main').innerHTML;
+  assert.match(markup,/room-start-compact/);assert.doesNotMatch(markup,/class="picture-guide"/,'The next room must not reopen the full tutorial');
+  const run=app.run(),parked=JSON.stringify(run);
+  const pointer={pointerId:1,pointerType:'mouse',isPrimary:true,button:0,clientX:550,clientY:540};
+  app.pointerMove(pointer);app.frame(100);app.frame(200);
+  assert.equal(app.publicState().awaitingStart,true);assert.equal(JSON.stringify(run),parked,'A compact prompt must still keep movement, suction and the clock parked');
+  app.pointerDown(pointer);
+  assert.equal(app.publicState().awaitingStart,false,'A fresh left-click starts the compact prompt');
+  assert.equal(app.nodes.get('#roomStart').hidden,true);
+
+  const reloaded=await boot(app.publicState().career);await reloaded.startRoom(1);
+  assert.match(reloaded.nodes.get('#main').innerHTML,/room-start-compact/,'Completed-room replays keep the short prompt after reload');
+  assert.doesNotMatch(reloaded.nodes.get('#main').innerHTML,/class="picture-guide"/);
+  await reloaded.act('controls');
+  assert.match(reloaded.nodes.get('#modalContent').innerHTML,/class="picture-guide"/,'Manual How to play still provides the full picture guide');
+  assert.equal(reloaded.publicState().awaitingStart,true);
+  await reloaded.act('resume');
+  const origin=reloaded.run().robot.x;
+  reloaded.keyEvent('keydown','d');reloaded.frame(100);reloaded.frame(200);
+  assert.equal(reloaded.publicState().awaitingStart,false);
+  assert(reloaded.run().robot.x>origin,'WASD starts and steers from the compact prompt');
+});
+
 await test('a quick key tap between simulation frames cancels the old mouse target', async () => {
   const app = await boot(); await app.startRoom(1);
   await app.act('begin-room');

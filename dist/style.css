@@ -752,11 +752,11 @@ body[data-screen="play"] main {
   padding-bottom:0;
   touch-action:pan-y
 }
-.arena:has(.room-start:not([hidden])) #gameCanvas {
+.arena:has(.room-start:not(.room-start-compact):not([hidden])) #gameCanvas {
   position:absolute;
   inset:0
 }
-body[data-screen="play"] main:has(.room-start:not([hidden])) {
+body[data-screen="play"] main:has(.room-start:not(.room-start-compact):not([hidden])) {
   width:min(100%,860px)
 }
 .arena:has(.room-start:not([hidden])) .joystick,
@@ -930,6 +930,14 @@ dialog:has(.how-to-play) {
   font-size:13px;
   line-height:1.5
 }
+.room-start.room-start-compact {
+  position:absolute;
+  inset:auto 12px 14px;
+  padding:0;
+  background:transparent
+}
+.room-start-compact .start-card {width:min(100%,350px)}
+.room-start-compact .start-card button {width:100%;min-width:0;font-size:16px}
 .touch-copy {
   display:none
 }

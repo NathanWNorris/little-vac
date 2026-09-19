@@ -1,6 +1,18 @@
 # Sweep Shift validation
 
-Current draft candidate: **1.6.1**, uploaded to itch.io with public visibility still off. Earlier sections below are historical evidence.
+Current draft candidate: **1.6.2**, uploaded to itch.io with public visibility still off. Earlier sections below are historical evidence.
+
+## 2026-09-19 — version 1.6.2 tutorial follow-up
+
+Completing Room 1 now replaces the repeated illustrated tutorial with a compact click/WASD start prompt on later jobs and replays. The full guide remains available through **How to play**. Every new job still spawns parked at its dock; movement, suction, and the clock wait for a deliberate click, WASD/arrow key, or touch Start action. Physics, room content, balance, and save format are unchanged.
+
+Targeted validation passed **42 app-orchestration groups**, **17 input groups**, and the syntax check. The new app regression failed against the old repeated-guide behavior, then passed after the change. It covers the full guide before the first success, compact Room 2 startup, frozen state during hover and idle frames, left-click activation, compact replay after reload, manual full Help, and WASD activation and steering. Existing tests retain touch, pause, restart, quit, hallway, and save checks. These use the real application with controlled DOM and career fixtures; they are not a new physical campaign playthrough.
+
+Desktop and **320px** visual checks passed for the compact prompt and full manual guide. These are responsive browser checks, not a physical-phone test. The full campaign and deeper engine checks were not repeated for this tutorial-only patch; their prior scope remains documented below.
+
+The new ZIP contains **12 runtime files**, is **64,762 bytes**, and has SHA-256 **90c65a6ab10bb7e2596de99ed80fd9b5188ad45e1e701b0a056f09ecef2c1219**. It has been uploaded to the existing [itch.io draft](https://fooded.itch.io/sweep-shift).
+
+Reload of the actual hosted page confirmed **v1.6.2**, no oversized page banner, automatic loading of the unchanged Home screen, the shorter **197-word** description, exactly **six gallery links**, and the saved theme. The **Draft** badge remained visible. Continue from the existing completed-Room-1 career opened Room 2 with the floor visible and a compact left-click/WASD prompt, parked at **0% with 0 / 120 bag space**. Pressing **D** removed the prompt and began the job. **Pause → How to play** still showed the full three-step illustrated guide. This targeted hosted check did not complete a job or make a purchase, and no new fullscreen result is claimed. No public-publish action was performed.
 
 ## 2026-09-19 — final publication pass, version 1.6.1
 
@@ -23,6 +35,8 @@ The actual [hosted game iframe](https://html-classic.itch.zone/html/19303530/ind
 Reload retained **Room 2**, **5 saved coins**, and the existing upgrade ranks: **Wider sweep 1, Bigger bag 1, Quicker wheels 0, Stronger suction 0**. A new Room 2 started from its parked state with the **D** key; clicking outside the iframe paused it. The empty test job was quit and the hosted game returned to Home. Browser warning/error logs were empty both before and after reload, before the separate fullscreen attempts below. This hosted smoke test did **not** complete a job or buy an upgrade; completed-job rewards and new-purchase persistence remain the local evidence described above. No production game source changed. **Draft remains selected and the final public-publish action has not been taken.**
 
 A later check attempted itch.io's external **Enter fullscreen** control twice, once by its semantic control and once by coordinate click. `document.fullscreenElement` remained false. The host page at `fooded.itch.io` logged `TypeError: not granted` and a `NotSupportedError` because `screen.orientation.lock` was unavailable on this device. The errors did not originate in the game iframe and embedded gameplay was unaffected. **Fullscreen could not be verified under automated Chrome**; the earlier empty-log result applies only to the game/start/pause/reload smoke check, not the entire session. No game or host-button change was made.
+
+The final editor view at `https://itch.io/game/edit/5021059#published` visibly showed **Draft selected, Public unselected, and Save**. The editor and hosted Home were retained for the user, and the hosted preview screenshot was saved at `tmp/itch-1.6.1-hosted-preview.jpg`. No public-publish action was performed.
 
 ## 2026-09-18 — version 1.6.1 deep playthrough and interface cleanup
 
