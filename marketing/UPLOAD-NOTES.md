@@ -98,3 +98,11 @@ Version 1.6.2 passed 42 app groups, 17 input groups, syntax checking, and deskto
 The historical 1.6.2 archive is `artifacts/publish-1.6.2/sweep-shift-itch.zip`, 64,762 bytes, SHA-256 `90c65a6ab10bb7e2596de99ed80fd9b5188ad45e1e701b0a056f09ecef2c1219`. Earlier archives and artwork remain historical evidence; do not relabel their hashes as 1.6.3 results.
 
 The full 24-job/50-area campaign and deeper engine checks belong to earlier validation documented in PLAYTEST.md. No physical-phone test is claimed. itch.io's external fullscreen control could not be activated under automated Chrome during the 1.6.1 smoke test; errors came from the host page, not the game iframe. Fullscreen remains unverified.
+
+## Launch preparation — 1.6.10, September 19, 2026
+
+The actual hosted page was confirmed playable at **1.6.10**. Saved settings retain the existing cover, six screenshots, **No payments**, a **960 × 800** embed, and autostart. **Draft is selected; Public is unselected. No public-publish action was taken.**
+
+Saved tags are `cleaning`, `cozy`, `relaxing`, `singleplayer`, `top-down`, `robots`, `incremental`, and `upgrades`. Session length is now **A few minutes**, corrected from A few seconds. Saved metadata lists **Keyboard, Mouse, Touchscreen**, **English**, and minimum/maximum players of **1**.
+
+The local handoff is `artifacts/publish-1.6.10`, with the verified build, cover, launch image, description, six gallery images, concise launch notes, and a hash manifest. Its two menu screenshots are explicitly labeled as older layouts. Physical-phone and native fullscreen-exit limits remain as recorded in the release audit.
