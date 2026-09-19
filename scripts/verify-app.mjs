@@ -36,7 +36,11 @@ async function boot(initial = fixtureCareer(), { blockedStorage = false, deniedL
       classList: { add() {}, remove() {}, toggle() {} }, addEventListener() {},
       setAttribute(name, value) { this.attributes[name] = String(value); }, getAttribute(name) { return this.attributes[name] ?? null; },
       insertAdjacentHTML(_position, html) { this.innerHTML += html; },
-      querySelector(selector) { return selector === 'h1' || selector === 'h2' ? node('heading') : null; },
+      querySelector(selector) {
+        if (selector === '#modalTitle' && this.innerHTML.includes('id="modalTitle"')) return node('modalTitle');
+        if (/^#(?:muteSetting|volumeSetting|motionSetting)$/.test(selector) && this.innerHTML.includes(`id="${selector.slice(1)}"`)) return nodes.get(selector) ?? null;
+        return selector === 'h1' || selector === 'h2' ? node('heading') : null;
+      },
       querySelectorAll(selector) {
         if (selector !== '.menu-wallet') return [];
         // Model wallet replacement so async saves can be checked without rebuilding the view.
@@ -47,7 +51,7 @@ async function boot(initial = fixtureCareer(), { blockedStorage = false, deniedL
         }));
       },
       focus() { document.activeElement = this; }, getContext() { return { setTransform() {} }; },
-      showModal() { this.open = true; }, close() { this.open = false; },
+      showModal() { this.open = true; this.onShow?.(); }, close() { this.open = false; },
       getBoundingClientRect() { return { left: 0, top: 0, bottom: 640, width: 960, height: 640 }; },
     };
   }
@@ -262,11 +266,53 @@ await test('another tab’s purchase and settings update preserve this tab’s a
   assert.equal(app.publicState().career.upgrades.bag, 1);
 });
 
+await test('an open Settings dialog tracks cross-tab preferences without replacing its controls or focus', async () => {
+  const app = await boot(); await app.act('shop'); await app.act('settings');
+  const sound = app.nodes.get('#muteSetting'), volume = app.nodes.get('#volumeSetting'), motion = app.nodes.get('#motionSetting');
+  // Initial DOM properties from the rendered checkbox/range attributes.
+  sound.checked = true; volume.value = '0.65'; motion.checked = false;
+  volume.focus();
+  const external = app.publicState().career;
+  external.settings = { muted: true, effects: 0.1, reducedMotion: true };
+  await app.externalCareer(external);
+  assert.equal(sound.checked, false);
+  assert.equal(volume.value, '0.1');
+  assert.equal(motion.checked, true);
+  assert.equal(app.nodes.get('#modal').open, true);
+  assert.equal(app.focused(), volume, 'Synchronizing settings must preserve the focused form control');
+  assert.equal(app.nodes.get('#motionSetting'), motion, 'The existing dialog inputs stay connected');
+  motion.checked = false;
+  await motion.onchange({ target: motion });
+  assert.equal(app.publicState().career.settings.reducedMotion, false, 'The next click changes the preference shown by the checkbox');
+  assert.equal(app.publicState().career.settings.muted, true);
+  assert.equal(app.publicState().career.settings.effects, 0.1);
+});
+
 await test('an external reset clears a later active room instead of showing a false completion', async () => {
   const app = await boot(fixtureCareer(6)); await app.startRoom(7);
   await app.externalCareer(fixtureCareer());
   assert.equal(app.run(), null); assert.equal(app.publicState().screen, 'rooms');
   assert.equal(app.publicState().career.coins, 0);
+});
+
+await test('a reset closes now-locked Endless and finale screens even when no room has been loaded', async () => {
+  for (const destination of ['endless', 'ending']) for (const update of ['storage', 'storage-with-settings', 'settings-save']) {
+    const app = await boot(fixtureCareer(24));
+    await app.act(destination);
+    assert.equal(app.publicState().screen, destination);
+    assert.equal(app.run(), null, 'This path starts directly from a reloaded completed career');
+    if (update !== 'storage') await app.act('settings');
+    const reset = app.publicState().career; progression.resetCareer(reset);
+    if (update === 'settings-save') {
+      app.storage.setItem(progression.SAVE_KEY, JSON.stringify(reset));
+      await app.nodes.get('#volumeSetting').onchange({ target: { value: '0.1' } });
+    } else await app.externalCareer(reset);
+    assert.equal(app.publicState().screen, 'rooms', `${destination} must no longer advertise an unavailable mode after ${update}`);
+    assert.deepEqual(app.publicState().career.completed, []);
+    assert.equal(app.nodes.get('#modal').open, false, 'A stale menu dialog must not obscure the reset career');
+    assert.doesNotMatch(app.nodes.get('#main').innerHTML, /All rooms complete!|id="seedForm"/);
+    assert.equal(app.run(), null);
+  }
 });
 
 await test('a rejected reward leaves the room safely when a reset arrived without a storage event', async () => {
@@ -520,6 +566,31 @@ await test('pause submenus return to Pause, and Main menu preserves the unfinish
   assert.match(homeText,/Room 13 · Leafy Welcome/);assert.match(homeText,/Upgrades/);assert.doesNotMatch(homeText,/Upgrades Locked/);
   await app.act('continue');assert.equal(app.run(),run);assert.equal(app.publicState().paused,false);
   assert.equal(run.robot.bag,7);assert.equal(run.robot.bagValue,11);assert.equal(run.percent,.42);
+});
+
+await test('How to play and Credits open at their heading instead of below the first instructions', async () => {
+  for (const [origin, action] of [['title', 'controls'], ['title', 'credits'], ['pause', 'controls']]) {
+    const app = await boot(), modal = app.nodes.get('#modal');
+    if (origin === 'pause') { await app.startRoom(1); await app.act('begin-room'); await app.act('pause'); }
+    // Native dialog autofocus scrolls to the first interactive control on small screens.
+    modal.onShow = () => { modal.scrollTop = 298; };
+    await app.act(action);
+    assert.equal(modal.open, true);
+    assert.equal(app.focused().id, 'modalTitle', `${action} should begin at its title`);
+    assert.equal(app.focused().tabIndex, -1, 'The intro heading can be focused without adding a tab stop');
+    assert.equal(modal.scrollTop, 0, 'Opening an informational dialog must reveal its first content');
+    if (origin === 'pause') {
+      assert.equal(app.publicState().paused, true);
+      await app.act('back-pause');
+      assert.equal(modal.open, true);
+      assert.match(app.nodes.get('#modalContent').innerHTML, />PAUSED</);
+      assert.equal(app.publicState().paused, true, 'Returning from help must not resume movement');
+    } else {
+      await app.act('resume');
+      assert.equal(modal.open, false);
+      assert.equal(app.publicState().screen, 'title');
+    }
+  }
 });
 
 await test('home primary labels match fresh, completed, and endless destinations', async () => {

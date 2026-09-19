@@ -1,6 +1,14 @@
 # Little Vac validation
 
-## Version 1.6.10 — release audit
+## Version 1.6.11 — follow-up release audit
+
+Passed **48 app + 17 input + 16 progression + 10 career-store groups (91 total)** and syntax. A fresh deep run completed the earned campaign, all 24 starter jobs, 43 Endless runs, and 86,400 soak frames. Additional probes covered 26 hallways, 1,040 full-bag boundary crossings/reversals, 300 campaign rendering-command frames, nine marker cases, 12 unusual seeds, and four more physical Endless completions. Rendering-command probes are not browser screenshots; the 144-run matrix was not rerun. [Full audit](docs/RELEASE-AUDIT-1.6.11.md).
+
+Manual Room 13 play cleaned its first area to 100% and verified locked-gate behavior, final-dirt markers, carried bag value, and backtracking without losing progress; this was a partial job with unchanged 1.6.10 physics still in memory. Reloaded 1.6.11 Help/Credits began at their headings on short/narrow viewports. The cross-tab fixes have automated coverage only.
+
+The **66,351-byte**, 12-file package matched source/archive/extraction hashes, SHA-256 **06886e0b102965bc3bad9608d0be3a46b2cbc3c04167fd1861b41753affb9a05**. Saved hosted 1.6.11 passed Help focus/scroll, reduced-motion save/reload/restore, and play/pause/Upgrades/resume smoke checks. Room 1/zero coins appeared in the current iframe and both directly opened old/new builds, so no prior-career retention is claimed. A 1.6.10-written save fixture loaded unchanged; that is compatibility evidence only. No game-source error was observed; a Chrome-extension TypeError was unrelated. **Draft remains selected and Public unselected.**
+
+## Historical version 1.6.10 — release audit
 
 Version **1.6.10** passed the full earned 24-job/50-area campaign, 24 starter jobs, 144 campaign runs across six upgrade builds, additional Endless runs, and 88 app/input/progression/store groups. Fixed duplicate Resume controls, pre-start keyboard focus, stale accessible instructions, large wallet layout, and misleading treasure/suction copy. Manual browser checks covered a full first-room completion, purchases, reload persistence, startup, menus, settings, and Endless restart. See [the full audit](docs/RELEASE-AUDIT-1.6.10.md) for exact coverage and device limits.
 

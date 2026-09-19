@@ -1,4 +1,12 @@
-# Little Vac 1.6.10 draft release candidate
+# Little Vac 1.6.11 draft release candidate
+
+Version **1.6.11** fixes short-screen Help/Credits scroll position, stale Endless/finale screens after a cross-tab reset, and stale values in open Settings. **91 logic groups**, syntax, the fresh deep physics suite, additional hallway/rendering probes, targeted browser checks, and hosted smoke passed. The older 144-run build matrix remains historical evidence. See [the full audit](docs/RELEASE-AUDIT-1.6.11.md) for exact coverage and limits.
+
+The ZIP has **12 runtime files**, root `index.html`, **66,351 bytes**, and SHA-256 **06886e0b102965bc3bad9608d0be3a46b2cbc3c04167fd1861b41753affb9a05**; source/archive/extraction hashes match. The uploaded 1.6.11 build is saved as browser-playable. **Draft is selected; Public is unselected. No public-publish action was taken.** The handoff is `artifacts/publish-1.6.11`; its two menu screenshots are labeled as older layouts.
+
+Hosted Help starts at its heading, a reduced-motion change survived reload and was restored, and play → pause → Upgrades → Resume preserved the active run. No hosted purchase or completed job was tested. Both the old and new directly opened builds and the current iframe showed Room 1 with zero coins; prior five-coin retention is not claimed for this pass. Source and an actual 1.6.10-written fixture confirm save compatibility, not browser storage history. Physical phones/touch hardware, non-Chrome engines, audio audition, and native fullscreen exit remain unverified.
+
+## Historical 1.6.10 draft release candidate
 
 Version **1.6.10** passed the full earned 24-job/50-area campaign, 24 starter jobs, 144 campaign runs across six upgrade builds, additional Endless runs, and 88 app/input/progression/store groups. Fixed duplicate Resume controls, pre-start keyboard focus, stale accessible instructions, large wallet layout, and misleading treasure/suction copy. Manual browser checks covered a full first-room completion, purchases, reload persistence, startup, menus, settings, and Endless restart. See [the full audit](docs/RELEASE-AUDIT-1.6.10.md) for exact coverage and device limits.
 

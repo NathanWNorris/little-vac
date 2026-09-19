@@ -1,4 +1,10 @@
-# Little Vac 1.6.10 upload
+# Little Vac 1.6.11 upload
+
+The **1.6.11** build was uploaded, saved, and reloaded with browser-playable checked, **Draft selected, and Public unselected**. No public-publish action was taken. The ZIP has **12 runtime files**, root `index.html`, **66,351 bytes**, and SHA-256 **06886e0b102965bc3bad9608d0be3a46b2cbc3c04167fd1861b41753affb9a05**; source/archive/extracted hashes match. The handoff is `artifacts/publish-1.6.11`, retaining the cover, launch image, and gallery with two older-layout menu images clearly labeled.
+
+Hosted Help opens at its heading with scroll position zero. Reduced motion saved across reload and was restored to its starting value. Play → D → Escape → Upgrades opened directly; Resume kept the run. No hosted purchase or completed job was tested. This pass saw fresh Room 1/zero coins on both old/new direct builds and the current iframe; it does not establish retention of the earlier five-coin career. The save key/schema are unchanged and a 1.6.10-written fixture loads intact. See [the 1.6.11 audit](../docs/RELEASE-AUDIT-1.6.11.md) for 91 logic checks, fresh deep/edge coverage, manual play, source compatibility evidence, and device limits.
+
+## Historical 1.6.10 upload
 
 Version **1.6.10** passed the full earned 24-job/50-area campaign, 24 starter jobs, 144 campaign runs across six upgrade builds, additional Endless runs, and 88 app/input/progression/store groups. Fixed duplicate Resume controls, pre-start keyboard focus, stale accessible instructions, large wallet layout, and misleading treasure/suction copy. Manual browser checks covered a full first-room completion, purchases, reload persistence, startup, menus, settings, and Endless restart. See [the full audit](../docs/RELEASE-AUDIT-1.6.10.md) for exact coverage and device limits.
 
